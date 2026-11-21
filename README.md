@@ -4,6 +4,7 @@ Digital sjekkliste for familier som er gjenforent i Tønsberg kommune. Den finne
 
 - **App for familiene:** `veileder.html`
 - **Redaktørverktøy:** `redaktor.html`
+- **Mottak for teknisk eier:** `mottak.html`
 - **Adresse:** https://tonsbergloftet.github.io/familiegjenforening/
 
 Appen er en statisk nettside uten database. Alt innhold ligger i JSON-filer i `data/`.
@@ -21,6 +22,7 @@ Appen er en statisk nettside uten database. Alt innhold ligger i JSON-filer i `d
 ```
 veileder.html            appen familiene bruker (IKKE endre navnet – QR-koder peker hit)
 redaktor.html            redaktørverktøyet
+mottak.html              mottak for teknisk eier: kontroll, KI-oversettelse, lagring
 index.html               sender videre til veileder.html
 data/config.json         språkliste, adresse, lenke til kommunens side
 data/struktur.json       spørsmål, faser, punkter og kontakter (rekkefølge, vilkår)
@@ -50,46 +52,32 @@ python3 -m http.server 8000
 
 Åpne deretter http://localhost:8000/veileder.html. Legg til `?utkast=1` for å se punkter med status «utkast».
 
-## Slik legger du inn en endring fra redaktør
+## Slik legger du inn endringer: bruk mottaket
 
-1. **Hent siste versjon først.** I GitHub Desktop: *Fetch origin* → *Pull*.
-2. Redaktøren sender `endringer-ÅÅÅÅ-MM-DD.json`. Den inneholder bare det som er endret:
-   - `tekster`: nøkkel → ny norsk tekst (`null` = slettet)
-   - `struktur`: ny `struktur.json` hvis punkter, faser eller kontakter er lagt til eller flyttet
-3. Legg de nye tekstene inn i `data/sprak/no.json`, og erstatt `data/struktur.json` hvis den er med.
-4. **KI-oversett de endrede nøklene** til alle språk (se under).
-5. Test lokalt og sjekk at alle språk lastes.
-6. Commit med en beskrivende melding, f.eks. `Innhold: nye tekster om bostøtte (redaktør 2026-12-03)`, og trykk *Push*.
+Åpne **https://tonsbergloftet.github.io/familiegjenforening/mottak.html** i Chrome eller Edge. Verktøyet tar deg gjennom fire steg:
 
-Siden oppdateres på GitHub Pages etter 1–2 minutter.
+1. **Velg repo-mappa.** Trykk *Fetch origin* og *Pull* i GitHub Desktop først. Verktøyet leser filene, kontrollerer dem og sier fra hvis mappa ikke er lik det som er publisert.
+2. **Se gjennom endringene.** Slipp inn endringsfila fra redaktøren. Du ser hver tekst før og etter, nye og fjernede punkter og endrede telefonnumre. Har noen andre endret samme tekst i mellomtiden, velger du hvilken versjon som skal gjelde. Her kan du også legge til et nytt språk.
+3. **KI-oversett.** For hvert språk kopierer du en ferdig pakke, limer den inn i Copilot, ChatGPT eller Claude og limer svaret tilbake. Verktøyet kontrollerer svaret:
+   - at alle tekster er med
+   - at teksten har riktig skrift
+   - at punktlister og «Dette kan du si» er beholdt
+   - at tallene er de samme
 
-Alternativ: Redaktøren kan også laste ned hele `no.json` og `struktur.json` fra verktøyet (under «For teknisk eier»). Da kan du erstatte filene direkte.
+   Du kommer ikke videre før alle språk er oversatt.
+4. **Lagre.** Verktøyet skriver bare de endrede filene til repo-mappa og leser dem tilbake for å kontrollere at de er riktige. Det lager også en ferdig commit-melding. Deretter kjører du *Commit to main* og *Push origin* i GitHub Desktop som vanlig.
 
-## KI-oversettelse
+Firefox og Safari kan ikke skrive til mappa. Der får du i stedet en zip med hele `data`-mappa, som erstatter den gamle.
 
-**Regel: Ingen norsk tekst lastes opp uten oversettelse.** Familiene ser KI-teksten merket «Maskinoversatt» til en tolk har godkjent den.
+Mottaket kan også brukes uten endringsfil, for å oversette tekster som mangler.
 
-1. Lim de endrede norske nøklene inn i Claude, ChatGPT eller Copilot med denne instruksen:
+### Hvis du må gjøre det for hånd
 
-   > Oversett verdiene i dette JSON-objektet til [språk]. Behold nøklene uendret. Behold linjeskift, linjer som starter med «– », og teksten innenfor «…» som egne setninger. Ikke oversett telefonnumre, adresser eller navn på etater. Svar bare med JSON.
+1. Legg de nye tekstene fra endringsfila (`tekster`) inn i `data/sprak/no.json`. `null` betyr at teksten er slettet. Er `struktur` med, erstatter den `data/struktur.json`.
+2. KI-oversett de endrede nøklene til alle språk, og sett status `{"s":"ki"}` i `data/sprak/xx.status.json`.
+3. Test lokalt, og commit med en beskrivende melding.
 
-2. Lim svaret inn i `data/sprak/xx.json`.
-3. Sett status for de samme nøklene i `data/sprak/xx.status.json` til `{"s":"ki"}`.
-4. Når en tolk har godkjent teksten, endrer du den til `{"s":"kontrollert"}`.
-
-Ved store mengder tekst: Oversett én fase om gangen (ca. 20–30 nøkler). Lange svar blir oftere kuttet eller får feil.
-
-**Sjekk etter KI:**
-- Er antall nøkler likt i `no.json` og `xx.json`?
-- Er telefonnumre og tall uendret?
-- Står teksten i riktig skrift (arabisk, tigrinja osv.)?
-
-## Nytt språk
-
-1. Legg språket til i `data/config.json` under `sprak` med `kode`, `navn` (på eget språk) og `retning` (`ltr` eller `rtl`).
-2. KI-oversett hele `no.json` og `ui/no.json` til `sprak/xx.json` og `ui/xx.json`.
-3. Lag `sprak/xx.status.json` der alle nøkler har `{"s":"ki"}`.
-4. Test og last opp, og be en tolk gå gjennom teksten.
+**Regel: Ingen norsk tekst lastes opp uten oversettelse.** Familiene ser KI-teksten merket «Maskinoversatt» til en tolk har godkjent den. Da endres status til `{"s":"kontrollert"}`.
 
 ## Kommunens side
 

@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Mottak – Familiegjenforening</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&display=swap">
+<style>
+/* Mottak for teknisk eier: én vei gjennom, fire steg, kontroll i hvert steg. Samme uttrykk som redaktøren. */
+:root{color-scheme:light dark;
+--bg:light-dark(#F7F5F1,#0f1a20);--sheet:light-dark(#ffffff,#16242c);--sunk:light-dark(#F1EDE6,#121f26);
+--ink:light-dark(#1C2E3A,#e4ecef);--muted:light-dark(#5F6A70,#9fb0b8);--line:light-dark(#E7E3DC,#26363f);
+--navy:light-dark(#013952,#bcd9e8);--green:light-dark(#00714e,#5cc79a);--on-green:light-dark(#ffffff,#0b1a14);
+--mint:light-dark(#EEF4E8,#18302a);--warn:light-dark(#FFF3D1,#3a3018);--warn-ink:light-dark(#5C4300,#f0d78f);
+--err:light-dark(#FDE8E6,#3a1d1b);--err-ink:light-dark(#8A1F14,#f4b2a9);--shadow:0 1px 3px rgba(1,57,82,.07),0 4px 12px rgba(1,57,82,.04)}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 'Barlow',system-ui,sans-serif}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid color-mix(in srgb,var(--green) 55%,transparent);outline-offset:2px}
+.top{display:flex;align-items:center;gap:12px;padding:10px max(16px,2vw);background:var(--sheet);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+.brand{display:flex;align-items:center;gap:10px;font-weight:600;color:var(--navy);white-space:nowrap}
+.brand::before{content:'';width:4px;height:22px;border-radius:2px;background:var(--green)}
+.brand small{font-weight:500;color:var(--muted);font-size:14px}
+.stepper{display:flex;gap:6px;margin-inline-start:auto;list-style:none;padding:0;margin-block:0}
+.stepper li{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--muted);padding:4px 10px 4px 4px;border-radius:999px}
+.stepper li b{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--sunk);font-size:13px}
+.stepper li.now{color:var(--navy);background:var(--mint);font-weight:600}.stepper li.now b{background:var(--green);color:var(--on-green)}
+.stepper li.done b{background:var(--mint);color:var(--green)}
+.wrap{max-width:860px;margin:0 auto;padding:20px 16px 90px}
+.lead{color:var(--muted);margin:4px 0 0}
+h1{font-size:28px;line-height:1.2;color:var(--navy);margin:8px 0 4px}
+.card{background:var(--sheet);border:1px solid var(--line);border-radius:18px;padding:22px;margin:16px 0;box-shadow:var(--shadow)}
+.card.locked{opacity:.5}.card.locked>*:not(h2){display:none}
+.card h2{display:flex;align-items:center;gap:10px;font-size:21px;color:var(--navy);margin:0 0 8px}
+.card h2 .n{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--sunk);font-size:15px;flex:none}
+.card.ok h2 .n{background:var(--green);color:var(--on-green)}
+.card h3{font-size:17px;margin:18px 0 6px}
+p{margin:6px 0}
+.btn{border:0;border-radius:999px;padding:10px 18px;min-height:44px;font-weight:600;background:var(--mint);color:var(--green)}
+.btn.primary{background:var(--green);color:var(--on-green)}
+.btn.ghost{background:transparent;color:var(--navy);text-decoration:underline;text-underline-offset:3px}
+.btn.small{min-height:34px;padding:5px 12px;font-size:14px}
+.btn:disabled{opacity:.45;cursor:default}
+.acts{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:14px 0 4px}
+.msg{border-radius:12px;padding:10px 14px;margin:8px 0;font-size:15px;overflow-wrap:anywhere}
+.msg.ok{background:var(--mint);color:var(--green)}.msg.warn{background:var(--warn);color:var(--warn-ink)}.msg.err{background:var(--err);color:var(--err-ink)}
+.msg ul{margin:4px 0 0;padding-inline-start:20px}
+.msg b{font-weight:700}
+.hint{font-size:14.5px;color:var(--muted)}
+.drop{border:2px dashed var(--line);border-radius:14px;padding:22px;text-align:center;color:var(--muted)}
+.drop.over{border-color:var(--green);background:var(--mint)}
+table{border-collapse:collapse;width:100%;font-size:15px;margin:8px 0}
+th,td{text-align:start;padding:6px 8px;border-bottom:1px solid var(--line)}th{font-weight:600;color:var(--muted);font-size:14px}
+.ch{border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin:8px 0}
+.ch .lbl{font-weight:600;font-size:15px}
+.ch .was{color:var(--muted);text-decoration:line-through;white-space:pre-wrap;font-size:15px;margin-top:4px}
+.ch .now{white-space:pre-wrap;font-size:15px;margin-top:4px;background:var(--mint);border-radius:8px;padding:4px 8px}
+.ch.conf{border-color:var(--warn-ink)}
+.ch label{display:flex;gap:8px;align-items:center;font-size:15px;margin-top:6px}
+.tag{display:inline-block;font-size:12.5px;font-weight:600;border-radius:999px;padding:1px 9px;margin-inline-start:6px;vertical-align:1px}
+.tag.ny{background:var(--mint);color:var(--green)}.tag.endret{background:var(--sunk);color:var(--navy)}.tag.slettet{background:var(--err);color:var(--err-ink)}.tag.konflikt{background:var(--warn);color:var(--warn-ink)}
+.lcard{border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin:12px 0}
+.lcard.done{background:var(--mint);border-color:transparent}
+.lhead{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.lhead b{font-size:18px}
+.pill{font-size:13px;font-weight:600;border-radius:999px;padding:2px 10px;margin-inline-start:auto}
+.pill.g{background:var(--green);color:var(--on-green)}.pill.y{background:var(--warn);color:var(--warn-ink)}.pill.r{background:var(--err);color:var(--err-ink)}
+textarea{width:100%;min-height:130px;border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--sunk);font:14px/1.45 ui-monospace,Menlo,Consolas,monospace}
+.iss{font-size:14.5px;border-top:1px solid var(--line);padding:8px 0}
+.iss .src,.iss .tr{white-space:pre-wrap;border-radius:8px;padding:6px 10px;margin:6px 0;background:var(--sheet);color:var(--ink)}.iss .src{color:var(--muted)}.iss .src::before,.iss .tr::before{content:attr(data-l);display:block;font:600 12.5px Barlow,sans-serif;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.files{font:14px/1.6 ui-monospace,Menlo,Consolas,monospace}
+.files li.new::after{content:' (ny fil)';color:var(--green);font-family:'Barlow',sans-serif}
+pre.commit{white-space:pre-wrap;background:var(--sunk);border-radius:12px;padding:12px 14px;font:14px/1.5 ui-monospace,Menlo,Consolas,monospace;margin:8px 0}
+ol.todo{padding-inline-start:22px}ol.todo li{margin:6px 0}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:end}.row label{display:flex;flex-direction:column;font-size:14px;font-weight:600;gap:4px}
+.row input,.row select{border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--sheet);min-height:42px}
+details summary{cursor:pointer;font-weight:600;color:var(--navy)}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--navy);color:var(--sheet);padding:10px 18px;border-radius:999px;opacity:0;transition:.2s;pointer-events:none;font-weight:600}
+.toast.show{opacity:1;transform:translateX(-50%)}
+[dir=rtl]{text-align:right}
+@media (max-width:760px){.stepper li span{display:none}.stepper li{padding:4px}.brand small{display:none}.card{padding:16px}}
+</style>
+</head>
+<body>
+<header class="top"><div class="brand">Mottak <small>Familiegjenforening · for teknisk eier</small></div><ol class="stepper" id="stepper"></ol></header>
+<main class="wrap">
+  <h1>Legg inn endringer</h1>
+  <p class="lead">Verktøyet tar deg gjennom fire steg og kontrollerer alt før noe lagres. Du laster fortsatt opp selv, med GitHub Desktop.</p>
+  <div id="app"></div>
+</main>
+<input type="file" id="dirInput" webkitdirectory multiple hidden>
+<input type="file" id="fileInput" accept=".json,application/json" hidden>
+<div class="toast" id="toast" role="status"></div>
+<script>
+(()=>{
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const clone=o=>JSON.parse(JSON.stringify(o));
+const isRtl=l=>['ar','fa','prs','ckb','ps','ur','he'].includes(l);
+const PACK=25,MAXW=80;
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),2400)}
+async function copy(txt,msg){try{await navigator.clipboard.writeText(txt);toast(msg||'Kopiert')}catch(e){const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();toast(msg||'Kopiert')}}
+async function sha10(s){const b=await crypto.subtle.digest('SHA-1',new TextEncoder().encode(s));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('').slice(0,10)}
+// Samme fingeravtrykk som redaktøren bruker i «grunnlag»
+const fingerprint=(s,t)=>{const j=JSON.stringify({s,t});return j.length+':'+[...j].reduce((h,c)=>(h*31+c.charCodeAt(0))|0,0)};
+
+// ───────── Tilstand ─────────
+let R=null;          // repoet slik det er nå: {dir, name, files:{sti:tekst}, data}
+let E=null,EN='';    // endringsfil og filnavn
+let AN=null,SD=[];   // analyse av tekster og struktur
+let CHOICE={};       // konflikter: 'redaktor' | 'behold'
+let NL=null;         // nytt språk {kode,navn,retning,status}
+let N=null,REMOVED=[],CHANGED=new Set(); // ny data etter steg 2
+let JOBS={};         // per språk: {keys, acc:{}, warn:{}, iss:{}, forced:{}, note}
+let SAVED=null;      // resultat av lagring
+let PUB=null;        // sammenligning med publisert versjon
+
+// ───────── Lese og skrive data ─────────
+const SPRAK_RE=/^sprak\/([a-z-]+)\.json$/,STATUS_RE=/^sprak\/([a-z-]+)\.status\.json$/,UI_RE=/^ui\/([a-z-]+)\.json$/;
+const wanted=p=>/^(config|struktur)\.json$/.test(p)||SPRAK_RE.test(p)||STATUS_RE.test(p)||UI_RE.test(p);
+function toData(files){
+  const J=p=>{if(files[p]==null)throw new Error(`Fant ikke ${p} i data-mappa.`);try{return JSON.parse(files[p])}catch(e){throw new Error(`${p} inneholder en feil og kan ikke leses (${e.message}). Rett fila, eller gå tilbake til forrige versjon i GitHub Desktop.`)}};
+  const d={config:J('config.json'),struktur:J('struktur.json'),sprak:{},status:{},ui:{}};
+  for(const p of Object.keys(files)){let m;if(m=p.match(STATUS_RE))d.status[m[1]]=J(p);else if(m=p.match(SPRAK_RE))d.sprak[m[1]]=J(p);else if(m=p.match(UI_RE))d.ui[m[1]]=J(p)}
+  return d;
+}
+function toFiles(d){
+  const f={'config.json':d.config,'struktur.json':d.struktur};
+  for(const l in d.sprak)f['sprak/'+l+'.json']=d.sprak[l];
+  for(const l in d.status)f['sprak/'+l+'.status.json']=d.status[l];
+  for(const l in d.ui)f['ui/'+l+'.json']=d.ui[l];
+  for(const k in f)f[k]=JSON.stringify(f[k],null,2)+'\n';
+  return f;
+}
+const same=(a,b)=>{try{return JSON.stringify(JSON.parse(a))===JSON.stringify(JSON.parse(b))}catch(e){return a===b}};
+
+async function pickFolder(){
+  if(!window.showDirectoryPicker){$('#dirInput').value='';$('#dirInput').click();return}
+  let h;try{h=await showDirectoryPicker({id:'fgv-repo',mode:'readwrite'})}catch(e){return}
+  try{
+    let d=h;try{d=await h.getDirectoryHandle('data')}catch(e){}
+    try{await d.getFileHandle('struktur.json')}catch(e){throw new Error(`Fant ikke data/struktur.json i mappa «${h.name}». Velg repo-mappa «familiegjenforening», eller data-mappa i den.`)}
+    const files={};
+    async function walk(dir,pre){for await(const [name,hd] of dir.entries()){
+      if(hd.kind==='directory'){if(!pre&&(name==='sprak'||name==='ui'))await walk(hd,name+'/')}
+      else if(wanted(pre+name))files[pre+name]=await (await hd.getFile()).text()}}
+    await walk(d,'');
+    await load(files,d,h.name);
+  }catch(e){fail1(e.message)}
+}
+$('#dirInput').onchange=async e=>{
+  const files={};let root='';
+  for(const f of e.target.files){const parts=f.webkitRelativePath.split('/');root=root||parts[0];const i=parts.lastIndexOf('data');const p=(i>=0?parts.slice(i+1):parts.slice(1)).join('/');if(wanted(p))files[p]=await f.text()}
+  if(!files['struktur.json'])return fail1(`Fant ikke data/struktur.json i mappa «${root}». Velg repo-mappa «familiegjenforening», eller data-mappa i den.`);
+  try{await load(files,null,root)}catch(err){fail1(err.message)}
+};
+let ERR1='';function fail1(m){ERR1=m;R=null;render()}
+
+async function load(files,dir,name){
+  const data=toData(files);ERR1='';
+  R={dir,name,files,data};resetFrom(2);
+  PUB=null;
+  if(location.protocol.startsWith('http')){
+    try{const g=p=>fetch('data/'+p,{cache:'no-cache'}).then(r=>{if(!r.ok)throw 0;return r.text()});
+      const [s,t]=await Promise.all([g('struktur.json'),g('sprak/no.json')]);
+      PUB=same(s,files['struktur.json'])&&same(t,files['sprak/no.json'])?'lik':'ulik';
+    }catch(e){PUB=null}}
+  render();
+}
+async function writeFiles(paths,files){
+  if((await R.dir.queryPermission({mode:'readwrite'}))!=='granted'&&(await R.dir.requestPermission({mode:'readwrite'}))!=='granted')throw new Error('Verktøyet fikk ikke lov til å skrive i mappa.');
+  for(const p of paths){const parts=p.split('/');let dir=R.dir;for(const seg of parts.slice(0,-1))dir=await dir.getDirectoryHandle(seg,{create:true});
+    const fh=await dir.getFileHandle(parts.at(-1),{create:true});const w=await fh.createWritable();await w.write(files[p]);await w.close()}
+  // Les tilbake og sjekk at det som ligger i mappa er det vi skrev
+  const bad=[];for(const p of paths){const parts=p.split('/');let dir=R.dir;for(const seg of parts.slice(0,-1))dir=await dir.getDirectoryHandle(seg);const t=await (await (await dir.getFileHandle(parts.at(-1))).getFile()).text();if(t!==files[p])bad.push(p)}
+  return bad;
+}
+// Enkel zip uten komprimering, for nettlesere som ikke kan skrive til mappa
+function crc32(u){let c=-1;for(let i=0;i<u.length;i++){c^=u[i];for(let k=0;k<8;k++)c=c&1?(c>>>1)^0xEDB88320:c>>>1}return(c^-1)>>>0}
+function zip(files){
+  const enc=new TextEncoder(),parts=[],cen=[];let off=0,n=0;
+  for(const [p,t] of Object.entries(files)){n++;const name=enc.encode(p),data=enc.encode(t),crc=crc32(data);
+    const l=new DataView(new ArrayBuffer(30));[[0,0x04034b50,4],[4,20,2],[6,0x0800,2],[12,0x21,2],[14,crc,4],[18,data.length,4],[22,data.length,4],[26,name.length,2]].forEach(([o,v,s])=>s===4?l.setUint32(o,v,true):l.setUint16(o,v,true));
+    const c=new DataView(new ArrayBuffer(46));[[0,0x02014b50,4],[4,20,2],[6,20,2],[8,0x0800,2],[14,0x21,2],[16,crc,4],[20,data.length,4],[24,data.length,4],[28,name.length,2],[42,off,4]].forEach(([o,v,s])=>s===4?c.setUint32(o,v,true):c.setUint16(o,v,true));
+    parts.push(l,name,data);cen.push(c,name);off+=30+name.length+data.length}
+  const size=cen.reduce((s,x)=>s+x.byteLength,0),e=new DataView(new ArrayBuffer(22));
+  e.setUint32(0,0x06054b50,true);e.setUint16(8,n,true);e.setUint16(10,n,true);e.setUint32(12,size,true);e.setUint32(16,off,true);
+  return new Blob([...parts,...cen,e],{type:'application/zip'});
+}
+function download(name,blob){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
+
+// ───────── Navn og kontroll ─────────
+const LIST={sporsmal:'sporsmal',fase:'faser',punkt:'punkter',kontakt:'kontakter'};
+const FIELD={tittel:'tittel',naar:'«Når og for hvem»',tekst:'tekst',kort:'kort navn',undertekst:'undertekst',navn:'navn',info:'beskrivelse',ja:'svaret «ja»',nei:'svaret «nei»'};
+const KIND={sporsmal:'Spørsmål',fase:'Fase',punkt:'Punkt',kontakt:'Kontakt'};
+function titleOf(type,id,...nos){const k=type==='punkt'||type==='fase'?type+'.'+id+'.tittel':type==='kontakt'?'kontakt.'+id+'.navn':'sporsmal.'+id+'.tekst';for(const no of nos)if(no&&no[k])return no[k];return id}
+function label(k,...nos){
+  if(k.startsWith('ui.'))return 'Fast tekst i appen: '+k.slice(3);
+  const m=k.match(/^(sporsmal|fase|punkt|kontakt)\.([^.]+)\.(.+)$/);if(!m)return k;
+  return `${KIND[m[1]]} «${titleOf(m[1],m[2],...nos)}» – ${FIELD[m[3]]||m[3]}`;
+}
+const belongs=(k,S)=>{const m=k.match(/^(sporsmal|fase|punkt|kontakt)\.([^.]+)\./);return !!m&&(S[LIST[m[1]]]||[]).some(x=>x.id===m[2])};
+const words=s=>String(s||'').replace(/[«»–-]/g,' ').trim().split(/\s+/).filter(Boolean).length;
+const langName=(d,l)=>((d.config.sprak||[]).find(x=>x.kode===l)||{}).navn||l;
+
+function validate(d){
+  const err=[],warn=[],S=d.struktur||{},no=d.sprak.no||{};
+  if(!d.sprak.no)err.push('Fila sprak/no.json mangler.');
+  for(const arr of ['sporsmal','faser','punkter','kontakter']){
+    if(!Array.isArray(S[arr])){err.push(`struktur.json mangler lista «${arr}».`);S[arr]=[];continue}
+    const seen=new Set();S[arr].forEach(x=>{if(!x.id||!/^[a-z0-9-]+$/.test(x.id))err.push(`Ugyldig ID i ${arr}: «${x.id}». Bruk små bokstaver a–z, tall og bindestrek.`);if(seen.has(x.id))err.push(`ID-en «${x.id}» er brukt to ganger i ${arr}.`);seen.add(x.id)})}
+  const F=new Set(S.faser.map(f=>f.id)),K=new Set(S.kontakter.map(k=>k.id)),Q=Object.fromEntries(S.sporsmal.map(q=>[q.id,q.svar||['nei','ja']]));
+  const need=[];
+  S.sporsmal.forEach(q=>need.push(`sporsmal.${q.id}.tekst`,`sporsmal.${q.id}.ja`,`sporsmal.${q.id}.nei`));
+  S.faser.forEach(f=>{need.push(`fase.${f.id}.kort`,`fase.${f.id}.tittel`);if(!S.punkter.some(p=>p.fase===f.id))warn.push(`Fasen «${titleOf('fase',f.id,no)}» har ingen punkter og vises ikke.`)});
+  S.punkter.forEach(p=>{const n=`«${titleOf('punkt',p.id,no)}»`;need.push(`punkt.${p.id}.tittel`,`punkt.${p.id}.tekst`);
+    if(!F.has(p.fase))err.push(`Punktet ${n} hører til en fase som ikke finnes («${p.fase}»).`);
+    (p.kontakter||[]).forEach(k=>{if(!K.has(k))err.push(`Punktet ${n} viser til en kontakt som ikke finnes («${k}»).`)});
+    (p.vises_hvis||[]).forEach(v=>{const [a,b]=String(v).split('=');if(!Q[a]||!Q[a].includes(b))err.push(`Punktet ${n} har et vilkår som ikke stemmer med spørsmålene: «${v}».`)});
+    if(p.lenke&&!/^https:\/\/\S+$/.test(p.lenke))warn.push(`Lenken i punktet ${n} ser ikke riktig ut: ${p.lenke}`);
+    if(!['publisert','utkast'].includes(p.status))err.push(`Punktet ${n} har ukjent status «${p.status}». Bruk publisert eller utkast.`);
+    if(words(no[`punkt.${p.id}.tekst`])>MAXW)warn.push(`Punktet ${n} har ${words(no[`punkt.${p.id}.tekst`])} ord. Anbefalt maks er ${MAXW}.`)});
+  S.kontakter.forEach(k=>{need.push(`kontakt.${k.id}.navn`);if(k.telefon&&!/^[+\d][\d ]{5,}$/.test(k.telefon))warn.push(`Telefonnummeret til «${titleOf('kontakt',k.id,no)}» ser uvanlig ut: ${k.telefon}`)});
+  need.forEach(k=>{if(!no[k]||!String(no[k]).trim())err.push(`Norsk tekst mangler: ${label(k,no)}.`)});
+  const orphan=Object.keys(no).filter(k=>!belongs(k,S));if(orphan.length)warn.push(`${orphan.length} norske tekster hører ikke til noe i struktur.json: ${orphan.slice(0,4).join(', ')}${orphan.length>4?' …':''}`);
+  const C=d.config||{};
+  if(C.lagringsnokkel!=='fgv_app_v1')err.push('lagringsnokkel i config.json må være fgv_app_v1. Ellers mister familiene fremdriften sin.');
+  if(C.app!=='veileder.html')err.push('app i config.json må være veileder.html. QR-koder og lenker peker dit.');
+  (C.sprak||[]).forEach(l=>{
+    if(!d.sprak[l.kode])err.push(`${l.navn}: fila sprak/${l.kode}.json mangler.`);
+    if(!d.ui[l.kode])err.push(`${l.navn}: fila ui/${l.kode}.json mangler.`);
+    if(l.kode==='no'||!d.sprak[l.kode])return;
+    const t=d.sprak[l.kode],miss=Object.keys(no).filter(k=>!t[k]),ui=Object.keys(d.ui.no||{}).filter(k=>!(d.ui[l.kode]||{})[k]);
+    if(miss.length)warn.push(`${l.navn}: ${miss.length} tekster er ikke oversatt og vises på norsk.`);
+    if(ui.length)warn.push(`${l.navn}: ${ui.length} faste tekster i appen er ikke oversatt.`);
+  });
+  return{err,warn};
+}
+
+// Kontroll av ett KI-svar
+const SCRIPT={ar:[/[؀-ۿ]/,'arabisk skrift'],fa:[/[؀-ۿ]/,'persisk skrift'],prs:[/[؀-ۿ]/,'persisk skrift'],ps:[/[؀-ۿ]/,'arabisk skrift'],ckb:[/[؀-ۿ]/,'arabisk skrift'],ur:[/[؀-ۿ]/,'arabisk skrift'],ti:[/[ሀ-፿]/,'ge\'ez-skrift'],am:[/[ሀ-፿]/,'ge\'ez-skrift'],uk:[/[Ѐ-ӿ]/,'kyrillisk skrift'],ru:[/[Ѐ-ӿ]/,'kyrillisk skrift']};
+const nums=s=>(String(s||'').match(/\d+(?:[ .]\d+)*/g)||[]).map(x=>x.replace(/[ .]/g,'')).filter(x=>x.length>=3);
+const listN=s=>String(s||'').split('\n').filter(x=>/^\s*[–-]\s/.test(x)).length;
+const callN=s=>(String(s||'').match(/«[^»\n]+»/g)||[]).length;
+function tidy(v){return String(v??'').replace(/\r\n?/g,'\n').replace(/^[ \t]*[•*·][ \t]+/gm,'– ').replace(/^[ \t]*-[ \t]+/gm,'– ').trim()}
+function check(no,v,l,k){
+  const out=[],E=m=>out.push({e:1,m}),W=m=>out.push({e:0,m});
+  if(!v)return[{e:1,m:'Svaret er tomt.'}];
+  const sc=SCRIPT[l];
+  if(sc&&!/\.navn$/.test(k)&&no.length>20&&!sc[0].test(v))E(`Teksten er ikke skrevet med ${sc[1]}.`);
+  if(!sc&&/[Ѐ-ӿ؀-ۿሀ-፿]/.test(v))E('Teksten inneholder feil skrift.');
+  if(listN(no)!==listN(v))E(`Punktlista har ${listN(no)} punkter på norsk og ${listN(v)} i oversettelsen. Hver linje i lista må starte med «– ».`);
+  if(callN(no)!==callN(v))E(`«Dette kan du si»-setningen må stå inne i «…» også i oversettelsen.`);
+  const nv=nums(v);nums(no).forEach(n=>{if(!nv.includes(n))W(`Tallet ${n} står ikke i oversettelsen.`)});
+  if(v===no&&no.length>25)W('Oversettelsen er lik den norske teksten.');
+  if(no.length>40&&(v.length>no.length*2.6||v.length<no.length*.35))W('Lengden er svært ulik den norske. Sjekk at ingenting mangler eller er lagt til.');
+  return out;
+}
+function parseAnswer(txt){
+  const t=String(txt||'').replace(/｛/g,'{').replace(/｝/g,'}');
+  if(!t.trim())throw new Error('Feltet er tomt. Lim inn svaret fra KI-verktøyet først.');
+  const a=t.indexOf('{'),b=t.lastIndexOf('}');
+  if(a<0||b<a)throw new Error('Fant ikke JSON i svaret. Svaret skal starte med { og slutte med }. Sjekk at du har kopiert hele svaret.');
+  const body=t.slice(a,b+1);
+  try{return JSON.parse(body)}catch(e){}
+  try{return JSON.parse(body.replace(/[“”„‟″]/g,'"'))}catch(e){}
+  throw new Error('Svaret kan ikke leses som JSON. Det mangler ofte et komma eller et anførselstegn, eller svaret er kuttet. Be KI-verktøyet svare med bare JSON, og lim inn på nytt.');
+}
+const GLOSS=[
+ ['UDI, Nav, BankID, MinID, Helsenorge, Skatteetaten, D-nummer, SFO','Navn. Skal ikke oversettes.'],
+ ['fødselsnummer, fastlege, helsestasjon, legevakt, barnetrygd, bostøtte, introduksjonsprogram','Oversett, og skriv det norske ordet i parentes første gang.'],
+ ['Navn på steder, f.eks. Tønsberg legekontor, Tønsberg læringssenter, Åpen barnehage','Skal ikke oversettes.']];
+function prompt(l,navn,keys,src,i,n){
+  const ui=keys.some(k=>k.startsWith('ui.')),obj={};keys.forEach(k=>obj[k]=src(k));
+  return `Oversett tekstene under fra norsk til ${navn} (${l})${n>1?`. Dette er pakke ${i} av ${n}`:''}.
+
+Tekstene er fra «Når familien kommer», en veileder fra Tønsberg kommune for familier som nettopp har kommet til Norge gjennom familiegjenforening.${ui?' Nøkler som starter med «ui.» er knapper og korte faste tekster i appen.':''}
+
+Regler:
+1. Skriv enkelt, vennlig og konkret, med korte setninger. Bruk «du» som på norsk.
+2. Ikke legg til, fjern eller forklar mer enn det som står på norsk.
+3. Behold linjeskift og tomme linjer.
+4. Linjer som starter med «– » er punktlister. Behold «– » først på linjen.
+5. Setninger inne i «…» er noe familien kan si. Behold «» rundt dem.
+6. Telefonnumre, tall og nettadresser skal stå uendret.
+7. Ordliste:
+${GLOSS.map(([a,b])=>'   - '+a+': '+b).join('\n')}
+
+Svar med bare ett JSON-objekt med de samme nøklene og oversettelsen som verdi. Ingen tekst før eller etter.
+
+${JSON.stringify(obj,null,2)}`;
+}
+
+// ───────── Steg 2: endringsfil ─────────
+function readChangeFile(text,name){
+  let x;try{x=JSON.parse(text)}catch(e){throw new Error(`«${name}» kan ikke leses. Be redaktøren laste ned endringsfila på nytt.`)}
+  if(x.type!=='endringer'||typeof x.tekster!=='object')throw new Error(`«${name}» er ikke en endringsfil fra redaktørverktøyet. Fila skal hete endringer-ÅÅÅÅ-MM-DD.json.`);
+  E=x;EN=name;CHOICE={};analyse();resetFrom(3);render();
+}
+function analyse(){
+  const no=R.data.sprak.no,T=E.tekster||{},F=E.forrige;
+  AN={nye:[],endret:[],slettet:[],uendret:[],konflikt:[]};
+  for(const [k,v] of Object.entries(T)){
+    const cur=no[k];
+    if(v==null||v===''){(cur!=null?AN.slettet:AN.uendret).push(k);continue}
+    if(cur===v){AN.uendret.push(k);continue}
+    if(F&&(k in F?cur!==F[k]:cur!=null)){AN.konflikt.push(k);CHOICE[k]=CHOICE[k]||'redaktor'}
+    (cur==null?AN.nye:AN.endret).push(k);
+  }
+  SD=E.struktur?strDiff(R.data.struktur,E.struktur):[];
+}
+function strDiff(a,b){
+  const out=[],no=R.data.sprak.no,nn=E.tekster||{};
+  const nm=(type,id)=>`«${nn[type==='kontakt'?`kontakt.${id}.navn`:type==='sporsmal'?`sporsmal.${id}.tekst`:`${type}.${id}.tittel`]||titleOf(type,id,no)}»`;
+  const fname={fase:'flyttet til en annen fase',status:'status',viktig:'«Viktig»',vises_hvis:'hvem det vises for',kontakter:'kontakter',lenke:'lenke',telefon:'telefon',nettside:'nettside',fremhevet:'fremheving',svar:'svaralternativer'};
+  const fmt=(f,v)=>v==null||v===''?'(tomt)':Array.isArray(v)?(v.join(', ')||'(ingen)'):f==='viktig'||f==='fremhevet'?(v?'ja':'nei'):f==='fase'?titleOf('fase',v,nn,no):String(v);
+  for(const [arr,type] of [['faser','fase'],['punkter','punkt'],['kontakter','kontakt'],['sporsmal','sporsmal']]){
+    const A=a[arr]||[],B=b[arr]||[];
+    B.forEach(x=>{const o=A.find(y=>y.id===x.id);
+      if(!o){out.push({t:'ny',m:`${{fase:'Ny fase',punkt:'Nytt punkt',kontakt:'Ny kontakt',sporsmal:'Nytt spørsmål'}[type]}: ${nm(type,x.id)}`});return}
+      new Set([...Object.keys(o),...Object.keys(x)]).forEach(f=>{if(f==='id'||JSON.stringify(o[f])===JSON.stringify(x[f]))return;
+        out.push({t:f==='telefon'?'viktig':'endret',m:`${KIND[type]} ${nm(type,x.id)}: ${fname[f]||f} ${fmt(f,o[f])} → ${fmt(f,x[f])}`})})});
+    A.forEach(x=>{if(!B.some(y=>y.id===x.id))out.push({t:'slettet',m:`${KIND[type]} fjernet: ${nm(type,x.id)}${type==='punkter'||type==='punkt'?'. Familier som har krysset av dette punktet, mister avkrysningen.':''}`})});
+    const ao=A.map(x=>x.id).filter(i=>B.some(y=>y.id===i)),bo=B.map(x=>x.id).filter(i=>A.some(y=>y.id===i));
+    if(ao.join()!==bo.join())out.push({t:'endret',m:`Ny rekkefølge på ${arr==='sporsmal'?'spørsmål':arr}.`});
+  }
+  return out;
+}
+function buildN(){
+  const d=clone(R.data);
+  if(E){const no=d.sprak.no;
+    [...AN.nye,...AN.endret].forEach(k=>{if(CHOICE[k]!=='behold')no[k]=E.tekster[k]});
+    AN.slettet.forEach(k=>delete no[k]);
+    if(E.struktur)d.struktur=clone(E.struktur);
+  }
+  if(NL){d.config.sprak.push({kode:NL.kode,navn:NL.navn,retning:NL.retning,status:NL.status});d.sprak[NL.kode]={};d.status[NL.kode]={};d.ui[NL.kode]={}}
+  // Tekster som ikke hører til noe lenger fjernes fra alle språk
+  REMOVED=[...new Set([...(E?AN.slettet:[]),...Object.keys(d.sprak.no).filter(k=>!belongs(k,d.struktur))])];
+  REMOVED.forEach(k=>{for(const l in d.sprak)delete d.sprak[l][k];for(const l in d.status)delete d.status[l][k]});
+  const old=R.data.sprak.no;CHANGED=new Set(Object.keys(d.sprak.no).filter(k=>d.sprak.no[k]!==old[k]));
+  N=d;JOBS={};
+  (d.config.sprak||[]).filter(l=>l.kode!=='no').forEach(l=>{
+    const t=d.sprak[l.kode]||(d.sprak[l.kode]={}),u=d.ui[l.kode]||(d.ui[l.kode]={});
+    const keys=Object.keys(d.sprak.no).filter(k=>CHANGED.has(k)||!t[k]).concat(Object.keys(d.ui.no||{}).filter(k=>!u[k]).map(k=>'ui.'+k));
+    JOBS[l.kode]={keys,acc:{},warn:{},iss:{},forced:{},ta:'',note:''};
+  });
+}
+const src=k=>k.startsWith('ui.')?N.ui.no[k.slice(3)]:N.sprak.no[k];
+function applyAnswer(l){
+  const j=JOBS[l],nav=langName(N,l);let x;
+  try{x=parseAnswer(j.ta)}catch(e){j.note=`<div class="msg err">${esc(e.message)}</div>`;return}
+  let got=0,ok=0,bad=0,extra=0;
+  for(const [k,raw] of Object.entries(x)){
+    if(!j.keys.includes(k)){extra++;continue}
+    got++;const v=tidy(raw),iss=check(src(k),v,l,k);
+    if(iss.some(i=>i.e)){j.iss[k]={v,iss};delete j.acc[k];bad++}
+    else{j.acc[k]=v;delete j.iss[k];if(iss.length)j.warn[k]=iss;else delete j.warn[k];ok++}
+  }
+  const left=j.keys.filter(k=>!(k in j.acc)&&!(k in j.iss)).length;
+  j.ta='';
+  j.note=`<div class="msg ${bad?'err':got?'ok':'warn'}">${got?`${ok} av ${got} tekster er lagt inn.`:'Svaret inneholdt ingen av tekstene i pakken.'}${bad?` ${bad} må rettes, se under.`:''}${extra?` ${extra} ukjente nøkler ble hoppet over.`:''}${left&&got?` ${left} gjenstår.`:''}</div>`;
+}
+const jobDone=j=>j.keys.every(k=>k in j.acc);
+const allDone=()=>N&&Object.values(JOBS).every(jobDone);
+
+function resetFrom(step){
+  if(step<=2){E=null;EN='';AN=null;SD=[];CHOICE={};NL=null}
+  if(step<=3){N=null;JOBS={};REMOVED=[];CHANGED=new Set()}
+  SAVED=null;
+}
+
+// ───────── Steg 4: resultat ─────────
+async function finalData(){
+  const d=clone(N);
+  for(const [l,j] of Object.entries(JOBS)){
+    for(const [k,v] of Object.entries(j.acc)){
+      if(k.startsWith('ui.'))d.ui[l][k.slice(3)]=v;
+      else{d.sprak[l][k]=v;(d.status[l]=d.status[l]||{})[k]={s:'ki',kilde:await sha10(d.sprak.no[k])}}
+    }
+  }
+  // Nye nøkler legges til sist. Eksisterende rekkefølge beholdes, så GitHub bare viser det som faktisk er endret.
+  return d;
+}
+function commitText(){
+  const no=N.sprak.no,ids=new Map();
+  [...CHANGED,...REMOVED].forEach(k=>{const m=k.match(/^(sporsmal|fase|punkt|kontakt)\.([^.]+)\./);if(m)ids.set(m[1]+':'+m[2],titleOf(m[1],m[2],no,R.data.sprak.no))});
+  const names=[...ids.values()],langs=Object.entries(JOBS).filter(([l,j])=>j.keys.length);
+  let title=E?`Innhold: ${names.slice(0,3).join(', ')}${names.length>3?` m.fl.`:''}`:'';
+  if(E&&!names.length&&SD.length)title='Innhold: endret struktur';
+  if(NL)title=(title?title+'; ':'')+`nytt språk: ${NL.navn}`;
+  if(!title)title=`Oversettelser: ${langs.map(([l])=>l).join(', ')}`;
+  const L=[];
+  if(E)L.push(`Endringsfil fra redaktør: ${EN}${E.laget?` (laget ${new Date(E.laget).toLocaleString('nb-NO',{dateStyle:'short',timeStyle:'short'})})`:''}`);
+  if(E)L.push(`Norsk: ${AN.endret.length} endret, ${AN.nye.length} nye, ${AN.slettet.length} slettet.`);
+  SD.forEach(s=>L.push('- '+s.m));
+  const kept=AN?AN.konflikt.filter(k=>CHOICE[k]==='behold'):[];if(kept.length)L.push(`Beholdt eksisterende tekst (konflikt): ${kept.join(', ')}`);
+  if(REMOVED.length)L.push(`Fjernet fra alle språk: ${REMOVED.length} tekster.`);
+  if(langs.length)L.push(`KI-oversatt, merket «Maskinoversatt» til tolk har kontrollert: ${langs.map(([l,j])=>`${l} (${j.keys.length})`).join(', ')}.`);
+  const forced=langs.flatMap(([l,j])=>Object.keys(j.forced).map(k=>`${l} ${k}`));if(forced.length)L.push(`Godtatt tross kontroll: ${forced.join(', ')}`);
+  return{title,body:L.join('\n')};
+}
+
+// ───────── Visning ─────────
+function stepNow(){return !R?1:!N?2:!allDone()?3:4}
+function render(){
+  const s=stepNow();
+  $('#stepper').innerHTML=['Mappe','Endringer','Oversettelse','Lagre'].map((t,i)=>`<li class="${i+1===s?'now':i+1<s?'done':''}"><b>${i+1<s?'✓':i+1}</b><span>${t}</span></li>`).join('');
+  $('#app').innerHTML=step1()+step2()+step3()+step4();
+  bind();
+}
+const card=(n,title,ok,locked,body)=>`<section class="card ${ok?'ok':''} ${locked?'locked':''}" id="s${n}"><h2><span class="n">${ok?'✓':n}</span>${title}</h2>${body}</section>`;
+const msgList=(cls,head,items)=>items.length?`<div class="msg ${cls}"><b>${head}</b><ul>${items.map(i=>`<li>${esc(i)}</li>`).join('')}</ul></div>`:'';
+
+function step1(){
+  let b=`<p>Åpne GitHub Desktop og trykk <b>Fetch origin</b> og deretter <b>Pull</b>, så du har siste versjon. Velg så repo-mappa <code>familiegjenforening</code> på maskinen din.</p>`;
+  if(ERR1)b+=`<div class="msg err">${esc(ERR1)}</div>`;
+  if(R){
+    const v=validate(R.data),C=R.data.config;
+    b+=`<div class="msg ok">Lest inn mappa <b>${esc(R.name)}</b>: ${Object.keys(R.files).length} filer, ${R.data.struktur.punkter.length} punkter, ${(C.sprak||[]).length} språk.</div>`;
+    if(PUB==='lik')b+=`<div class="msg ok">Innholdet er likt det som er publisert.</div>`;
+    if(PUB==='ulik')b+=`<div class="msg warn"><b>Mappa er ikke lik det som er publisert.</b> Har du trykket Pull i GitHub Desktop? Er det under 2 minutter siden forrige opplasting, kan du se bort fra dette.</div>`;
+    b+=msgList('err','Feil som må rettes før du går videre:',v.err)+msgList('warn','Til informasjon:',v.warn);
+    const no=R.data.sprak.no,nk=Object.keys(no).length;
+    b+=`<details><summary>Status for språkene</summary><table><tr><th>Språk</th><th>Kontrollert av tolk</th><th>Maskinoversatt</th><th>Mangler</th></tr>${(C.sprak||[]).filter(l=>l.kode!=='no').map(l=>{const t=R.data.sprak[l.kode]||{},st=R.data.status[l.kode]||{};const kk=Object.keys(no).filter(k=>t[k]&&st[k]&&st[k].s==='kontrollert').length,miss=Object.keys(no).filter(k=>!t[k]).length;return`<tr><td>${esc(l.navn)}${l.status!=='publisert'?' <span class="hint">(utkast)</span>':''}</td><td>${kk} av ${nk}</td><td>${nk-kk-miss}</td><td>${miss}</td></tr>`}).join('')}</table></details>`;
+  }
+  b+=`<div class="acts"><button class="btn ${R?'':'primary'}" id="pick">${R?'Velg mappa på nytt':'Velg repo-mappa'}</button>${!window.showDirectoryPicker?'<span class="hint">Nettleseren din kan ikke lagre direkte i mappa. Du får en zip-fil i steg 4. Chrome og Edge kan lagre direkte.</span>':''}</div>`;
+  return card(1,'Velg repo-mappa',R&&!validate(R.data).err.length,false,b);
+}
+function step2(){
+  const locked=!R||validate(R.data).err.length>0;let b='';
+  if(!locked){
+    b+=`<p>Legg inn endringsfila fra redaktøren. Du ser alt som endres før noe skjer.</p>`;
+    if(!E)b+=`<div class="drop" id="drop">Slipp <b>endringer-….json</b> her, eller <button class="btn small" id="pickFile">velg fil</button></div><div id="e2"></div>`;
+    else{
+      b+=`<div class="msg ok">Endringsfil: <b>${esc(EN)}</b>${E.laget?`, laget ${esc(new Date(E.laget).toLocaleString('nb-NO',{dateStyle:'medium',timeStyle:'short'}))}`:''}. <button class="btn ghost small" id="clearE">Bytt fil</button></div>`;
+      const fp=fingerprint(R.data.struktur,R.data.sprak.no),total=AN.nye.length+AN.endret.length+AN.slettet.length;
+      if(E.eldre_utkast)b+=`<div class="msg warn"><b>Redaktøren jobbet videre på et eldre utkast.</b> Se nøye gjennom endringene under, så ingenting blir tilbakestilt ved en feil.</div>`;
+      if(E.grunnlag&&E.grunnlag!==fp&&E.struktur)b+=`<div class="msg warn"><b>Innholdet er endret siden redaktøren lastet ned fila.</b> Endringsfila erstatter hele strukturen (faser, punkter og kontakter). Sjekk listen over strukturendringer under. Er noe feil, be redaktøren åpne redaktørverktøyet på nytt og laste ned en ny fil.</div>`;
+      if(!total&&!SD.length)b+=`<div class="msg warn">Alt i denne fila er allerede lagt inn. Det er ingenting nytt å publisere.</div>`;
+      if(AN.konflikt.length)b+=`<div class="msg warn"><b>${AN.konflikt.length===1?'1 tekst':AN.konflikt.length+' tekster'} er endret av andre siden redaktøren lastet ned fila.</b> Velg hvilken versjon som skal gjelde for hver av dem.</div>`;
+      const no=R.data.sprak.no,nn=E.tekster;
+      const row=(k,kind)=>{const conf=AN.konflikt.includes(k);return`<div class="ch ${conf?'conf':''}"><div class="lbl">${esc(label(k,nn,no))}<span class="tag ${kind}">${{ny:'Ny',endret:'Endret',slettet:'Slettes'}[kind]}</span>${conf?'<span class="tag konflikt">Konflikt</span>':''}</div>${kind!=='ny'?`<div class="was">${esc(no[k])}</div>`:''}${kind!=='slettet'?`<div class="now">${esc(nn[k])}</div>`:''}${/\.tekst$/.test(k)&&k.startsWith('punkt.')&&words(nn[k])>MAXW?`<div class="hint">${words(nn[k])} ord. Anbefalt maks er ${MAXW}.</div>`:''}${conf?`<label><input type="radio" name="c-${esc(k)}" value="redaktor" ${CHOICE[k]!=='behold'?'checked':''} data-choice="${esc(k)}"> Bruk redaktørens tekst</label><label><input type="radio" name="c-${esc(k)}" value="behold" ${CHOICE[k]==='behold'?'checked':''} data-choice="${esc(k)}"> Behold teksten som står i repoet nå</label>`:''}</div>`};
+      if(total)b+=`<h3>Tekster (${total})</h3>`+AN.endret.map(k=>row(k,'endret')).join('')+AN.nye.map(k=>row(k,'ny')).join('')+AN.slettet.map(k=>row(k,'slettet')).join('');
+      if(SD.length)b+=`<h3>Struktur (${SD.length})</h3>`+SD.map(s=>`<div class="msg ${s.t==='slettet'||s.t==='viktig'?'warn':'ok'}">${esc(s.m)}</div>`).join('')+(SD.some(s=>s.t==='viktig')?'<p class="hint">Telefonnumre vises for familiene på alle språk. Sjekk at det nye nummeret stemmer.</p>':'');
+    }
+    if(NL)b+=`<div class="msg ok">Nytt språk: <b>${esc(NL.navn)}</b> (${esc(NL.kode)}, ${NL.retning==='rtl'?'høyre til venstre':'venstre til høyre'}). ${NL.status==='publisert'?'Vises for familiene med en gang, merket «Maskinoversatt».':'Lagres som utkast og vises bare med ?utkast=1.'} <button class="btn ghost small" id="clearNL">Fjern</button></div>`;
+    else b+=`<details id="nlBox"><summary>Legge til et nytt språk</summary><p class="hint">Alle tekstene KI-oversettes i neste steg. Be så en tolk se over.</p><div class="row"><label>Språkkode<input id="nlKode" placeholder="f.eks. ti" size="6" maxlength="5"></label><label>Navn på eget språk<input id="nlNavn" placeholder="f.eks. ትግርኛ"></label><label>Skriveretning<select id="nlDir"><option value="ltr">Venstre til høyre</option><option value="rtl">Høyre til venstre</option></select></label><label>Vis for familiene<select id="nlStatus"><option value="publisert">Med en gang</option><option value="utkast">Senere (utkast)</option></select></label><button class="btn" id="nlAdd">Legg til</button></div><div id="nlErr"></div><p class="hint">Språkkoden er ISO 639-1, f.eks. so (somali), ti (tigrinja), uk (ukrainsk), fa (persisk).</p></details>`;
+    if(N){const v=validate(N);b+=v.err.length?'':`<div class="msg ok">Kontrollert: endringene gir gyldige filer.</div>`}
+    else if(E||NL){
+      const preview=(()=>{const keep=N;buildN();const v=validate(N);N=keep;return v})();
+      b+=msgList('err','Endringene gir feil som må rettes av redaktøren før de kan legges inn:',preview.err);
+      const go=E?(AN.nye.length+AN.endret.length+AN.slettet.length+SD.length>0):false;
+      b+=`<div class="acts"><button class="btn primary" id="apply" ${preview.err.length||(!go&&!NL)?'disabled':''}>Ta i bruk og gå til oversettelse</button></div>`;
+    } else b+=`<div class="acts"><button class="btn ghost" id="skipE">Jeg har ingen endringsfil, bare oversett det som mangler</button></div>`;
+  }
+  return card(2,'Se gjennom endringene',!!N,locked,b);
+}
+function step3(){
+  const locked=!N;let b='';
+  if(!locked){
+    const L=Object.entries(JOBS).filter(([l,j])=>j.keys.length);
+    if(!L.length)b+=`<div class="msg ok">Ingen tekster trenger oversettelse.</div>`;
+    else{
+      b+=`<p>Hvert språk må oversettes før du kan lagre. For hver pakke: <b>kopier</b>, lim inn i Copilot, ChatGPT eller Claude, og <b>lim svaret</b> inn i feltet under.</p><p class="hint">Store mengder deles opp i pakker på ${PACK} tekster. Da blir svarene sjeldnere kuttet.</p>`;
+      L.forEach(([l,j])=>{
+        const nav=langName(N,l),done=jobDone(j),left=j.keys.filter(k=>!(k in j.acc)),packs=[];for(let i=0;i<left.length;i+=PACK)packs.push(left.slice(i,i+PACK));
+        const nIss=Object.keys(j.iss).length,nW=Object.keys(j.warn).length;
+        b+=`<div class="lcard ${done?'done':''}"><div class="lhead"><b dir="auto">${esc(nav)}</b><span class="hint">${Object.keys(j.acc).length} av ${j.keys.length} tekster</span><span class="pill ${done?'g':nIss?'r':'y'}">${done?'Ferdig':nIss?nIss+' må rettes':'Venter på svar'}</span></div>`;
+        if(!done){
+          b+=`<div class="acts">${packs.map((p,i)=>`<button class="btn small" data-pack="${l}:${i}">Kopier ${packs.length>1?`pakke ${i+1} av ${packs.length}`:'pakken'} (${p.length})</button>`).join('')}</div>
+          <textarea data-ta="${l}" placeholder="Lim inn svaret fra KI-verktøyet her" spellcheck="false" autocorrect="off" autocapitalize="off">${esc(j.ta)}</textarea>
+          <div class="acts"><button class="btn primary small" data-apply="${l}">Kontroller og legg inn</button></div>`;
+        }
+        b+=j.note;
+        if(nIss)b+=`<div class="msg err"><b>Disse er ikke lagt inn.</b> Be KI-verktøyet rette dem, og lim inn på nytt. Eller godta hvis du har sjekket at det er riktig.${Object.entries(j.iss).map(([k,x])=>`<div class="iss"><b>${esc(label(k,N.sprak.no))}</b><ul>${x.iss.map(i=>`<li>${esc(i.m)}</li>`).join('')}</ul><div class="src" data-l="Norsk">${esc(src(k))}</div><div class="tr" data-l="Oversettelse" dir="auto">${esc(x.v)}</div><button class="btn small" data-force="${l}|${esc(k)}">Godta likevel</button></div>`).join('')}</div>`;
+        if(nW)b+=`<details><summary>Sjekk ${nW} tekster med merknader</summary>${Object.entries(j.warn).map(([k,iss])=>`<div class="iss"><b>${esc(label(k,N.sprak.no))}</b>: ${esc(iss.map(i=>i.m).join(' '))}<div class="src" data-l="Norsk">${esc(src(k))}</div><div class="tr" data-l="Oversettelse" dir="auto">${esc(j.acc[k])}</div></div>`).join('')}</details>`;
+        b+=`</div>`;
+      });
+    }
+  }
+  return card(3,'KI-oversett til alle språk',allDone()&&!!N,locked,b);
+}
+function step4(){
+  const locked=!allDone();let b='';
+  if(!locked){
+    if(!SAVED){
+      b+=`<p>Alt er kontrollert. Siste kontroll kjøres når du lagrer.</p><div id="s4msg"></div><div class="acts"><button class="btn primary" id="save">${R.dir?'Lagre i repo-mappa':'Last ned data-mappa (zip)'}</button></div>`;
+    }else{
+      const {title,body}=commitText();
+      b+=SAVED.html;
+      b+=`<h3>Last opp med GitHub Desktop</h3><ol class="todo">
+        <li>Åpne GitHub Desktop. Under <b>Changes</b> skal du se nøyaktig disse filene:<ul class="files">${SAVED.paths.map(p=>`<li class="${SAVED.created.includes(p)?'new':''}">data/${esc(p)}</li>`).join('')}</ul>Ser du andre filer, ikke ta dem med før du vet hva de er.</li>
+        <li>Kopier oppsummeringen og beskrivelsen under, og lim dem inn nederst til venstre.<pre class="commit"><b>${esc(title)}</b>\n\n${esc(body)}</pre><div class="acts"><button class="btn small" id="cpT">Kopier oppsummering</button><button class="btn small" id="cpB">Kopier beskrivelse</button></div></li>
+        <li>Trykk <b>Commit to main</b>, og deretter <b>Push origin</b>.</li>
+        <li>Vent 1–2 minutter, og åpne <a href="veileder.html${NL?'?lang='+NL.kode:''}" target="_blank" rel="noopener">appen</a>. Sjekk det du har endret, gjerne på mobil.</li>
+        <li>Gi redaktøren beskjed om at endringene er publisert${Object.values(JOBS).some(j=>j.keys.length)?', og be en tolk kontrollere de nye oversettelsene':''}.</li></ol>
+        <div class="acts"><button class="btn ghost" id="again">Start på nytt med en ny endringsfil</button></div>`;
+    }
+  }
+  return card(4,'Lagre og last opp',!!SAVED,locked,b);
+}
+
+function bind(){
+  const on=(s,ev,f)=>{const el=$(s);if(el)el[ev]=f};
+  on('#pick','onclick',pickFolder);
+  on('#pickFile','onclick',()=>{$('#fileInput').value='';$('#fileInput').click()});
+  const drop=$('#drop');if(drop){drop.ondragover=e=>{e.preventDefault();drop.classList.add('over')};drop.ondragleave=()=>drop.classList.remove('over');drop.ondrop=async e=>{e.preventDefault();drop.classList.remove('over');const f=e.dataTransfer.files[0];if(f)takeFile(f)}}
+  on('#clearE','onclick',()=>{E=null;EN='';AN=null;SD=[];resetFrom(3);render()});
+  on('#skipE','onclick',()=>{buildN();render();$('#s3').scrollIntoView({behavior:'smooth'})});
+  on('#apply','onclick',()=>{buildN();render();$('#s3').scrollIntoView({behavior:'smooth'})});
+  on('#clearNL','onclick',()=>{NL=null;resetFrom(3);render()});
+  on('#nlAdd','onclick',()=>{
+    const kode=$('#nlKode').value.trim().toLowerCase(),navn=$('#nlNavn').value.trim(),C=R.data.config;
+    const e=!/^[a-z]{2,3}$/.test(kode)?'Språkkoden skal være 2–3 små bokstaver, f.eks. ti.':(C.sprak||[]).some(l=>l.kode===kode)?`Språket ${kode} finnes allerede.`:!navn?'Skriv navnet på språket, slik det skrives på språket selv.':'';
+    if(e){$('#nlErr').innerHTML=`<div class="msg err">${esc(e)}</div>`;return}
+    NL={kode,navn,retning:$('#nlDir').value,status:$('#nlStatus').value};resetFrom(3);render()});
+  document.querySelectorAll('[data-choice]').forEach(r=>r.onchange=()=>{CHOICE[r.dataset.choice]=r.value});
+  document.querySelectorAll('[data-ta]').forEach(t=>t.oninput=()=>{JOBS[t.dataset.ta].ta=t.value});
+  document.querySelectorAll('[data-pack]').forEach(bt=>bt.onclick=()=>{
+    const [l,i]=bt.dataset.pack.split(':'),j=JOBS[l],left=j.keys.filter(k=>!(k in j.acc)),packs=[];for(let x=0;x<left.length;x+=PACK)packs.push(left.slice(x,x+PACK));
+    copy(prompt(l,langName(N,l),packs[+i],src,+i+1,packs.length),'Pakken er kopiert. Lim den inn i KI-verktøyet.')});
+  document.querySelectorAll('[data-apply]').forEach(bt=>bt.onclick=()=>{const l=bt.dataset.apply;JOBS[l].ta=document.querySelector(`[data-ta="${l}"]`).value;applyAnswer(l);render();const c=document.querySelector(`[data-apply="${l}"]`)||document.querySelector('#s3');if(allDone())$('#s4').scrollIntoView({behavior:'smooth'})});
+  document.querySelectorAll('[data-force]').forEach(bt=>bt.onclick=()=>{const [l,k]=bt.dataset.force.split('|'),j=JOBS[l],x=j.iss[k];j.acc[k]=x.v;j.forced[k]=x.iss.map(i=>i.m).join(' ');j.warn[k]=x.iss;delete j.iss[k];render()});
+  on('#save','onclick',save);
+  on('#cpT','onclick',()=>copy(commitText().title,'Oppsummeringen er kopiert'));
+  on('#cpB','onclick',()=>copy(commitText().body,'Beskrivelsen er kopiert'));
+  on('#again','onclick',async()=>{if(R.dir){try{const files={};async function walk(dir,pre){for await(const [name,hd] of dir.entries()){if(hd.kind==='directory'){if(!pre&&(name==='sprak'||name==='ui'))await walk(hd,name+'/')}else if(wanted(pre+name))files[pre+name]=await (await hd.getFile()).text()}}await walk(R.dir,'');await load(files,R.dir,R.name)}catch(e){fail1(e.message)}}else{R=null;resetFrom(2);render()}scrollTo({top:0,behavior:'smooth'})});
+}
+async function takeFile(f){try{readChangeFile(await f.text(),f.name)}catch(e){const el=$('#e2');if(el)el.innerHTML=`<div class="msg err">${esc(e.message)}</div>`}}
+$('#fileInput').onchange=e=>{const f=e.target.files[0];if(f)takeFile(f)};
+
+async function save(){
+  const btn=$('#save');btn.disabled=true;
+  try{
+    const d=await finalData(),v=validate(d);
+    if(v.err.length){$('#s4msg').innerHTML=msgList('err','Siste kontroll fant feil. Ingenting er lagret:',v.err);btn.disabled=false;return}
+    const files=toFiles(d),paths=Object.keys(files).filter(p=>R.files[p]==null||!same(R.files[p],files[p])),created=paths.filter(p=>R.files[p]==null);
+    if(!paths.length){$('#s4msg').innerHTML='<div class="msg warn">Ingen filer er endret. Det er ingenting å laste opp.</div>';btn.disabled=false;return}
+    let html='';
+    if(R.dir){
+      const bad=await writeFiles(paths,files);
+      if(bad.length)throw new Error('Disse filene ble ikke lagret riktig: '+bad.join(', ')+'. Prøv igjen.');
+      html=`<div class="msg ok"><b>${paths.length} filer er lagret i repo-mappa og kontrollert.</b></div>`;
+    }else{
+      download('data.zip',zip(Object.fromEntries(Object.entries(files).map(([p,t])=>['data/'+p,t]))));
+      html=`<div class="msg ok"><b>data.zip er lastet ned.</b> Den inneholder hele data-mappa.</div><ol class="todo"><li>Pakk ut data.zip.</li><li>Slett mappa <code>data</code> i repo-mappa <code>familiegjenforening</code>.</li><li>Flytt den nye <code>data</code>-mappa inn i repo-mappa.</li></ol>`;
+    }
+    SAVED={paths,created,html};render();$('#s4').scrollIntoView({behavior:'smooth'});
+  }catch(e){$('#s4msg').innerHTML=`<div class="msg err">${esc(e.message)}</div>`;btn.disabled=false}
+}
+render();
+})();
+</script>
+</body>
+</html>
