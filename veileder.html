@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@oslokommune/punkt-css@16.18.0/dist/css/pkt.min.css">
+<title>Når familien kommer – Tønsberg kommune</title>
+<meta name="description" content="En sjekkliste for deg som venter på familien din i Tønsberg: hva du må ordne, i den rekkefølgen det skjer. / A checklist for when your family comes to Tønsberg.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Når familien kommer – Tønsberg kommune / When your family arrives">
+<meta property="og:description" content="En sjekkliste for deg som venter på familien din i Tønsberg. Norsk, English, العربية, Türkçe, Nederlands.">
+<meta name="twitter:card" content="summary">
+<style>
+  :root { --navy:#013952; --green:#c5daaf; --green-dark:#00714e; --bg:#F7F5F1; --ink:#1C2E3A; --muted:#5F6A70; --line:#E7E3DC;
+          --card-shadow: 0 1px 3px rgba(1,57,82,.07), 0 4px 12px rgba(1,57,82,.04); }
+  * { box-sizing:border-box; margin:0; padding:0; font-family:'Barlow', system-ui, sans-serif; }
+  body { background:var(--bg); color:var(--ink); line-height:1.5; -webkit-text-size-adjust:100%; }
+  a { color:var(--navy); text-underline-offset:2px; }
+  .qa { background:#FFE9A8; color:#5C4300; font-size:.75em; font-weight:600; padding:0 .3em; border-radius:4px; white-space:nowrap; margin-inline-start:.25em; }
+  .ph { background:#E6EEF3; color:var(--navy); font-weight:600; padding:0 .3em; border-radius:4px; }
+  body.hide-qa .qa { display:none; }
+  body:not(.hide-qa) .tf { background:#E6EEF3; border-radius:4px; padding:0 .25em; }
+  .lang-sw { display:flex; gap:2px; background:#ECE7DE; border-radius:999px; padding:3px; }
+  .lang-sw button { border:none; background:transparent; font:600 .8125rem 'Barlow',sans-serif; color:#6E655A; padding:.3rem .75rem; border-radius:999px; cursor:pointer; }
+  .lang-sw button[aria-pressed=true] { background:var(--green-dark); color:#fff; }
+
+  [hidden] { display:none !important; }
+  .wrap { max-width:600px; margin:0 auto; padding:0 1.125rem; }
+  header.top { position:sticky; top:0; z-index:10; background:rgba(247,245,241,.96); border-bottom:1px solid var(--line); }
+  header.top .wrap { display:flex; align-items:center; justify-content:space-between; gap:.75rem; height:56px; }
+  .muni { display:flex; align-items:center; gap:.625rem; font-weight:600; color:var(--navy); font-size:.9375rem; white-space:nowrap; }
+  .muni::before { content:''; width:4px; height:22px; border-radius:2px; background:var(--green-dark); }
+  .lang-sw button { padding:.3rem .5rem; font-size:.75rem; }
+  /* Welcome */
+  .welcome { padding:1.5rem 0 2.5rem; }
+  .welcome h1 { font-size:clamp(1.625rem,6vw,2rem); color:var(--navy); line-height:1.15; margin-bottom:.5rem; }
+  .welcome > p { color:var(--muted); font-size:1.0625rem; margin-bottom:1.5rem; }
+  .q { margin-bottom:1.25rem; }
+  .q h2 { font-size:1rem; font-weight:600; margin-bottom:.5rem; color:var(--ink); }
+  .opts { display:flex; flex-direction:column; gap:.5rem; }
+  .opt { text-align:start; border:none; background:#fff; border-radius:14px; box-shadow:var(--card-shadow); padding:.875rem 1rem; font:500 1rem 'Barlow',sans-serif; color:var(--ink); cursor:pointer; display:flex; align-items:center; gap:.75rem; }
+  .opt::before { content:''; width:18px; height:18px; border-radius:50%; box-shadow:inset 0 0 0 2px #B9B2A6; flex-shrink:0; }
+  .opt[aria-pressed=true] { background:#EEF4E8; box-shadow:0 0 0 2px var(--green-dark); font-weight:600; }
+  .opt[aria-pressed=true]::before { box-shadow:inset 0 0 0 5px var(--green-dark); }
+  .start { width:100%; border:none; border-radius:999px; background:var(--green-dark); color:#fff; font:600 1.0625rem 'Barlow',sans-serif; padding:1rem; cursor:pointer; margin-top:.5rem; }
+  .start:disabled { opacity:.35; cursor:default; }
+  .note { background:#FFF6DD; border-radius:12px; padding:.75rem 1rem; font-size:.875rem; margin:1rem 0; }
+  /* App */
+  .tl { display:flex; background:#fff; border-radius:18px; box-shadow:var(--card-shadow); padding:.625rem .25rem .5rem; margin:1rem 0 1.25rem; position:relative; }
+  .tl button { flex:1; border:none; background:none; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:.3rem; position:relative; z-index:1; font-family:inherit; padding:0 .125rem; min-width:0; }
+  .tl .dot { width:28px; height:28px; border-radius:50%; background:#fff; box-shadow:inset 0 0 0 1.5px #DDD6CA; display:flex; align-items:center; justify-content:center; font-size:.75rem; font-weight:600; color:#A39C90; }
+  .tl .lbl { font-size:.6875rem; color:#8E877C; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
+  .tl button.key .dot { background:#EEF4E8; box-shadow:inset 0 0 0 1.5px var(--green); color:var(--green-dark); }
+  .tl button.done .dot { background:var(--green-dark); box-shadow:none; color:#fff; }
+  .tl button.active .dot { background:var(--navy); box-shadow:none; color:#fff; }
+  .tl button.active .lbl { color:var(--navy); font-weight:700; }
+  .tl::before { content:''; position:absolute; top:calc(.625rem + 13px); left:calc(100% / (2 * var(--n,7))); right:calc(100% / (2 * var(--n,7))); height:2px; background:#ECE6DB; }
+  .ph-head h2 { font-size:1.375rem; color:var(--navy); line-height:1.2; }
+  .ph-head p { color:var(--muted); margin-top:.125rem; }
+  .ph-done { color:var(--green-dark); font-weight:600; margin-top:.5rem; }
+  .list { display:flex; flex-direction:column; gap:.625rem; margin-top:1rem; }
+  .item { background:#fff; border-radius:16px; box-shadow:var(--card-shadow); }
+  .item summary { list-style:none; display:flex; gap:.75rem; align-items:flex-start; padding:.875rem 1rem; cursor:pointer; }
+  .item summary::-webkit-details-marker { display:none; }
+  .cb { width:22px; height:22px; flex-shrink:0; margin-top:1px; border-radius:6px; box-shadow:inset 0 0 0 2px #B9B2A6; display:flex; align-items:center; justify-content:center; background:#fff; cursor:pointer; border:none; }
+  .cb svg { display:none; }
+  .item.done .cb { background:var(--green-dark); box-shadow:none; }
+  .item.done .cb svg { display:block; }
+  .meta { flex:1; min-width:0; }
+  .t { font-weight:600; font-size:1.0625rem; line-height:1.3; color:var(--ink); }
+  .sub { display:flex; flex-wrap:wrap; gap:.25rem .625rem; align-items:center; margin-top:.3rem; font-size:.8125rem; }
+  .badge { font-weight:600; }
+  .badge.key { color:var(--green-dark); } .badge.first { color:#3E6F61; } .badge.urgent { color:#923c3d; } .badge.maybe { color:#3F6585; } .badge.smart { color:#3E6F61; } .badge.done { color:var(--green-dark); }
+  .for { background:#F1ECE3; color:#6E655A; border-radius:999px; padding:.05rem .55rem; }
+  .when { color:var(--muted); }
+  .chev { color:var(--muted); transition:transform .2s; margin-top:2px; }
+  details[open] .chev { transform:rotate(180deg); }
+  .item.done .t { text-decoration:line-through; opacity:.5; }
+  .item.done .sub .for, .item.done .sub .when, .item.done .chev { display:none; }
+  .body { padding:0 1rem 1rem 3.375rem; font-size:.9375rem; display:flex; flex-direction:column; gap:.75rem; }
+  [dir=rtl] .body { padding:0 3.375rem 1rem 1rem; }
+  .body h3 { font-size:.8125rem; font-weight:600; color:var(--muted); margin-bottom:.125rem; }
+  .body .do { background:#EEF4E8; border-radius:12px; padding:.75rem .875rem; }
+  .body .do h3 { color:var(--green-dark); }
+  .body ol { padding-inline-start:1.25rem; display:flex; flex-direction:column; gap:.3rem; }
+  .callbox { background:#F4F1EB; border-radius:12px; padding:.75rem .875rem; }
+  .callno { margin-top:.5rem; padding-top:.5rem; border-top:1px dashed #D9D1C3; font-weight:500; }
+  .callno div { text-align:left; }
+  .link { font-weight:600; }
+  .nav { display:flex; gap:.5rem; margin:1.5rem 0 1rem; }
+  .nav button { flex:1; border-radius:999px; padding:.75rem; font:600 .9375rem 'Barlow',sans-serif; cursor:pointer; border:none; background:#fff; color:var(--navy); box-shadow:var(--card-shadow); }
+  .nav button.next { background:var(--green-dark); color:#fff; }
+  .nav button:disabled { opacity:.35; cursor:default; }
+  .foot { padding:1rem 0 2.5rem; color:var(--muted); font-size:.8125rem; display:flex; flex-direction:column; gap:.375rem; }
+  .foot .links { display:flex; gap:1rem; flex-wrap:wrap; }
+  .foot button { background:none; border:none; color:var(--navy); font:600 .8125rem 'Barlow',sans-serif; text-decoration:underline; text-underline-offset:2px; cursor:pointer; padding:0; }
+  .back { display:inline-block; font-size:.875rem; font-weight:600; }
+  .toprow { display:flex; justify-content:space-between; align-items:center; gap:.75rem; margin-top:1rem; flex-wrap:wrap; }
+  .sharebtn { border:none; border-radius:999px; background:#EEF4E8; color:var(--green-dark); font:600 .875rem 'Barlow',sans-serif; padding:.5rem .875rem; cursor:pointer; }
+  .sharehint { font-size:.8125rem; color:var(--muted); margin-top:.375rem; }
+  .body .stuck { border-inline-start:3px solid #E2C46B; padding-inline-start:.75rem; }
+
+  .hero { padding:1.25rem 0 1.25rem; }
+  .hero h1 { font-size:clamp(1.625rem,6vw,2.125rem); line-height:1.15; color:var(--navy); letter-spacing:-.3px; margin-bottom:.625rem; }
+  .hero p { color:var(--muted); font-size:1.0625rem; }
+  .kom { background:#EEF4E8; border-radius:18px; margin-bottom:.875rem; overflow:hidden; }
+  .kom-head { padding:1rem 1.125rem .875rem; }
+  .kom-lead { font-weight:700; color:var(--navy); font-size:1.0625rem; }
+  .kom-act { margin-top:.25rem; }
+  .kom .toggle { background:#E4EEDC; border-top:1px solid #D7E5CC; }
+  .kom .details { border-top:1px solid #D7E5CC; }
+  .points { display:flex; flex-direction:column; gap:.875rem; list-style:none; }
+  .point { background:#fff; border-radius:18px; box-shadow:var(--card-shadow); overflow:hidden; }
+  .point-head { padding:1.125rem 1.125rem 1rem; display:grid; grid-template-columns:auto 1fr; gap:.25rem .875rem; }
+  .num { grid-row:span 3; width:2.25rem; height:2.25rem; border-radius:50%; background:var(--green); color:var(--navy); font-weight:700; display:flex; align-items:center; justify-content:center; font-size:1.0625rem; }
+  .point h2 { font-size:1.1875rem; line-height:1.25; color:var(--navy); }
+  .short-do { font-weight:600; color:var(--green-dark); }
+  .toggle { width:100%; border:none; border-top:1px solid var(--line); background:#FBFAF7; padding:.75rem 1.125rem; font:600 .9375rem 'Barlow',sans-serif; color:var(--navy); cursor:pointer; display:flex; justify-content:space-between; align-items:center; text-align:start; }
+  .toggle .chev { transition:transform .2s; }
+  .open > .toggle .chev { transform:rotate(180deg); }
+  .details { display:none; padding:.25rem 1.125rem 1.25rem; border-top:1px solid var(--line); }
+  .open > .details { display:block; }
+  .block { margin-top:1rem; }
+  .block h3 { font-size:.8125rem; font-weight:600; color:var(--muted); margin-bottom:.25rem; }
+  .quote { font-size:1.0625rem; color:var(--navy); border-inline-start:3px solid var(--green); padding-inline-start:.75rem; }
+  .block.do { background:#EEF4E8; border-radius:12px; padding:.875rem 1rem; }
+  .block.do h3 { color:var(--green-dark); }
+  .block.next { background:#F4F1EB; border-radius:12px; padding:.875rem 1rem; }
+  .block.next h3 { color:var(--navy); font-size:.9375rem; }
+  .block.next p + p { margin-top:.5rem; }
+  .block ul, .block ol { padding-inline-start:1.25rem; display:flex; flex-direction:column; gap:.375rem; margin-top:.375rem; }
+  .cols { display:grid; grid-template-columns:1fr 1fr; gap:.75rem; }
+  @media (max-width:440px){ .cols { grid-template-columns:1fr; } }
+  .cta { margin:1.75rem 0 1rem; background:var(--navy); color:#fff; border-radius:18px; padding:1.25rem; }
+  .cta p { color:rgba(255,255,255,.8); margin-bottom:.875rem; }
+  .cta a { display:block; text-align:center; background:var(--green); color:var(--navy); font-weight:700; font-size:1.0625rem; padding:.875rem 1rem; border-radius:999px; text-decoration:none; }
+  .share { display:flex; align-items:center; justify-content:space-between; gap:1rem; background:#fff; border-radius:18px; box-shadow:var(--card-shadow); padding:1rem 1.125rem; }
+  .share button { flex-shrink:0; border:none; border-radius:999px; background:#EEF4E8; color:var(--green-dark); font:600 .9375rem 'Barlow',sans-serif; padding:.625rem 1rem; cursor:pointer; }
+
+  .screen { padding-bottom:.5rem; }
+  .langpick { padding:2.5rem 0 2rem; }
+  .langpick h1 { font-size:1.75rem; color:var(--navy); line-height:1.2; }
+  .langpick .picks { display:flex; flex-wrap:wrap; gap:.25rem 1rem; color:var(--muted); margin:.375rem 0 1.5rem; }
+  .langpick .opt::before { display:none; }
+  .langpick .opt { font-size:1.125rem; padding:1rem 1.25rem; }
+  .hero { padding:1.5rem 0 1.25rem; }
+  .backlink { display:inline-block; margin-top:1rem; font-size:.875rem; font-weight:600; color:var(--navy); }
+  .cta .sec { display:block; text-align:center; margin-top:.75rem; color:#fff; font-weight:600; font-size:.9375rem; background:none; padding:0; }
+  .foot { padding:1.25rem 0 2.5rem; }
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <div class="muni" id="muni">Tønsberg kommune</div>
+  <div class="lang-sw" id="langsw" role="group" aria-label="Språk / Language"></div>
+</div></header>
+<div class="wrap">
+  <main id="screen" class="screen"></main>
+  <footer class="foot">
+    <div class="links" id="footLinks" hidden><button id="change"></button><button id="restart"></button></div>
+    <span id="disc"></span><span id="proto"></span>
+  </footer>
+</div>
+<style>
+  .kc { background:#F4F1EB; border-radius:12px; padding:.75rem .875rem; margin-top:.75rem; }
+  .kc b { display:block; color:var(--navy); }
+  .kc span { display:block; color:var(--muted); font-size:.9375rem; }
+  .kc a { display:inline-block; margin-top:.25rem; margin-inline-end:1rem; font-weight:600; color:var(--green-dark); }
+  .body p + p, .body p + ul, .body ul + p { margin-top:.625rem; }
+  .body ul { padding-inline-start:1.25rem; display:flex; flex-direction:column; gap:.3rem; margin-top:.5rem; }
+  .callbox { margin-top:.75rem; }
+  .callbox h3 { font-size:.8125rem; font-weight:600; color:var(--muted); margin-bottom:.25rem; }
+  .vk { color:#923c3d; font-weight:600; }
+  .mt { color:#3F6585; font-weight:500; }
+  .startlink { display:inline-block; margin:-.5rem 0 1.25rem; font-weight:600; color:var(--navy); }
+  .testnote { font-size:.875rem; color:var(--muted); margin:1.5rem 0 0; }
+</style>
+<script>
+// ─────────────────────────────────────────────────────────────
+// Familiegjenforeningsveileder – sjekklisten.
+// Alt innhold hentes fra data/. Se README.md og DATAMODELL.md.
+// ─────────────────────────────────────────────────────────────
+{
+const DATA_DIR = 'data/';
+const params = new URLSearchParams(location.search);
+const SHOW_DRAFTS = params.get('utkast') === '1';   // ?utkast=1 viser innhold med status «utkast»
+let CFG, S, TX = {}, UI = {}, ST = {}, LANGS = [], NAMES = {}, DIR = {}, KEY = 'fgv_app_v1';
+let state = { lang: null, svar: {}, answered: false, checked: {} }, phase = 0;
+
+async function getJSON(path, optional) {
+  const r = await fetch(DATA_DIR + path, { cache: 'no-cache' });
+  if (!r.ok) { if (optional) return {}; throw new Error(path + ' (' + r.status + ')'); }
+  try { return await r.json(); } catch (e) { throw new Error(path + ': ' + e.message); }
+}
+async function load() {
+  CFG = await getJSON('config.json');
+  S = await getJSON('struktur.json');
+  KEY = CFG.lagringsnokkel || KEY;
+  const langs = CFG.sprak.filter(l => l.status === 'publisert' || (SHOW_DRAFTS && l.status === 'utkast'));
+  LANGS = langs.map(l => l.kode);
+  langs.forEach(l => { NAMES[l.kode] = l.navn; DIR[l.kode] = l.retning || 'ltr'; });
+  await Promise.all(LANGS.map(async l => {
+    [TX[l], UI[l], ST[l]] = await Promise.all([getJSON('sprak/' + l + '.json'), getJSON('ui/' + l + '.json'), l === 'no' ? {} : getJSON('sprak/' + l + '.status.json', true)]);
+  }));
+}
+function esc(s) { return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+const isRtl = l => DIR[l] === 'rtl';
+const visible = x => x.status === 'publisert' || (SHOW_DRAFTS && x.status === 'utkast');
+// Tekst på valgt språk, ellers norsk
+const t = (k, l = state.lang || 'no') => (TX[l] && TX[l][k]) || (TX.no && TX.no[k]) || '';
+const u = (k, l = state.lang || 'no') => (UI[l] && UI[l][k]) || (UI.no && UI.no[k]) || '';
+const ltr = s => isRtl(state.lang) ? s.replace(/(\d[\d :.–-]*\d)/g, '<span dir="ltr">$1</span>') : s;
+const fwd = () => isRtl(state.lang) ? '←' : '→', bwd = () => isRtl(state.lang) ? '→' : '←';
+
+// Maskinoversatt: minst én tekst i punktet er ikke kontrollert av tolk (eller mangler og vises på norsk)
+function machine(prefix) {
+  if (state.lang === 'no') return false;
+  const st = ST[state.lang] || {};
+  return Object.keys(TX.no).filter(k => k.startsWith(prefix)).some(k => !TX[state.lang][k] || !st[k] || st[k].s !== 'kontrollert');
+}
+const anyMachine = () => state.lang !== 'no' && Object.keys(TX.no).some(k => { const s = (ST[state.lang] || {})[k]; return !s || s.s !== 'kontrollert'; });
+
+// Teksten i et punkt: tomme linjer skiller avsnitt, «–» gir punktliste, en lang replikk i «…» gir boks
+function body(s) {
+  let h = '';
+  String(s || '').split(/\n\s*\n/).forEach(block => {
+    const ls = block.split('\n').map(x => x.trim()).filter(Boolean);
+    if (!ls.length) return;
+    if (ls.every(x => /^[–-]\s/.test(x))) { h += '<ul>' + ls.map(x => '<li>' + ltr(esc(x.replace(/^[–-]\s*/, ''))) + '</li>').join('') + '</ul>'; return; }
+    ls.forEach(x => {
+      const m = x.match(/^(.*?)«([^»]{26,})»(.*)$/);
+      if (m) h += `<div class="callbox"><h3>${esc(u('liste.overskrift_replikk'))}</h3><p>${m[1].trim() ? ltr(esc(m[1].trim())) + ' ' : ''}«${esc(m[2])}»${esc(m[3])}</p></div>`;
+      else if (/^[–-]\s/.test(x)) h += '<ul><li>' + ltr(esc(x.replace(/^[–-]\s*/, ''))) + '</li></ul>';
+      else h += '<p>' + ltr(esc(x)) + '</p>';
+    });
+  });
+  return h;
+}
+function contact(id) {
+  const c = (S.kontakter || []).find(k => k.id === id);
+  if (!c) return '';
+  const tel = c.telefon ? `<a href="tel:${esc(c.telefon.replace(/\s/g, ''))}" dir="ltr">${esc(c.telefon)}</a>` : '';
+  const web = c.nettside ? `<a href="${esc(c.nettside)}" target="_blank" rel="noopener" dir="ltr">${esc(c.nettside.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, ''))}</a>` : '';
+  return `<div class="kc"><b>${esc(t('kontakt.' + id + '.navn'))}</b><span>${ltr(esc(t('kontakt.' + id + '.info')))}</span>${tel}${web}</div>`;
+}
+
+// ── Tilstand (lagres bare på denne enheten) ──
+function loadState() {
+  try {
+    const s = JSON.parse(localStorage.getItem(KEY));
+    if (s) {
+      if (!s.svar) {   // overgang fra første versjon
+        const yn = v => v === 'yes' ? 'ja' : v === 'no' ? 'nei' : undefined;
+        s.svar = {}; if (s.arrived) s.svar.ankommet = yn(s.arrived); if (s.kids) s.svar.barn = yn(s.kids); if (s.housing) s.svar.bolig = yn(s.housing);
+        delete s.arrived; delete s.kids; delete s.housing;
+      }
+      state = Object.assign(state, s);
+    }
+  } catch (e) {}
+  if (LANGS.includes(params.get('lang'))) state.lang = params.get('lang');
+  if (state.lang && !LANGS.includes(state.lang)) state.lang = null;
+  save();
+}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+const condOk = x => (x.vises_hvis || []).every(c => { const [q, v] = c.split('='); return state.svar[q] === v; });
+
+// ── Navigasjon: #sprak → #sporsmal → #liste ──
+function route() {
+  let r = location.hash.slice(1);
+  if (!state.lang) return 'sprak';
+  if (!['sprak', 'sporsmal', 'liste'].includes(r)) r = state.answered ? 'liste' : 'sporsmal';
+  if (r === 'liste' && !state.answered) r = 'sporsmal';
+  return r;
+}
+function go(r) { if (location.hash.slice(1) === r) render(); else location.hash = r; window.scrollTo(0, 0); }
+function appUrl() { const x = new URL(location.href); x.hash = ''; x.search = '?lang=' + state.lang; return x.href; }
+async function share(btn) {
+  const url = appUrl(), label = btn.textContent;
+  if (navigator.share) { try { await navigator.share({ title: u('start.tittel'), url }); return; } catch (e) { if (e.name === 'AbortError') return; } }
+  try { await navigator.clipboard.writeText(url); btn.textContent = u('felles.lenke_kopiert'); setTimeout(() => btn.textContent = label, 2000); } catch (e) { prompt('', url); }
+}
+
+function chrome(r) {
+  const l = state.lang || 'no';
+  document.documentElement.lang = l === 'no' ? 'nb' : l;
+  document.documentElement.dir = isRtl(l) ? 'rtl' : 'ltr';
+  document.title = u('start.tittel', l) + ' – ' + u('felles.kommune', l);
+  document.getElementById('muni').textContent = u('felles.kommune', l);
+  document.getElementById('disc').textContent = u('felles.ansvarsfraskrivelse', l) + ' ';
+  document.getElementById('proto').textContent = u('felles.prototype', l);
+  const sw = document.getElementById('langsw');
+  sw.hidden = r === 'sprak';
+  sw.innerHTML = LANGS.map(x => `<button data-l="${x}" aria-pressed="${x === l}" title="${esc(NAMES[x])}">${x.toUpperCase()}</button>`).join('');
+  sw.querySelectorAll('button').forEach(b => b.onclick = () => { state.lang = b.dataset.l; save(); render(); });
+  document.getElementById('footLinks').hidden = r !== 'liste';
+  document.getElementById('change').textContent = u('liste.endre_svar', l);
+  document.getElementById('restart').textContent = u('liste.start_paa_nytt', l);
+}
+
+function screenLang() {
+  const a = l => `lang="${l === 'no' ? 'nb' : l}" dir="${isRtl(l) ? 'rtl' : 'ltr'}"`;
+  return `<section class="langpick"><h1>${esc(u('sprakvalg.overskrift', 'no'))}</h1><p class="picks">` +
+    LANGS.filter(l => l !== 'no').map(l => `<span ${a(l)}>${esc(u('sprakvalg.overskrift', l))}</span>`).join('') +
+    `</p><div class="opts">` + LANGS.map(l => `<button class="opt" data-l="${l}" ${a(l)}>${esc(NAMES[l])}</button>`).join('') + `</div></section>`;
+}
+function screenQuestions() {
+  const qs = S.sporsmal.filter(visible), all = qs.every(q => state.svar[q.id]);
+  return `<section class="welcome"><h1>${esc(u('start.tittel'))}</h1><p>${esc(u('start.ingress'))}</p>` +
+    (CFG.viktigste_side ? `<a class="startlink" href="${esc(CFG.viktigste_side)}">${esc(u('start.viktigste'))} ${fwd()}</a>` : '') +
+    (anyMachine() && u('felles.ki_merknad') ? `<p class="note">${esc(u('felles.ki_merknad'))}</p>` : '') +
+    qs.map(q => `<div class="q"><h2>${esc(t('sporsmal.' + q.id + '.tekst'))}</h2><div class="opts">` +
+      q.svar.map(v => `<button class="opt" data-k="${q.id}" data-v="${v}" aria-pressed="${state.svar[q.id] === v}">${esc(t('sporsmal.' + q.id + '.' + v))}</button>`).join('') + `</div></div>`).join('') +
+    `<button class="start" id="start" ${all ? '' : 'disabled'}>${esc(u('sporsmal.knapp'))}</button><p class="testnote">${esc(u('start.test'))}</p></section>`;
+}
+function phases() {
+  return S.faser.filter(f => visible(f) && condOk(f)).map(f => ({ ...f, items: S.punkter.filter(p => p.fase === f.id && visible(p) && condOk(p)) })).filter(f => f.items.length);
+}
+function screenList() {
+  const P = phases(); if (phase >= P.length) phase = 0;
+  const p = P[phase], allDone = p.items.every(it => state.checked[it.id]);
+  let s = `<div class="toprow"><a class="back" href="#sporsmal">${bwd()} ${esc(u('liste.endre_svar'))}</a><button class="sharebtn" id="shareList">${esc(u('liste.del'))}</button></div><p class="sharehint">${esc(u('liste.del_hint'))}</p>`;
+  if (anyMachine() && u('felles.ki_merknad')) s += `<p class="note">${esc(u('felles.ki_merknad'))}</p>`;
+  s += `<nav class="tl" style="--n:${P.length}">` + P.map((x, i) => {
+    const done = x.items.every(it => state.checked[it.id]);
+    const cls = [x.fremhevet ? 'key' : '', done ? 'done' : '', i === phase ? 'active' : ''].join(' ');
+    const dot = done && i !== phase ? '<svg width="12" height="10" viewBox="0 0 12 10"><path d="M1 5L4.5 8.5L11 1.5" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>' : (i + 1);
+    return `<button class="${cls}" data-i="${i}"><span class="dot">${dot}</span><span class="lbl">${esc(t('fase.' + x.id + '.kort'))}</span></button>`;
+  }).join('') + `</nav>`;
+  s += `<div class="ph-head"><h2>${esc(t('fase.' + p.id + '.tittel'))}</h2><p>${esc(t('fase.' + p.id + '.undertekst'))}</p>${allDone ? `<p class="ph-done">${esc(u('liste.fase_ferdig'))}</p>` : ''}</div><div class="list">`;
+  p.items.forEach(it => {
+    const done = !!state.checked[it.id], k = f => 'punkt.' + it.id + '.' + f;
+    let b = body(t(k('tekst'))) + (it.kontakter || []).map(contact).join('');
+    if (it.lenke) b += `<p><a class="link" href="${esc(it.lenke)}" target="_blank" rel="noopener">${esc(u('liste.lenke'))} ${fwd()}</a></p>`;
+    const meta = [done ? `<span class="badge done">${esc(u('merkelapp.done'))}</span>` : (it.viktig ? `<span class="vk">${esc(u('liste.viktig'))}</span>` : ''),
+      t(k('naar')) ? `<span class="when">${ltr(esc(t(k('naar'))))}</span>` : '', machine('punkt.' + it.id + '.') ? `<span class="mt">${esc(u('liste.maskinoversatt'))}</span>` : ''].filter(Boolean).join('');
+    s += `<details class="item${done ? ' done' : ''}" data-id="${it.id}"><summary>
+        <button class="cb" aria-label="${esc(u('merkelapp.done'))}" aria-pressed="${done}"><svg width="12" height="9" viewBox="0 0 12 9"><path d="M1 4L4.5 7.5L11 1" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <div class="meta"><div class="t">${esc(t(k('tittel')))}</div>${meta ? `<div class="sub">${meta}</div>` : ''}</div>
+        <span class="chev" aria-hidden="true">▾</span></summary><div class="body">${b}</div></details>`;
+  });
+  s += `</div><div class="nav"><button id="prev" ${phase === 0 ? 'disabled' : ''}>${esc(u('liste.forrige'))}</button><button class="next" id="next" ${phase === P.length - 1 ? 'disabled' : ''}>${esc(u('liste.neste'))}</button></div>`;
+  return s;
+}
+
+function render() {
+  const r = route(); chrome(r);
+  const el = document.getElementById('screen');
+  if (r === 'sprak') {
+    el.innerHTML = screenLang();
+    el.querySelectorAll('[data-l]').forEach(b => b.onclick = () => { state.lang = b.dataset.l; save(); go(state.answered ? 'liste' : 'sporsmal'); });
+  } else if (r === 'sporsmal') {
+    el.innerHTML = screenQuestions();
+    el.querySelectorAll('.opt').forEach(b => b.onclick = () => { state.svar[b.dataset.k] = b.dataset.v; save(); render(); });
+    document.getElementById('start').onclick = () => { state.answered = true; phase = 0; save(); go('liste'); };
+  } else {
+    el.innerHTML = screenList();
+    el.querySelectorAll('.tl button').forEach(b => b.onclick = () => { phase = +b.dataset.i; render(); });
+    el.querySelectorAll('details.item').forEach(d => {
+      const id = d.dataset.id;
+      d.querySelector('.cb').onclick = e => { e.preventDefault(); e.stopPropagation(); if (state.checked[id]) delete state.checked[id]; else state.checked[id] = true; save(); render(); };
+      d.querySelector('summary').onclick = e => { if (state.checked[id]) e.preventDefault(); };
+    });
+    document.getElementById('prev').onclick = () => { phase--; render(); window.scrollTo(0, 0); };
+    document.getElementById('next').onclick = () => { phase++; render(); window.scrollTo(0, 0); };
+    const sb = document.getElementById('shareList'); sb.onclick = () => share(sb);
+  }
+}
+
+load().then(() => {
+  loadState();
+  addEventListener('hashchange', () => { render(); window.scrollTo(0, 0); });
+  document.getElementById('change').onclick = () => go('sporsmal');
+  document.getElementById('restart').onclick = () => {
+    if (!confirm(u('liste.bekreft_start_paa_nytt'))) return;
+    state = { lang: state.lang, svar: {}, answered: false, checked: {} }; save(); go('sporsmal');
+  };
+  render();
+}).catch(err => {
+  console.error(err);
+  document.getElementById('screen').innerHTML = '<section class="welcome"><h1>Innholdet kunne ikke lastes</h1><p>Prøv igjen om litt. Hvis feilen fortsetter, kontakt den som har ansvaret for siden.</p><p class="note" lang="nb" dir="ltr">Teknisk feil: ' + esc(String(err.message || err)) + '</p></section>';
+});
+}
+</script>
+</body>
+</html>

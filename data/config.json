@@ -1,0 +1,40 @@
+{
+  "adresse": "https://tonsbergloftet.github.io/familiegjenforening/",
+  "_adresse": "Publisert adresse til mappen der veileder.html ligger.",
+  "viktigste_side": "",
+  "_viktigste_side": "Lenke til kommunens side med de tre viktigste tingene. Tom = lenken vises ikke.",
+  "app": "veileder.html",
+  "lagringsnokkel": "fgv_app_v1",
+  "sprak": [
+    {
+      "kode": "no",
+      "navn": "Norsk",
+      "retning": "ltr",
+      "status": "publisert"
+    },
+    {
+      "kode": "en",
+      "navn": "English",
+      "retning": "ltr",
+      "status": "publisert"
+    },
+    {
+      "kode": "ar",
+      "navn": "العربية",
+      "retning": "rtl",
+      "status": "publisert"
+    },
+    {
+      "kode": "tr",
+      "navn": "Türkçe",
+      "retning": "ltr",
+      "status": "publisert"
+    },
+    {
+      "kode": "nl",
+      "navn": "Nederlands",
+      "retning": "ltr",
+      "status": "publisert"
+    }
+  ]
+}

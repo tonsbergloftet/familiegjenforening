@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Redaktør – Familiegjenforening</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&display=swap">
+<style>
+/* VOICE calm, plain work tool for a non-technical editor – same family as the app
+   IDEA the veileder opened up: the journey on the left, one card being written in the middle, the card on a phone on the right
+   PICTURE the live phone preview with the journey timeline on top
+   COLOUR warm paper, white sheets, Tønsberg navy, dark green for actions, sage highlights
+   TYPE Barlow
+   LAYOUT laptop: list | form | phone; tablet: list | form, preview by tab; phone: Innhold / Rediger / Forhåndsvis tabs */
+
+:root{color-scheme:light dark;
+--bg:light-dark(#F7F5F1,#0f1a20);--sheet:light-dark(#ffffff,#16242c);--sunk:light-dark(#F1EDE6,#121f26);
+--ink:light-dark(#1C2E3A,#e4ecef);--muted:light-dark(#5F6A70,#9fb0b8);--line:light-dark(#E7E3DC,#26363f);
+--navy:light-dark(#013952,#bcd9e8);--green:light-dark(#00714e,#5cc79a);--on-green:light-dark(#ffffff,#0b1a14);
+--mint:light-dark(#EEF4E8,#18302a);--sage:light-dark(#c5daaf,#2c4a3c);--warn:light-dark(#FFF3D1,#3a3018);--warn-ink:light-dark(#5C4300,#f0d78f);
+--draft:light-dark(#E6EEF3,#1d3340);--shadow:0 1px 3px rgba(1,57,82,.07),0 4px 12px rgba(1,57,82,.04)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 'Barlow',system-ui,sans-serif;overflow:hidden}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid color-mix(in srgb,var(--green) 55%,transparent);outline-offset:2px}
+.app{display:grid;grid-template-rows:auto 1fr;height:100%}
+.top{display:flex;align-items:center;gap:12px;padding:10px max(16px,2vw);background:var(--sheet);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;font-weight:600;color:var(--navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brand::before{content:'';width:4px;height:22px;border-radius:2px;background:var(--green);flex:none}
+.brand small{font-weight:500;color:var(--muted);font-size:14px}
+.saved{margin-inline-start:auto;font-size:14px;color:var(--muted);white-space:nowrap}
+.btn{border:0;border-radius:999px;padding:10px 18px;min-height:44px;font-weight:600;background:var(--mint);color:var(--green)}
+.btn.primary{background:var(--green);color:var(--on-green)}
+.btn.ghost{background:transparent;color:var(--navy)}
+.btn:disabled{opacity:.45;cursor:default}
+.count{display:inline-grid;place-items:center;min-width:22px;height:22px;border-radius:11px;background:var(--on-green);color:var(--green);font-size:13px;margin-inline-start:6px;padding:0 6px}
+.main{display:grid;grid-template-columns:300px minmax(0,1fr) 400px;min-height:0}
+.nav{border-inline-end:1px solid var(--line);overflow:auto;padding:14px 12px 40px;background:var(--bg)}
+.search{width:100%;padding:10px 14px;border:1px solid var(--line);border-radius:12px;background:var(--sheet);font-size:16px;margin-bottom:10px}
+.grp{margin:14px 0 4px;padding:0 8px;font-size:13px;font-weight:600;color:var(--muted)}
+.node{display:flex;align-items:center;gap:8px;width:100%;text-align:start;border:0;background:transparent;border-radius:10px;padding:8px 10px;min-height:40px;font-size:15px;color:var(--ink)}
+.node:hover{background:var(--sunk)}
+.node[aria-current=true]{background:var(--sheet);box-shadow:var(--shadow);font-weight:600;color:var(--navy)}
+.node .lbl{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.node.phase{font-weight:600;color:var(--navy)}
+.node.child{padding-inline-start:26px;font-size:14.5px}
+.dot{width:8px;height:8px;border-radius:50%;flex:none;background:var(--green)}
+.dot.utkast{background:transparent;box-shadow:inset 0 0 0 2px #7d9fb3}
+.dot.skjult{background:#b9b2a6}
+.dot.plain{background:var(--line)}
+.flag{font-size:12px;font-weight:600;color:var(--warn-ink);background:var(--warn);border-radius:6px;padding:1px 6px;flex:none}
+.chg{width:6px;height:6px;border-radius:50%;background:#e2a33b;flex:none}
+.add{display:block;width:calc(100% - 26px);margin:2px 0 6px 26px;text-align:start;border:1px dashed var(--line);background:transparent;border-radius:10px;padding:7px 10px;font-size:14px;color:var(--green);font-weight:600}
+.edit{overflow:auto;padding:22px clamp(16px,3vw,40px) 80px}
+.crumb{font-size:14px;color:var(--muted);margin-bottom:4px}
+h1{font-size:clamp(26px,3vw,34px);line-height:1.1;letter-spacing:-.02em;color:var(--navy);margin:0 0 14px;text-wrap:balance}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:18px}
+.seg{display:inline-flex;background:var(--sunk);border-radius:999px;padding:3px}
+.seg button{border:0;background:transparent;border-radius:999px;padding:7px 14px;min-height:38px;font-size:14px;font-weight:600;color:var(--muted)}
+.seg button[aria-pressed=true]{background:var(--sheet);color:var(--navy);box-shadow:var(--shadow)}
+.mini{border:0;background:transparent;color:var(--navy);font-weight:600;font-size:14px;padding:8px 10px;border-radius:10px;min-height:40px}
+.mini:hover{background:var(--sunk)}
+.sec{background:var(--sheet);border-radius:18px;box-shadow:var(--shadow);padding:18px 20px 8px;margin-bottom:16px}
+.sec h2{font-size:17px;margin:0 0 2px;color:var(--navy)}
+.sec>p{margin:0 0 12px;font-size:14px;color:var(--muted)}
+.f{margin-bottom:16px}
+.fh{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.fh label{font-weight:600;font-size:15px;flex:1}
+.qa{border:0;background:transparent;border-radius:8px;padding:4px 8px;font-size:13px;font-weight:600;color:var(--muted);min-height:32px}
+.qa[aria-pressed=true]{background:var(--warn);color:var(--warn-ink)}
+.fh .qa{display:none}
+.f:hover .fh .qa,.f:focus-within .fh .qa,.fh .qa[aria-pressed=true]{display:inline-block}
+.fh label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fh{flex-wrap:wrap;min-height:32px}
+.f input[type=text],.f input[type=url],.f textarea,.f select{width:100%;border:1px solid var(--line);border-radius:12px;background:var(--bg);padding:10px 12px;font-size:16px;line-height:1.45}
+.f textarea{resize:vertical;min-height:48px;overflow:hidden}
+.f input:focus,.f textarea:focus,.f select:focus{outline:0;border-color:var(--green);background:var(--sheet);box-shadow:0 0 0 3px color-mix(in srgb,var(--green) 18%,transparent)}
+.hint{font-size:13.5px;color:var(--muted);margin-top:4px}
+.stale{font-size:13.5px;color:var(--warn-ink);background:var(--warn);border-radius:8px;padding:4px 9px;margin-top:6px;display:inline-block}
+.long{color:#b5562b}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:8px 14px;font-size:14.5px;min-height:40px}
+.chip[aria-pressed=true]{background:var(--mint);border-color:var(--green);color:var(--green);font-weight:600}
+.row2{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0 16px}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:15px;padding:6px 0}
+.check input{width:20px;height:20px;margin-top:2px;accent-color:var(--green)}
+.ins{position:relative}
+.menu{position:absolute;z-index:20;inset-inline-end:0;top:100%;background:var(--sheet);border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.12);width:min(340px,80vw);max-height:300px;overflow:auto;padding:6px}
+.menu button{display:block;width:100%;text-align:start;border:0;background:transparent;border-radius:8px;padding:8px 10px;font-size:14px}
+.menu button:hover{background:var(--sunk)}
+.menu small{display:block;color:var(--muted)}
+.prev{border-inline-start:1px solid var(--line);overflow:auto;padding:18px 20px 40px;background:var(--sunk)}
+.prev h3{margin:0 0 8px;font-size:14px;color:var(--muted);font-weight:600}
+.phone{width:100%;max-width:360px;margin:10px auto 0;background:#F7F5F1;color:#1C2E3A;border-radius:28px;box-shadow:0 0 0 8px #1d2a31,0 18px 40px rgba(0,0,0,.18);overflow:hidden;color-scheme:light}
+.ph-top{display:flex;align-items:center;gap:8px;height:46px;padding:0 16px;border-bottom:1px solid #E7E3DC;font-weight:600;color:#013952;font-size:14px}
+.ph-top::before{content:'';width:3px;height:18px;border-radius:2px;background:#00714e}
+.ph-body{padding:14px;min-height:360px}
+.p-h{font-size:20px;line-height:1.2;color:#013952;font-weight:700;margin:4px 0 4px}
+.p-sub{color:#5F6A70;font-size:14px;margin:0 0 12px}
+.card{background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(1,57,82,.07),0 4px 12px rgba(1,57,82,.04);overflow:hidden;margin-bottom:10px}
+.card-h{display:flex;gap:10px;padding:13px 14px;align-items:flex-start}
+.cb{width:22px;height:22px;border-radius:7px;box-shadow:inset 0 0 0 2px #C9C2B6;flex:none;margin-top:2px}
+.ct{font-weight:600;font-size:15.5px;line-height:1.3}
+.meta{display:flex;flex-wrap:wrap;gap:4px 10px;margin-top:4px;font-size:12.5px;color:#5F6A70}
+.badge{font-weight:600}
+.b-key{color:#013952}.b-first{color:#00714e}.b-urgent{color:#a4471d}.b-maybe{color:#6a5d9c}.b-smart{color:#5F6A70}
+.cbody{border-top:1px solid #E7E3DC;padding:4px 14px 14px;font-size:14.5px}
+.cbody h4{margin:12px 0 2px;font-size:12.5px;color:#5F6A70;font-weight:600}
+.cbody p{margin:0}
+.cbody ol,.cbody ul{margin:4px 0 0;padding-inline-start:20px}
+.do{background:#EEF4E8;border-radius:10px;padding:2px 12px 10px;margin-top:10px}
+.do h4{color:#00714e}
+.call{background:#F4F1EB;border-radius:10px;padding:2px 12px 10px;margin-top:10px}
+.lnk{display:inline-block;margin-top:12px;color:#013952;font-weight:600}
+.num{width:30px;height:30px;border-radius:50%;background:#c5daaf;color:#013952;font-weight:700;display:grid;place-items:center;flex:none}
+.sdo{color:#00714e;font-weight:600;margin-top:6px}
+.quote{color:#013952;border-inline-start:3px solid #c5daaf;padding-inline-start:10px}
+.tf{background:#E6EEF3;border-radius:4px;padding:0 3px}
+.miss{color:#a4471d}
+.kom{background:#EEF4E8;border-radius:16px;padding:12px 14px;font-size:14.5px}
+.kom b{color:#013952}
+.opt{background:#fff;border-radius:12px;padding:11px 12px;margin-top:6px;box-shadow:0 1px 3px rgba(1,57,82,.07);font-size:14.5px}
+.tl{display:flex;gap:4px;background:#fff;border-radius:14px;padding:8px 4px;margin-bottom:12px;box-shadow:0 1px 3px rgba(1,57,82,.07)}
+.tl span{flex:1;text-align:center;font-size:11px;color:#8E877C}
+.tl span.on{color:#013952;font-weight:700}
+.pv-note{font-size:13.5px;color:var(--muted);text-align:center;margin-top:14px}
+.empty{color:var(--muted);font-size:15px}
+.tabbar{display:none}
+.tabbar button{flex:1;border:0;background:transparent;min-height:56px;font-weight:600;font-size:15px;color:var(--muted);border-top:3px solid transparent}
+.tabbar button[aria-pressed=true]{color:var(--green);border-top-color:var(--green)}
+.step{display:flex;gap:4px;margin-inline-start:auto}
+.step .mini{white-space:nowrap}
+.drawer{position:fixed;inset:0;z-index:50;background:rgba(10,20,25,.35);display:none;justify-content:flex-end}
+.drawer.on{display:flex}
+.panel{width:min(520px,100%);height:100%;background:var(--sheet);overflow:auto;padding:22px 22px 40px;box-shadow:-10px 0 40px rgba(0,0,0,.15)}
+.panel h2{margin:0 0 4px;color:var(--navy);font-size:24px}
+.panel>p{color:var(--muted);margin:0 0 16px}
+.ch{border-top:1px solid var(--line);padding:12px 0;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;align-items:start}
+.ch b{font-size:15px}
+.ch .was{font-size:14px;color:var(--muted);text-decoration:line-through;overflow-wrap:anywhere}
+.ch .now{font-size:14px;overflow-wrap:anywhere}
+.steps{counter-reset:s;list-style:none;padding:0;margin:16px 0}
+.steps li{counter-increment:s;position:relative;padding:12px 0 12px 44px;border-top:1px solid var(--line)}
+.steps li::before{content:counter(s);position:absolute;inset-inline-start:0;top:12px;width:30px;height:30px;border-radius:50%;background:var(--mint);color:var(--green);font-weight:700;display:grid;place-items:center}
+.files{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.modal{position:fixed;inset:0;z-index:60;background:rgba(10,20,25,.35);display:none;place-items:center;padding:16px}
+.modal.on{display:grid}
+.box{background:var(--sheet);border-radius:20px;padding:22px;width:min(460px,100%);box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.box h2{margin:0 0 12px;color:var(--navy)}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--navy);color:var(--sheet);padding:10px 18px;border-radius:999px;font-weight:600;font-size:15px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:70}
+.toast.on{opacity:1}
+.proto{font-size:13px;color:var(--muted);padding:8px 8px 0}
+@media (max-width:1180px){.app{grid-template-rows:auto 1fr auto}.tabbar{display:flex;background:var(--sheet);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}.tabbar [data-view=nav]{display:none}.main{grid-template-columns:270px minmax(0,1fr)}.prev{display:none}.main[data-view=prev] .edit{display:none}.main[data-view=prev] .prev{display:block;border:0}}
+@media (max-width:760px){.main{grid-template-columns:minmax(0,1fr)}.nav{display:none;border:0}.main[data-view=nav] .nav{display:block}.main[data-view=nav] .edit,.main[data-view=nav] .prev{display:none}.tabbar [data-view=nav]{display:block}.brand small{display:none}.saved{display:none}.top .btn.primary{margin-inline-start:auto}}
+@media (prefers-reduced-motion:reduce){.toast{transition:none}}
+
+.tool{display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap}
+.tool button{border:1px solid var(--line);background:var(--sheet);border-radius:10px;padding:6px 12px;min-height:38px;font-size:14px;font-weight:600;color:var(--navy)}
+.big{min-height:180px!important}
+.wc{font-size:13.5px;color:var(--muted);margin-top:4px}
+.wc.over{color:#b5562b;font-weight:600}
+.toggle{display:flex;align-items:center;gap:10px;font-size:15px;padding:6px 0}
+.toggle input{width:20px;height:20px;accent-color:var(--green)}
+.checked{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.checked input{border:1px solid var(--line);border-radius:12px;background:var(--bg);padding:9px 12px;font-size:16px}
+.kc{background:#F4F1EB;border-radius:12px;padding:10px 12px;margin-top:10px;font-size:14px}
+.kc b{display:block;color:#013952}
+.kc span{display:block;color:#5F6A70}
+.kc a,.kc .tel{color:#00714e;font-weight:600}
+.vk{color:#a4471d;font-weight:600}
+.flagdot{font-size:12px;font-weight:600;color:var(--warn-ink);background:var(--warn);border-radius:6px;padding:1px 6px;flex:none}
+.cbody .call p{margin:0}
+@media (max-width:1180px){.toast{bottom:84px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand">Redaktør <small>Når familien kommer</small></div>
+    <span class="saved" id="saved">Ingen endringer</span>
+    <button class="mini" id="helpBtn">Hjelp</button>
+    <button class="btn primary" id="pubBtn">Send endringer<span class="count" id="cnt">0</span></button>
+  </header>
+  <div class="main" id="main">
+    <nav class="nav" id="nav" aria-label="Innhold"></nav>
+    <section class="edit" id="edit"></section>
+    <aside class="prev" id="prev"></aside>
+  </div>
+  <nav class="tabbar" aria-label="Visning"><button data-view="nav">Innhold</button><button data-view="edit">Rediger</button><button data-view="prev">Forhåndsvis</button></nav>
+</div>
+<div class="drawer" id="drawer"><div class="panel" id="panel"></div></div>
+<div class="modal" id="modal"><div class="box" id="box"></div></div>
+<div class="toast" id="toast" role="status"></div>
+<script>
+(async()=>{
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const clone=o=>JSON.parse(JSON.stringify(o));
+// Henter det som er publisert nå. Redaktøren jobber alltid oppå siste versjon.
+const ORIG=await (async()=>{try{const g=p=>fetch(p,{cache:'no-cache'}).then(r=>{if(!r.ok)throw new Error(p+' ('+r.status+')');return r.json()});const [s,t]=await Promise.all([g('data/struktur.json'),g('data/sprak/no.json')]);return{s,t}}
+  catch(e){document.getElementById('edit').innerHTML='<h1>Innholdet kunne ikke lastes</h1><p>'+String(e.message).replace(/</g,'&lt;')+'</p><p>Redaktøren må åpnes fra nettsiden, ikke som fil på maskinen.</p>';throw e}})();
+const BASE=JSON.stringify(ORIG).length+':'+[...JSON.stringify(ORIG)].reduce((h,c)=>(h*31+c.charCodeAt(0))|0,0);
+const KEY='fgv_redaktor',NLANG=4,MAXW=80;
+let D=clone(ORIG),sel={type:'punkt',id:ORIG.s.punkter[0].id},q='',openCard=true,view=matchMedia('(max-width:760px)').matches?'nav':'edit',baseChanged=false;
+try{const x=JSON.parse(localStorage.getItem(KEY));if(x&&x.s&&x.t){
+  // Utkastet er publisert: start på nytt fra det som ligger ute
+  if(x.base!==BASE&&JSON.stringify({s:x.s,t:x.t})===JSON.stringify(ORIG)){localStorage.removeItem(KEY)}
+  else{D=x;baseChanged=x.base&&x.base!==BASE}}}catch(e){}
+D.base=D.base||BASE;
+const t=k=>D.t[k]||'';
+const changedT=k=>(ORIG.t[k]||'')!==(D.t[k]||'');
+function save(){D.at=new Date().toISOString();D.base=D.base||BASE;try{localStorage.setItem(KEY,JSON.stringify(D))}catch(e){}stamp()}
+function stamp(){const n=changes().length;$('#cnt').textContent=n;$('#saved').textContent=n?'Utkast lagret '+new Date(D.at||Date.now()).toLocaleTimeString('nb-NO',{hour:'2-digit',minute:'2-digit'}):'Ingen endringer'}
+function toast(m){const e=$('#toast');e.textContent=m;e.classList.add('on');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('on'),2200)}
+const words=s=>(String(s||'').match(/[\p{L}\p{N}]+/gu)||[]).length;
+const P=id=>D.s.punkter.find(x=>x.id===id),F=id=>D.s.faser.find(x=>x.id===id),K=id=>D.s.kontakter.find(x=>x.id===id),Q=id=>D.s.sporsmal.find(x=>x.id===id);
+const isNew=(arr,id)=>!ORIG.s[arr].some(x=>x.id===id);
+function slug(ti,taken){let id=ti.toLowerCase().replace(/æ/g,'ae').replace(/ø/g,'o').replace(/å/g,'a').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,30)||'ny',b=id,n=2;while(taken.includes(id))id=b+'-'+n++;return id}
+const today=()=>new Date().toISOString().slice(0,10);
+const fmtDate=d=>d?new Date(d+'T12:00').toLocaleDateString('nb-NO',{day:'numeric',month:'short',year:'numeric'}):'';
+const FORLBL={'barn=ja':'Har barn','barn=nei':'Har ikke barn','bolig=nei':'Trenger bolig','bolig=ja':'Har bolig','ankommet=nei':'Før familien kommer','ankommet=ja':'Familien er kommet'};
+
+// ── Endringer ──
+function changes(){
+  const out=[];
+  new Set([...Object.keys(ORIG.t),...Object.keys(D.t)]).forEach(k=>{if(changedT(k))out.push({kind:'t',k,was:ORIG.t[k]||'',now:D.t[k]||''})});
+  [['punkter','punkt'],['faser','fane'],['kontakter','kontakt']].forEach(([arr,lb])=>{
+    D.s[arr].forEach(x=>{const o=ORIG.s[arr].find(y=>y.id===x.id);if(!o)out.push({kind:'s',label:'Ny '+lb+': '+(t(lb==='punkt'?'punkt.'+x.id+'.tittel':lb==='fane'?'fase.'+x.id+'.tittel':'kontakt.'+x.id+'.navn')||x.id)});
+      else if(JSON.stringify(o)!==JSON.stringify(x))out.push({kind:'s',label:'Innstillinger endret: '+(t(lb==='punkt'?'punkt.'+x.id+'.tittel':lb==='fane'?'fase.'+x.id+'.tittel':'kontakt.'+x.id+'.navn')||x.id)})});
+    const a=ORIG.s[arr].map(x=>x.id),b=D.s[arr].map(x=>x.id).filter(i=>a.includes(i));if(a.filter(i=>b.includes(i)).join()!==b.join())out.push({kind:'s',label:'Ny rekkefølge'});
+  });
+  return out;
+}
+const FL={tittel:'Tittel',naar:'Når og for hvem',tekst:'Tekst',kort:'Kort navn',undertekst:'Undertekst',navn:'Navn',info:'Beskrivelse',ja:'Svar ja',nei:'Svar nei'};
+function labelOf(k){const p=k.split('.'),f=FL[p[2]]||p[2];
+  if(p[0]==='punkt')return(t('punkt.'+p[1]+'.tittel')||p[1])+' · '+f;if(p[0]==='fase')return'Fase: '+t('fase.'+p[1]+'.tittel')+' · '+f;if(p[0]==='kontakt')return'Kontakt: '+t('kontakt.'+p[1]+'.navn')+' · '+f;if(p[0]==='sporsmal')return'Spørsmål: '+t('sporsmal.'+p[1]+'.tekst')+' · '+f;return k}
+
+// ── Navigasjon ──
+function nb(o,label,cls='',pre=''){const cur=sel.type===o.type&&sel.id===o.id;return `<button class="node ${cls}" data-sel='${esc(JSON.stringify(o))}' aria-current="${cur}">${pre}<span class="lbl">${esc(label)}</span>${changedEnt(o)?'<span class="chg"></span>':''}</button>`}
+function changedEnt(o){const pre={punkt:'punkt.',fase:'fase.',kontakt:'kontakt.',q:'sporsmal.'}[o.type];if(!pre)return false;
+  if(Object.keys({...ORIG.t,...D.t}).some(k=>k.startsWith(pre+o.id+'.')&&changedT(k)))return true;const arr={punkt:'punkter',fase:'faser',kontakt:'kontakter',q:'sporsmal'}[o.type];
+  return JSON.stringify(ORIG.s[arr].find(x=>x.id===o.id))!==JSON.stringify(D.s[arr].find(x=>x.id===o.id))}
+function renderNav(){
+  const m=s=>!q||String(s).toLowerCase().includes(q);
+  let h=`<input class="search" id="search" type="search" placeholder="Søk i innholdet" value="${esc(q)}" aria-label="Søk">`;
+  h+=`<div class="grp">Sjekklisten</div>`;
+  D.s.faser.forEach(f=>{const items=D.s.punkter.filter(p=>p.fase===f.id),hits=items.filter(p=>m(t('punkt.'+p.id+'.tittel')+' '+t('punkt.'+p.id+'.tekst')));
+    if(q&&!hits.length)return;
+    h+=nb({type:'fase',id:f.id},t('fase.'+f.id+'.tittel'),'phase',`<span class="dot ${f.status}"></span>`);
+    hits.forEach(p=>{const w=words(t('punkt.'+p.id+'.tekst'));h+=nb({type:'punkt',id:p.id},t('punkt.'+p.id+'.tittel')||'(uten tittel)','child',`<span class="dot ${p.status}"></span>`).replace('</span><','</span>'+(w>MAXW?'<span class="flagdot" title="Over '+MAXW+' ord">'+w+'</span>':'')+'<')});
+    if(!q)h+=`<button class="add" data-add="${f.id}">+ Nytt punkt</button>`;});
+  if(!q)h+=`<button class="add" style="margin-inline-start:0;width:100%" data-addfase="1">+ Ny fase</button>`;
+  h+=`<div class="grp">Spørsmålene</div>`;
+  D.s.sporsmal.forEach(s=>{if(m(t('sporsmal.'+s.id+'.tekst')))h+=nb({type:'q',id:s.id},t('sporsmal.'+s.id+'.tekst'),'',`<span class="dot plain"></span>`)});
+  h+=`<div class="grp">Kontakter</div>`;
+  D.s.kontakter.forEach(k=>{if(m(t('kontakt.'+k.id+'.navn')))h+=nb({type:'kontakt',id:k.id},t('kontakt.'+k.id+'.navn'),'',`<span class="dot plain"></span>`)});
+  if(!q)h+=`<button class="add" style="margin-inline-start:0;width:100%" data-addk="1">+ Ny kontakt</button>`;
+  h+=`<p class="proto">Utkastet lagres bare i denne nettleseren til du sender endringene.</p>`;
+  $('#nav').innerHTML=h;
+  const s=$('#search');s.oninput=()=>{q=s.value.trim().toLowerCase();renderNav();const n=$('#search');n.focus();n.setSelectionRange(n.value.length,n.value.length)};
+}
+
+// ── Felt ──
+const fid=k=>'f_'+k.replace(/[^a-z0-9]/gi,'_');
+function stale(k){return changedT(k)&&ORIG.t[k]?`<div class="stale">Endret. Blir KI-oversatt til ${NLANG} språk når teknisk eier laster det opp.</div>`:''}
+function input(k,label,hint='',ph=''){return `<div class="f"><div class="fh"><label for="${fid(k)}">${label}</label></div><input type="text" id="${fid(k)}" data-k="${k}" value="${esc(t(k))}" placeholder="${esc(ph)}">${hint?`<div class="hint">${hint}</div>`:''}${stale(k)}</div>`}
+function area(k,label,hint=''){return `<div class="f"><div class="fh"><label for="${fid(k)}">${label}</label></div><textarea id="${fid(k)}" data-k="${k}" rows="2">${esc(t(k))}</textarea>${hint?`<div class="hint">${hint}</div>`:''}${stale(k)}</div>`}
+function wcHtml(w){return `${w} ord${w>MAXW?` – anbefalt maks ${MAXW}. Kort ned der det går.`:` av anbefalt maks ${MAXW}`}`}
+const order=()=>{const o=[];D.s.faser.forEach(f=>{o.push({type:'fase',id:f.id});D.s.punkter.filter(p=>p.fase===f.id).forEach(p=>o.push({type:'punkt',id:p.id}))});D.s.sporsmal.forEach(s=>o.push({type:'q',id:s.id}));D.s.kontakter.forEach(k=>o.push({type:'kontakt',id:k.id}));return o};
+function stepper(){const o=order(),i=o.findIndex(x=>x.type===sel.type&&x.id===sel.id);const b=(d,l)=>{const x=o[i+d];return `<button class="mini" ${x?`data-sel='${esc(JSON.stringify(x))}'`:'disabled'}>${l}</button>`};return `<span class="step">${b(-1,'‹ Forrige')}${b(1,'Neste ›')}</span>`}
+const head=(crumb,title,extra='')=>`<div class="crumb">${crumb}</div><h1>${esc(title)}</h1><div class="bar">${extra}${stepper()}</div>`;
+const seg=(obj)=>`<div class="seg" role="group" aria-label="Status">${[['publisert','Publisert'],['utkast','Utkast']].map(([v,l])=>`<button data-status="${v}" aria-pressed="${obj.status===v}">${l}</button>`).join('')}</div>`;
+
+function renderEdit(){
+  let h='';
+  if(sel.type==='punkt'){
+    const p=P(sel.id),items=D.s.punkter.filter(x=>x.fase===p.fase),i=items.indexOf(p),k=f=>'punkt.'+p.id+'.'+f,w=words(t(k('tekst')));
+    h+=head('Sjekklisten · '+esc(t('fase.'+p.fase+'.tittel')),t(k('tittel'))||'Nytt punkt',seg(p)+`<button class="mini" data-move="-1" ${i?'':'disabled'}>Flytt opp</button><button class="mini" data-move="1" ${i<items.length-1?'':'disabled'}>Flytt ned</button>${isNew('punkter',p.id)?'<button class="mini" data-del="punkt">Slett utkastet</button>':''}`);
+    h+=`<div class="sec"><h2>Punktet</h2><p>Det familien leser. Skriv kort: hvorfor det er viktig, og hva de gjør.</p>
+      ${input(k('tittel'),'Tittel','Start gjerne med et verb: «Bestill …», «Søk om …».')}
+      ${input(k('naar'),'Når og for hvem','Valgfritt. Vises under tittelen.','F.eks. «Rett etter ankomst» eller «Barn 1–5 år»')}
+      <div class="f"><div class="fh"><label for="${fid(k('tekst'))}">Tekst</label></div>
+        <div class="tool"><button data-ins="list" title="Ny linje som starter med – blir en punktliste">– Punktliste</button><button data-ins="call" title="Tekst i «» vises som en boks: Dette kan du si">«Dette kan du si»</button></div>
+        <textarea class="big" id="${fid(k('tekst'))}" data-k="${k('tekst')}" rows="7">${esc(t(k('tekst')))}</textarea>
+        <div class="wc ${w>MAXW?'over':''}" id="wc">${wcHtml(w)}</div>
+        <div class="hint">Linjer som starter med «–» blir en punktliste. En linje med noe i «…» blir en boks med «Dette kan du si».</div>${stale(k('tekst'))}</div></div>`;
+    h+=`<div class="sec"><h2>Kontakter og lenke</h2><p>Telefonnummer og adresse hentes fra kontaktlisten. Da står de ett sted, og oversettes ikke.</p>
+      <div class="f"><div class="fh"><label>Kontakter som vises nederst</label></div><div class="chips">${D.s.kontakter.map(c=>`<button class="chip" data-kon="${c.id}" aria-pressed="${(p.kontakter||[]).includes(c.id)}">${esc(t('kontakt.'+c.id+'.navn'))}</button>`).join('')}</div></div>
+      <div class="f"><div class="fh"><label for="s_link">Lenke («Gå til nettside»)</label></div><input type="url" id="s_link" data-set="lenke" value="${esc(p.lenke||'')}" placeholder="https://"></div></div>`;
+    const opts=[];D.s.sporsmal.forEach(s=>s.svar.forEach(v=>opts.push(s.id+'='+v)));
+    h+=`<div class="sec"><h2>Hvem og hvor</h2><p></p>
+      <label class="toggle"><input type="checkbox" data-set="viktig" ${p.viktig?'checked':''}> <span><b>Viktig</b> – vises med merket «Viktig» i listen</span></label>
+      <div class="f"><div class="fh"><label>Vises bare for</label></div><div class="chips">${opts.filter(v=>FORLBL[v]).map(v=>`<button class="chip" data-cond="${v}" aria-pressed="${(p.vises_hvis||[]).includes(v)}">${FORLBL[v]}</button>`).join('')}</div><div class="hint">${(p.vises_hvis||[]).length?'Vises bare når alle valgte stemmer med svarene familien har gitt.':'Ingen valgt – vises for alle.'}</div></div>
+      <div class="f"><div class="fh"><label for="s_fase">Fase i reisen</label></div><select id="s_fase" data-set="fase">${D.s.faser.map(f=>`<option value="${f.id}" ${p.fase===f.id?'selected':''}>${esc(t('fase.'+f.id+'.tittel'))}</option>`).join('')}</select></div></div></div>`;
+  } else if(sel.type==='fase'){
+    const f=F(sel.id),i=D.s.faser.indexOf(f),n=D.s.punkter.filter(p=>p.fase===f.id).length,k=x=>'fase.'+f.id+'.'+x;
+    h+=head('Reisen · fase '+(i+1)+' av '+D.s.faser.length,t(k('tittel'))||'Ny fase',seg(f)+`<button class="mini" data-fmove="-1" ${i?'':'disabled'}>Flytt tidligere</button><button class="mini" data-fmove="1" ${i<D.s.faser.length-1?'':'disabled'}>Flytt senere</button>${isNew('faser',f.id)&&!n?'<button class="mini" data-del="fase">Slett utkastet</button>':''}`);
+    h+=`<div class="sec"><h2>Fasen</h2><p>${n?n+' punkter i denne fasen.':'Ingen punkter ennå. En tom fase vises ikke i appen.'}</p>${input(k('kort'),'Kort navn i tidslinjen','Ett ord. Det er lite plass på mobil.')}${input(k('tittel'),'Overskrift')}${input(k('undertekst'),'Undertekst')}${n?'':`<button class="btn" data-add="${f.id}">+ Legg til første punkt</button>`}</div>`;
+  } else if(sel.type==='q'){
+    const s=Q(sel.id);
+    h+=head('Spørsmålene',t('sporsmal.'+s.id+'.tekst'));
+    h+=`<div class="sec"><h2>Spørsmålet</h2><p>Svarene styrer hvilke punkter familien ser.</p>${input('sporsmal.'+s.id+'.tekst','Spørsmål')}${s.svar.map(v=>input('sporsmal.'+s.id+'.'+v,'Svaralternativ «'+v+'»')).join('')}</div>`;
+  } else if(sel.type==='kontakt'){
+    const c=K(sel.id),used=D.s.punkter.filter(p=>(p.kontakter||[]).includes(c.id));
+    h+=head('Kontakter',t('kontakt.'+c.id+'.navn')||'Ny kontakt');
+    h+=`<div class="sec"><h2>Kontakten</h2><p>${used.length?'Brukt i '+used.length+' punkter: '+used.map(p=>esc(t('punkt.'+p.id+'.tittel'))).join(', ')+'.':'Ikke brukt i noen punkter ennå.'}</p>
+      ${input('kontakt.'+c.id+'.navn','Navn')}${area('kontakt.'+c.id+'.info','Kort beskrivelse','Hva de hjelper med, åpningstid, adresse.')}
+      <div class="row2"><div class="f"><div class="fh"><label for="k_tel">Telefon</label></div><input type="text" id="k_tel" data-kset="telefon" value="${esc(c.telefon||'')}" placeholder="33 40 60 00"></div><div class="f"><div class="fh"><label for="k_url">Nettside</label></div><input type="url" id="k_url" data-kset="nettside" value="${esc(c.nettside||'')}" placeholder="https://"></div></div>
+      <div class="hint">Telefon og nettside er like på alle språk og oversettes ikke.</div></div>`;
+  }
+  $('#edit').innerHTML=h;document.querySelectorAll('#edit textarea').forEach(grow);
+}
+function grow(a){a.style.height='auto';a.style.height=(a.scrollHeight+2)+'px'}
+
+// ── Forhåndsvisning ──
+function body(s){
+  const blocks=String(s||'').split(/\n\s*\n/);let h='';
+  blocks.forEach(b=>{const ls=b.split('\n').map(x=>x.trim()).filter(Boolean);if(!ls.length)return;
+    const items=ls.filter(x=>/^[–-]\s/.test(x));
+    if(items.length===ls.length){h+=`<ul>${ls.map(x=>`<li>${esc(x.replace(/^[–-]\s*/,''))}</li>`).join('')}</ul>`;return}
+    ls.forEach(x=>{const m=x.match(/^(.*?)«([^»]+)»(.*)$/);
+      if(m&&m[2].length>25)h+=`<div class="call"><h4>Dette kan du si:</h4><p>${m[1].trim()?esc(m[1].trim())+' ':''}«${esc(m[2])}»${esc(m[3])}</p></div>`;
+      else if(/^[–-]\s/.test(x))h+=`<ul><li>${esc(x.replace(/^[–-]\s*/,''))}</li></ul>`;
+      else{const lab=x.match(/^([^:]{3,28}):\s(.+)$/);h+=lab?`<p style="margin-top:10px"><b>${esc(lab[1])}:</b> ${esc(lab[2])}</p>`:`<p style="margin-top:10px">${esc(x)}</p>`}});
+  });return h}
+function kcard(id){const c=K(id);if(!c)return'';return `<div class="kc"><b>${esc(t('kontakt.'+c.id+'.navn'))}</b><span>${esc(t('kontakt.'+c.id+'.info'))}</span>${c.telefon?`<span class="tel">${esc(c.telefon)}</span>`:''}${c.nettside?`<a>${esc(c.nettside.replace(/^https?:\/\/(www\.)?/,'').replace(/\/$/,''))}</a>`:''}</div>`}
+function itemCard(p,open){
+  const k=f=>'punkt.'+p.id+'.'+f;
+  const meta=[p.viktig?'<span class="vk">Viktig</span>':'',t(k('naar'))?`<span>${esc(t(k('naar')))}</span>`:'',...(p.vises_hvis||[]).map(v=>FORLBL[v]?`<span>${FORLBL[v]}</span>`:'')].filter(Boolean).join('');
+  return `<div class="card"><div class="card-h"><span class="cb"></span><div><div class="ct">${esc(t(k('tittel')))||'<span class="miss">Mangler tittel</span>'}</div>${meta?`<div class="meta">${meta}</div>`:''}</div></div>${open?`<div class="cbody">${body(t(k('tekst')))}${(p.kontakter||[]).map(kcard).join('')}${p.lenke?'<span class="lnk">Gå til nettside →</span>':''}</div>`:''}</div>`;
+}
+function renderPrev(){
+  const pv=$('#prev');let b='',tog=false;
+  const tl=fid=>`<div class="tl">${D.s.faser.filter(f=>f.status==='publisert'||f.id===fid).map(f=>`<span class="${f.id===fid?'on':''}">${esc(t('fase.'+f.id+'.kort'))}</span>`).join('')}</div>`;
+  if(sel.type==='punkt'){const p=P(sel.id);tog=true;b=tl(p.fase)+`<div class="p-h">${esc(t('fase.'+p.fase+'.tittel'))}</div><p class="p-sub">${esc(t('fase.'+p.fase+'.undertekst'))}</p>`+itemCard(p,openCard)+(p.status==='utkast'?'<p class="pv-note">Utkast – vises ikke for familiene ennå.</p>':'')}
+  else if(sel.type==='fase'){b=tl(sel.id)+`<div class="p-h">${esc(t('fase.'+sel.id+'.tittel'))}</div><p class="p-sub">${esc(t('fase.'+sel.id+'.undertekst'))}</p>`+D.s.punkter.filter(p=>p.fase===sel.id).map(p=>itemCard(p,false)).join('')}
+  else if(sel.type==='q'){const s=Q(sel.id);b=`<div class="p-h">Hva gjelder dere?</div><b>${esc(t('sporsmal.'+s.id+'.tekst'))}</b>${s.svar.map(v=>`<div class="opt">${esc(t('sporsmal.'+s.id+'.'+v))}</div>`).join('')}`}
+  else if(sel.type==='kontakt'){b=`<p class="p-sub">Slik vises kontakten nederst i et punkt:</p><div class="card"><div class="cbody" style="border:0">${kcard(sel.id)}</div></div>`}
+  pv.innerHTML=`<div class="bar" style="margin-bottom:6px">${stepper()}</div><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><h3>Slik ser familien det</h3>${tog?`<div class="seg"><button data-open="0" aria-pressed="${!openCard}">Lukket</button><button data-open="1" aria-pressed="${openCard}">Åpen</button></div>`:''}</div><div class="phone"><div class="ph-top">Tønsberg kommune</div><div class="ph-body">${b}</div></div>`;
+}
+function setView(v){view=v;$('#main').dataset.view=v;document.querySelectorAll('.tabbar [data-view]').forEach(x=>x.setAttribute('aria-pressed',x.dataset.view===v));if(v==='prev')renderPrev();const el=v==='nav'?$('#nav'):v==='prev'?$('#prev'):$('#edit');el.scrollTop=0}
+function renderAll(){renderNav();renderEdit();renderPrev();stamp()}
+
+// ── Dialoger ──
+function download(name,obj){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(obj,null,2)+'\n'],{type:'application/json'}));a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
+function modal(h){$('#box').innerHTML=h;$('#modal').classList.add('on')}
+const closeModal=()=>$('#modal').classList.remove('on');
+function newItem(fase){
+  modal(`<h2>Nytt punkt i «${esc(t('fase.'+fase+'.tittel'))}»</h2><div class="f"><div class="fh"><label for="nt">Tittel</label></div><input type="text" id="nt" placeholder="F.eks. Søk om skoleskyss"></div><p class="hint">Punktet lagres som utkast og vises ikke for familiene før du setter det til Publisert.</p><div class="bar" style="justify-content:flex-end;margin:16px 0 0"><button class="btn ghost" id="mNo">Avbryt</button><button class="btn primary" id="mYes">Lag punktet</button></div>`);
+  $('#nt').focus();$('#mNo').onclick=closeModal;$('#mYes').onclick=()=>{const ti=$('#nt').value.trim();if(!ti){$('#nt').focus();return}
+    const id=slug(ti,D.s.punkter.map(p=>p.id)),arr=D.s.punkter;let last=-1;arr.forEach((x,i)=>{if(x.fase===fase)last=i});arr.splice(last+1,0,{id,fase,status:'utkast'});D.t['punkt.'+id+'.tittel']=ti;
+    save();closeModal();sel={type:'punkt',id};renderAll();setView('edit');toast('Punktet er laget som utkast');setTimeout(()=>{const f=document.querySelector(`[data-k="punkt.${id}.tekst"]`);f&&f.focus()},50)};
+}
+function newPhase(){
+  modal(`<h2>Ny fase i reisen</h2><div class="f"><div class="fh"><label for="pk">Kort navn i tidslinjen</label></div><input type="text" id="pk" placeholder="F.eks. Jobb"></div><div class="f"><div class="fh"><label for="pt">Overskrift</label></div><input type="text" id="pt" placeholder="F.eks. Jobb og økonomi"></div><div class="f"><div class="fh"><label for="pa">Plassering</label></div><select id="pa"><option value="__first">Først</option>${D.s.faser.map((f,i)=>`<option value="${f.id}" ${i===D.s.faser.length-1?'selected':''}>Etter «${esc(t('fase.'+f.id+'.tittel'))}»</option>`).join('')}</select></div><div class="bar" style="justify-content:flex-end;margin:16px 0 0"><button class="btn ghost" id="mNo">Avbryt</button><button class="btn primary" id="mYes">Lag fasen</button></div>`);
+  $('#pk').focus();$('#mNo').onclick=closeModal;$('#mYes').onclick=()=>{const kt=$('#pk').value.trim(),ti=$('#pt').value.trim();if(!kt||!ti){(kt?$('#pt'):$('#pk')).focus();return}
+    const id=slug(kt,D.s.faser.map(f=>f.id)),pos=$('#pa').value,i=pos==='__first'?0:D.s.faser.findIndex(f=>f.id===pos)+1;D.s.faser.splice(i,0,{id,status:'utkast'});D.t['fase.'+id+'.kort']=kt;D.t['fase.'+id+'.tittel']=ti;
+    save();closeModal();sel={type:'fase',id};renderAll();setView('edit');toast('Fasen er laget som utkast')};
+}
+function newContact(){
+  modal(`<h2>Ny kontakt</h2><div class="f"><div class="fh"><label for="kn">Navn</label></div><input type="text" id="kn" placeholder="F.eks. Tønsberg tannklinikk"></div><div class="bar" style="justify-content:flex-end;margin:16px 0 0"><button class="btn ghost" id="mNo">Avbryt</button><button class="btn primary" id="mYes">Lag kontakten</button></div>`);
+  $('#kn').focus();$('#mNo').onclick=closeModal;$('#mYes').onclick=()=>{const n=$('#kn').value.trim();if(!n){$('#kn').focus();return}const id=slug(n,D.s.kontakter.map(k=>k.id));D.s.kontakter.push({id});D.t['kontakt.'+id+'.navn']=n;save();closeModal();sel={type:'kontakt',id};renderAll();setView('edit')};
+}
+function openChanges(){
+  const ch=changes(),tc=ch.filter(c=>c.kind==='t'),sc=ch.filter(c=>c.kind==='s');
+  let h=`<div style="display:flex;justify-content:space-between;align-items:center"><h2>Endringer</h2><button class="mini" id="dc">Lukk</button></div>`;
+  if(!ch.length)h+=`<p>Ingen endringer ennå. Det du gjør, lagres som utkast i denne nettleseren til du sender det til teknisk eier.</p>`;
+  else{h+=`<p>${ch.length} ${ch.length===1?'endring':'endringer'}.${tc.length?' Ny og endret tekst blir KI-oversatt til '+NLANG+' språk når teknisk eier laster den opp.':''}</p>`;
+    h+=ch.map((c,i)=>c.kind==='t'?`<div class="ch"><div><b>${esc(labelOf(c.k))}</b><div class="was">${esc(c.was)||'<i>tomt</i>'}</div><div class="now">${esc(c.now)||'<i>fjernet</i>'}</div></div><button class="mini" data-undo="${i}">Angre</button></div>`:`<div class="ch"><div><b>${esc(c.label)}</b></div><span></span></div>`).join('');
+    h+=`<h2 style="margin-top:22px;font-size:20px">Send til teknisk eier</h2><ol class="steps"><li><b>Last ned endringsfila</b><div class="files"><button class="btn" id="dlFile">endringer-${today()}.json</button></div><div class="hint">Fila inneholder bare det du har endret.</div></li><li><b>Send fila til teknisk eier</b><div class="hint">På e-post eller Teams. Skriv gjerne én setning om hva du har endret og hvorfor.</div></li><li><b>Teknisk eier publiserer</b><div class="hint">Endringen KI-oversettes og publiseres samtidig. På andre språk enn norsk vises den med merket «Maskinoversatt» til en tolk har sett over den.</div></li></ol><details style="margin:6px 0 14px"><summary>For teknisk eier</summary><p class="hint">Hele filene, til bruk inntil mottaket er tatt i bruk. De erstatter <code>data/sprak/no.json</code> og <code>data/struktur.json</code>. Oversettelsene må oppdateres etterpå.</p><button class="btn" id="dlNo">Last ned no.json og struktur.json</button></details><button class="btn ghost" id="reset">Forkast alle endringer</button>`}
+  $('#panel').innerHTML=h;$('#drawer').classList.add('on');$('#dc').onclick=()=>$('#drawer').classList.remove('on');
+  $('#panel').querySelectorAll('[data-undo]').forEach(b=>b.onclick=()=>{const c=ch[+b.dataset.undo];if(c.was)D.t[c.k]=c.was;else delete D.t[c.k];save();renderAll();openChanges()});
+  const dl=$('#dlFile');if(dl)dl.onclick=()=>{const tekst={};tc.forEach(c=>tekst[c.k]=c.now||null);download('endringer-'+today()+'.json',{type:'endringer',laget:new Date().toISOString(),tekster:tekst,struktur:sc.length?D.s:undefined});toast('Endringsfila er lastet ned')};
+  const dn=$('#dlNo');if(dn)dn.onclick=()=>{download('no.json',(({base,at,avklart,...r})=>r.t)(D));download('struktur.json',D.s)};
+  const r=$('#reset');if(r)r.onclick=()=>{modal(`<h2>Forkaste alle endringer?</h2><p>Utkastet slettes, og alt går tilbake til det som er publisert nå.</p><div class="bar" style="justify-content:flex-end;margin:16px 0 0"><button class="btn ghost" id="mNo">Avbryt</button><button class="btn primary" id="mYes">Forkast</button></div>`);$('#mNo').onclick=closeModal;$('#mYes').onclick=()=>{D=clone(ORIG);try{localStorage.removeItem(KEY)}catch(e){}closeModal();$('#drawer').classList.remove('on');renderAll();toast('Endringene er forkastet')}};
+}
+const TUT=[['Velkommen til redaktøren','Her endrer du innholdet i sjekklisten «Når familien kommer». Du skriver bare på norsk. Oversettelsen ordner teknisk eier og tolkene.'],
+ ['Reisen til venstre','Punktene står i fasene familien går gjennom, i samme rekkefølge som i appen. På mobil finner du dem under «Innhold» nederst.'],
+ ['Ett punkt, tre felt','Tittel, når og for hvem, og tekst. Hold teksten under 80 ord: hvorfor det er viktig, og hva familien gjør. Telefonnumre legger du til som kontakter.'],
+ ['Se resultatet','Forhåndsvisningen viser punktet slik familien ser det. Nye punkter er utkast til du setter dem til «Publisert».'],
+ ['Send endringene','Når du er ferdig, trykker du «Send endringer», laster ned fila og sender den til teknisk eier. Til da lagres alt som utkast i denne nettleseren.']];
+function tutorial(i){const [h,p]=TUT[i],last=i===TUT.length-1;
+  modal(`<div style="display:flex;gap:6px;margin-bottom:14px">${TUT.map((_,j)=>`<span style="height:5px;flex:1;border-radius:3px;background:${j<=i?'var(--green)':'var(--line)'}"></span>`).join('')}</div><h2>${h}</h2><p style="font-size:16px;line-height:1.55">${p}</p><div class="bar" style="justify-content:space-between;margin:18px 0 0"><button class="btn ghost" id="tSkip">${last?'Lukk':'Hopp over'}</button><span style="display:flex;gap:8px">${i?'<button class="btn" id="tPrev">Tilbake</button>':''}<button class="btn primary" id="tNext">${last?'Kom i gang':'Neste'}</button></span></div>`);
+  const end=()=>{closeModal();try{localStorage.setItem('fgv_redaktor_intro','1')}catch(e){}};$('#tSkip').onclick=end;$('#tNext').onclick=()=>last?end():tutorial(i+1);const pv=$('#tPrev');if(pv)pv.onclick=()=>tutorial(i-1)}
+
+// ── Hendelser ──
+const cur=()=>sel.type==='punkt'?P(sel.id):sel.type==='fase'?F(sel.id):sel.type==='kontakt'?K(sel.id):sel.type==='q'?Q(sel.id):null;
+document.addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b||b.closest('#box')&&!b.dataset.sel)return;const c=cur();
+  if(b.dataset.sel){sel=JSON.parse(b.dataset.sel);renderAll();setView(view==='prev'&&!b.closest('.nav')?'prev':'edit');return}
+  if(b.dataset.view){setView(b.dataset.view);return}
+  if(b.dataset.status&&c){c.status=b.dataset.status;save();renderAll();return}
+  if(b.dataset.move&&c){const arr=D.s.punkter,same=arr.filter(x=>x.fase===c.fase),o=same[same.indexOf(c)+ +b.dataset.move];if(!o)return;const i=arr.indexOf(c),j=arr.indexOf(o);[arr[i],arr[j]]=[arr[j],arr[i]];save();renderAll();return}
+  if(b.dataset.fmove&&c){const arr=D.s.faser,i=arr.indexOf(c),j=i+ +b.dataset.fmove;if(j<0||j>=arr.length)return;[arr[i],arr[j]]=[arr[j],arr[i]];save();renderAll();return}
+  if(b.dataset.cond&&c){const v=b.dataset.cond,a=c.vises_hvis||[],qid=v.split('=')[0];c.vises_hvis=a.includes(v)?a.filter(x=>x!==v):[...a.filter(x=>!x.startsWith(qid+'=')),v];if(!c.vises_hvis.length)delete c.vises_hvis;save();renderEdit();renderPrev();renderNav();return}
+  if(b.dataset.kon&&c){const a=c.kontakter||[],v=b.dataset.kon;c.kontakter=a.includes(v)?a.filter(x=>x!==v):[...a,v];if(!c.kontakter.length)delete c.kontakter;b.setAttribute('aria-pressed',(c.kontakter||[]).includes(v));save();renderPrev();renderNav();return}
+  if(b.dataset.ins){const ta=document.querySelector(`#edit textarea[data-k$=".tekst"]`);const p=ta.selectionStart??ta.value.length,pre=ta.value.slice(0,p),nl=pre&&!pre.endsWith('\n')?'\n':'';
+    const ins=b.dataset.ins==='list'?nl+'– ':nl+'Ring og si: «»';ta.value=pre+ins+ta.value.slice(p);const pos=p+ins.length-(b.dataset.ins==='call'?1:0);ta.focus();ta.setSelectionRange(pos,pos);ta.dispatchEvent(new Event('input',{bubbles:true}));return}
+  if(b.dataset.open){openCard=b.dataset.open==='1';renderPrev();return}
+  if(b.dataset.add){newItem(b.dataset.add);return}
+  if(b.dataset.addfase){newPhase();return}
+  if(b.dataset.addk){newContact();return}
+  if(b.dataset.del){const arr=b.dataset.del==='punkt'?D.s.punkter:D.s.faser,o=arr.find(x=>x.id===sel.id),pre=(b.dataset.del==='punkt'?'punkt.':'fase.')+sel.id+'.';const next=b.dataset.del==='punkt'?{type:'fase',id:o.fase}:{type:'fase',id:(arr[arr.indexOf(o)-1]||arr[1]).id};arr.splice(arr.indexOf(o),1);Object.keys(D.t).filter(k=>k.startsWith(pre)).forEach(k=>delete D.t[k]);save();sel=next;renderAll();toast('Utkastet er slettet');return}
+  if(b.id==='pubBtn'){openChanges();return}
+  if(b.id==='helpBtn'){tutorial(0);return}
+});
+document.addEventListener('input',e=>{const el=e.target;
+  if(el.dataset.k){const k=el.dataset.k;if(el.value.trim())D.t[k]=el.value;else delete D.t[k];if(el.tagName==='TEXTAREA')grow(el);
+    if(k.endsWith('.tekst')&&k.startsWith('punkt.')){const w=words(el.value),wc=$('#wc');wc.textContent=wcHtml(w);wc.classList.toggle('over',w>MAXW)}
+    const f=el.closest('.f');let st=f.querySelector('.stale');const show=changedT(k)&&ORIG.t[k];if(show&&!st){f.insertAdjacentHTML('beforeend',stale(k))}else if(!show&&st)st.remove();
+    save();renderPrev();clearTimeout(el._n);el._n=setTimeout(renderNav,400);return}
+  if(el.dataset.kset){const c=K(sel.id);if(el.value.trim())c[el.dataset.kset]=el.value.trim();else delete c[el.dataset.kset];save();renderPrev();return}
+});
+document.addEventListener('change',e=>{const el=e.target,c=cur();if(!el.dataset.set||!c)return;const f=el.dataset.set;
+  if(el.type==='checkbox'){if(el.checked)c[f]=true;else delete c[f]}else if(el.value.trim())c[f]=el.value.trim();else delete c[f];
+  if(f==='fase'){const arr=D.s.punkter;arr.splice(arr.indexOf(c),1);let last=-1;arr.forEach((x,i)=>{if(x.fase===c.fase)last=i});arr.splice(last+1,0,c)}
+  save();renderAll()});
+$('#drawer').addEventListener('click',e=>{if(e.target.id==='drawer')$('#drawer').classList.remove('on')});
+$('#modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){$('#drawer').classList.remove('on');closeModal()}});
+renderAll();setView(view);
+addEventListener('resize',()=>{if(view==='nav'&&!matchMedia('(max-width:760px)').matches)setView('edit')});
+try{if(baseChanged)modal(`<h2>Det er publisert nye endringer</h2><p>Innholdet er oppdatert siden du startet utkastet ditt. Utkastet ditt er beholdt, men sjekk at du ikke overskriver noe som er endret i mellomtiden.</p><div class="bar" style="justify-content:flex-end;margin:16px 0 0"><button class="btn ghost" id="mNo">Start på nytt fra det publiserte</button><button class="btn primary" id="mYes">Fortsett på utkastet</button></div>`),$('#mYes').onclick=()=>{closeModal()},$('#mNo').onclick=()=>{D=clone(ORIG);D.base=BASE;try{localStorage.removeItem(KEY)}catch(e){}closeModal();renderAll()};
+  else if(!localStorage.getItem('fgv_redaktor_intro'))tutorial(0)}catch(e){}
+})();
+</script>
+</body>
+</html>
