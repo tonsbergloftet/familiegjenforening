@@ -34,7 +34,8 @@ button{cursor:pointer}
 .btn:disabled{opacity:.45;cursor:default}
 .wrap{max-width:1040px;margin:0 auto;padding:20px 16px 100px}
 h1{font-size:28px;line-height:1.2;color:var(--navy);margin:8px 0 4px}
-h2.group{font-size:15px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:28px 0 8px}
+h2.group{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:15px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:28px 0 8px}
+h2.group .btn{text-transform:none;letter-spacing:0}
 p{margin:6px 0}
 .lead{color:var(--muted)}
 .intro{background:var(--sheet);border:1px solid var(--line);border-radius:16px;padding:16px 20px;margin:14px 0;box-shadow:var(--shadow)}
@@ -146,6 +147,11 @@ const val=k=>k in D.edits?D.edits[k]:(cur(k)||'');
 const edited=u=>u.keys.some(({k})=>k in D.edits);
 function state(u){if(u.type==='ui')return edited(u)?'endret':'ui';if(D.approved[u.id])return'godkjent';if(isPublishedOk(u)&&!edited(u))return'kontrollert';return'gjenstar'}
 const reviewable=ALL.filter(u=>u.type!=='ui');
+const hardErr=u=>u.keys.some(({k})=>check(nor(k),val(k),k).some(i=>i.e));
+const left=(us=reviewable)=>us.filter(u=>u.type!=='ui'&&state(u)==='gjenstar');
+// Godkjenn mange på en gang. Det som har formatfeil, hoppes over og må ses på enkeltvis.
+function bulk(us){const ok=us.filter(u=>!hardErr(u)),skip=us.length-ok.length;ok.forEach(u=>D.approved[u.id]=true);save();BULK=ok.map(u=>u.id);BULK.skipped=us.filter(hardErr).map(u=>unitTitle(u));
+  if(skip)toast(`${skip} hoppet over fordi noe ser feil ut`);else toast(`${ok.length} godkjent`);OPEN=(left()[0]||{}).id||null;render()}
 
 // ───────── Kontroll av format (samme regler som mottaket) ─────────
 const SCRIPT={ar:[/[؀-ۿ]/,'arabisk skrift'],fa:[/[؀-ۿ]/,'persisk skrift'],prs:[/[؀-ۿ]/,'persisk skrift'],ps:[/[؀-ۿ]/,'arabisk skrift'],ckb:[/[؀-ۿ]/,'arabisk skrift'],ur:[/[؀-ۿ]/,'arabisk skrift'],ti:[/[ሀ-፿]/,'ge\'ez-skrift'],am:[/[ሀ-፿]/,'ge\'ez-skrift'],uk:[/[Ѐ-ӿ]/,'kyrillisk skrift'],ru:[/[Ѐ-ӿ]/,'kyrillisk skrift']};
@@ -162,26 +168,28 @@ function check(no,v,k){
 }
 
 // ───────── Visning ─────────
-let OPEN=null,ONLY=reviewable.some(u=>state(u)==='gjenstar'),INTRO=!localStorage.getItem('fgv_tolk_intro');
+let BULK=null,OPEN=null,ONLY=reviewable.some(u=>state(u)==='gjenstar'),INTRO=!localStorage.getItem('fgv_tolk_intro');
 function pill(s){return{godkjent:'<span class="pill m">Godkjent av deg</span>',kontrollert:'<span class="pill g">Kontrollert</span>',gjenstar:'<span class="pill y">Ikke kontrollert</span>',ui:'',endret:'<span class="pill e">Endret</span>'}[s]}
 function render(){
   const done=reviewable.filter(u=>['godkjent','kontrollert'].includes(state(u))).length;
   $('#prog').innerHTML=`<span>${done} av ${reviewable.length}</span><span class="bar"><i style="width:${Math.round(done/reviewable.length*100)}%"></i></span>`;
-  let h=`<h1 dir="auto">${esc(LN.navn)}</h1><p class="lead">Les den norske teksten, rett oversettelsen hvis noe er feil, og trykk <b>Godkjenn</b>. Når du er ferdig, sender du en fil til teknisk eier.</p>`;
+  let h=`<h1 dir="auto">${esc(LN.navn)}</h1><p class="lead">Les den norske teksten, rett oversettelsen hvis noe er feil, og trykk <b>Godkjenn</b>. Teksten trenger ikke være perfekt, men den skal være riktig og lett å forstå.</p>`;
   if(INTRO)h+=`<div class="intro"><b>Slik gjør du det</b><ol>
     <li>Åpne et punkt. Den norske teksten står først, og oversettelsen ved siden av eller under.</li>
     <li>Rett direkte i oversettelsen. Er du usikker på hva den norske teksten betyr, kontakt redaktøren${CFG.redaktor?` (${esc(CFG.redaktor)})`:''}.</li>
     <li>Linjer som starter med «– » er punktlister. Setninger i «…» er noe familien kan si. Behold disse tegnene.</li>
-    <li>Trykk <b>Godkjenn</b> når punktet er riktig. Det du gjør, lagres i denne nettleseren til du sender det.</li>
+    <li>Trykk <b>Godkjenn</b> når punktet er riktig. Har du lest gjennom en hel del, kan du trykke <b>Godkjenn alle</b> ved overskriften. Det du gjør, lagres i denne nettleseren til du sender det.</li>
     <li>Trykk <b>Send til teknisk eier</b> nederst. Du kan sende når du vil, også før du er ferdig med alt.</li></ol>
     <button class="btn small" id="introOk">Skjønner</button></div>`;
-  h+=`<div class="tools"><label><input type="checkbox" id="only" ${ONLY?'checked':''}> Vis bare det som ikke er kontrollert</label><a class="btn ghost small" href="veileder.html?lang=${L}" target="_blank" rel="noopener">Se appen på ${esc(LN.navn)}</a><a class="btn ghost small" href="tolk.html">Bytt språk</a></div>`;
+  h+=`<div class="tools"><label><input type="checkbox" id="only" ${ONLY?'checked':''}> Vis bare det som ikke er kontrollert</label>${left().length?`<button class="btn small" id="approveAll">Godkjenn alt som gjenstår (${left().length})</button>`:''}<a class="btn ghost small" href="veileder.html?lang=${L}" target="_blank" rel="noopener">Se appen på ${esc(LN.navn)}</a><a class="btn ghost small" href="tolk.html">Bytt språk</a></div>`;
+  if(BULK)h+=`<div class="msg ok">${BULK.length} godkjent.${BULK.skipped.length?` Ikke godkjent fordi noe ser feil ut: ${esc(BULK.skipped.map(t=>'«'+t+'»').join(', '))}. Åpne og se på ${BULK.skipped.length===1?'det':'dem'}.`:''} <button class="btn ghost small" id="undoBulk">Angre</button></div>`;
   if(BASE==='data/'&&CFG.github)h+=`<div class="msg warn">Fikk ikke kontakt med GitHub. Du ser den publiserte versjonen, som kan være noen minutter gammel.</div>`;
   let shown=0;
   G.forEach(g=>{
     const us=g.units.filter(u=>!ONLY||['gjenstar','godkjent','endret'].includes(state(u))||u.id===OPEN);
     if(!us.length)return;shown+=us.length;
-    h+=`<h2 class="group">${esc(g.title)}</h2>`+us.map(card).join('');
+    const gl=left(g.units);
+    h+=`<h2 class="group"><span>${esc(g.title)}</span>${gl.length>1?`<button class="btn small" data-bulk="${G.indexOf(g)}">Godkjenn alle (${gl.length})</button>`:''}</h2>`+us.map(card).join('');
   });
   if(!shown)h+=`<div class="msg ok">Alt er kontrollert. Takk! Fjern haken over for å se alle tekstene.</div>`;
   $('#app').innerHTML=h;
@@ -214,6 +222,9 @@ function sendBar(){
 }
 function bind(){
   const ib=$('#introOk');if(ib)ib.onclick=()=>{INTRO=false;try{localStorage.setItem('fgv_tolk_intro','1')}catch(e){}render()};
+  const ab=$('#approveAll');if(ab)ab.onclick=()=>{const n=left().length;modal(`<h2>Godkjenne alt som gjenstår?</h2><p>${n} punkter blir godkjent som de står nå. Gjør det bare hvis du har lest gjennom dem.</p><p class="hint">Punkter der noe ser feil ut, for eksempel en ødelagt punktliste, blir ikke godkjent.</p><div class="acts"><button class="btn primary" id="yesAll">Godkjenn ${n}</button><button class="btn ghost" id="noAll">Avbryt</button></div>`);$('#yesAll').onclick=()=>{$('#modal').classList.remove('on');bulk(left())};$('#noAll').onclick=()=>$('#modal').classList.remove('on')};
+  document.querySelectorAll('[data-bulk]').forEach(b=>b.onclick=()=>bulk(left(G[+b.dataset.bulk].units)));
+  const ub=$('#undoBulk');if(ub)ub.onclick=()=>{(BULK||[]).forEach(id=>delete D.approved[id]);save();BULK=null;render()};
   $('#only').onchange=e=>{ONLY=e.target.checked;render()};
   document.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>{OPEN=OPEN===b.dataset.open?null:b.dataset.open;render();if(OPEN)document.getElementById('u-'+OPEN).scrollIntoView({block:'start',behavior:'smooth'})});
   document.querySelectorAll('textarea[data-k]').forEach(ta=>ta.oninput=()=>{
@@ -228,7 +239,7 @@ function bind(){
     const u=ALL.find(x=>x.id===b.dataset.approve);
     const hard=u.keys.flatMap(({k})=>check(nor(k),val(k),k).filter(i=>i.e));
     if(hard.length&&!b.dataset.confirmed){$(`[data-warn="${CSS.escape(u.id)}"]`).innerHTML=`<div class="msg err">Noe ser feil ut: ${esc(hard.map(i=>i.m).join(' '))} Rett det, eller trykk Godkjenn en gang til hvis det er riktig slik.</div>`;b.dataset.confirmed='1';return}
-    D.approved[u.id]=true;save();toast('Godkjent');
+    D.approved[u.id]=true;BULK=null;save();toast('Godkjent');
     const i=ALL.indexOf(u),next=ALL.slice(i+1).concat(ALL.slice(0,i)).find(x=>state(x)==='gjenstar');
     OPEN=next?next.id:null;render();if(OPEN)document.getElementById('u-'+OPEN).scrollIntoView({block:'start',behavior:'smooth'});
   });

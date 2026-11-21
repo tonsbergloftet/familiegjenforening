@@ -23,9 +23,10 @@
   .ph { background:#E6EEF3; color:var(--navy); font-weight:600; padding:0 .3em; border-radius:4px; }
   body.hide-qa .qa { display:none; }
   body:not(.hide-qa) .tf { background:#E6EEF3; border-radius:4px; padding:0 .25em; }
-  .lang-sw { display:flex; gap:2px; background:#ECE7DE; border-radius:999px; padding:3px; }
-  .lang-sw button { border:none; background:transparent; font:600 .8125rem 'Barlow',sans-serif; color:#6E655A; padding:.3rem .75rem; border-radius:999px; cursor:pointer; }
-  .lang-sw button[aria-pressed=true] { background:var(--green-dark); color:#fff; }
+  .lang-sw button { display:inline-flex; align-items:center; gap:.4rem; min-height:40px; border:1px solid var(--line); background:#fff; border-radius:999px; padding:.3rem .9rem .3rem .7rem; font:600 .9375rem 'Barlow',sans-serif; color:var(--navy); cursor:pointer; max-width:46vw; }
+  .lang-sw button span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .lang-sw svg { flex:none; }
+  .langpick .opt[aria-current=true] { outline:2px solid var(--green-dark); }
 
   [hidden] { display:none !important; }
   .wrap { max-width:600px; margin:0 auto; padding:0 1.125rem; }
@@ -33,7 +34,6 @@
   header.top .wrap { display:flex; align-items:center; justify-content:space-between; gap:.75rem; height:56px; }
   .muni { display:flex; align-items:center; gap:.625rem; font-weight:600; color:var(--navy); font-size:.9375rem; white-space:nowrap; }
   .muni::before { content:''; width:4px; height:22px; border-radius:2px; background:var(--green-dark); }
-  .lang-sw button { padding:.3rem .5rem; font-size:.75rem; }
   /* Welcome */
   .welcome { padding:1.5rem 0 2.5rem; }
   .welcome h1 { font-size:clamp(1.625rem,6vw,2rem); color:var(--navy); line-height:1.15; margin-bottom:.5rem; }
@@ -155,7 +155,7 @@
 <body>
 <header class="top"><div class="wrap">
   <div class="muni" id="muni">Tønsberg kommune</div>
-  <div class="lang-sw" id="langsw" role="group" aria-label="Språk / Language"></div>
+  <div class="lang-sw" id="langsw"></div>
 </div></header>
 <div class="wrap">
   <main id="screen" class="screen"></main>
@@ -293,8 +293,9 @@ function chrome(r) {
   document.getElementById('proto').textContent = u('felles.prototype', l);
   const sw = document.getElementById('langsw');
   sw.hidden = r === 'sprak';
-  sw.innerHTML = LANGS.map(x => `<button data-l="${x}" aria-pressed="${x === l}" title="${esc(NAMES[x])}">${x.toUpperCase()}</button>`).join('');
-  sw.querySelectorAll('button').forEach(b => b.onclick = () => { state.lang = b.dataset.l; save(); render(); });
+  // Én tydelig knapp: jordklode + språket som er valgt. Fører til språkvalget.
+  sw.innerHTML = `<button aria-label="${esc(u('sprakvalg.overskrift', l))}: ${esc(NAMES[l])}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg><span>${esc(NAMES[l])}</span></button>`;
+  sw.querySelector('button').onclick = () => go('sprak');
   document.getElementById('footLinks').hidden = r !== 'liste';
   document.getElementById('change').textContent = u('liste.endre_svar', l);
   document.getElementById('restart').textContent = u('liste.start_paa_nytt', l);
@@ -304,7 +305,7 @@ function screenLang() {
   const a = l => `lang="${l === 'no' ? 'nb' : l}" dir="${isRtl(l) ? 'rtl' : 'ltr'}"`;
   return `<section class="langpick"><h1>${esc(u('sprakvalg.overskrift', 'no'))}</h1><p class="picks">` +
     LANGS.filter(l => l !== 'no').map(l => `<span ${a(l)}>${esc(u('sprakvalg.overskrift', l))}</span>`).join('') +
-    `</p><div class="opts">` + LANGS.map(l => `<button class="opt" data-l="${l}" ${a(l)}>${esc(NAMES[l])}</button>`).join('') + `</div></section>`;
+    `</p><div class="opts">` + LANGS.map(l => `<button class="opt" data-l="${l}" ${a(l)} aria-current="${l === state.lang}">${esc(NAMES[l])}</button>`).join('') + `</div></section>`;
 }
 function screenQuestions() {
   const qs = S.sporsmal.filter(visible), all = qs.every(q => state.svar[q.id]);
