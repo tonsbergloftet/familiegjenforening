@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Kontroll av oversettelse – Familiegjenforening</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&display=swap">
+<style>
+/* Tolk: les norsk til venstre, rett oversettelsen til høyre, godkjenn punkt for punkt. Ett kort åpent om gangen. */
+:root{color-scheme:light dark;
+--bg:light-dark(#F7F5F1,#0f1a20);--sheet:light-dark(#ffffff,#16242c);--sunk:light-dark(#F1EDE6,#121f26);
+--ink:light-dark(#1C2E3A,#e4ecef);--muted:light-dark(#5F6A70,#9fb0b8);--line:light-dark(#E7E3DC,#26363f);
+--navy:light-dark(#013952,#bcd9e8);--green:light-dark(#00714e,#5cc79a);--on-green:light-dark(#ffffff,#0b1a14);
+--mint:light-dark(#EEF4E8,#18302a);--warn:light-dark(#FFF3D1,#3a3018);--warn-ink:light-dark(#5C4300,#f0d78f);
+--err:light-dark(#FDE8E6,#3a1d1b);--err-ink:light-dark(#8A1F14,#f4b2a9);--edit:light-dark(#E6EEF3,#1d3340);--shadow:0 1px 3px rgba(1,57,82,.07),0 4px 12px rgba(1,57,82,.04)}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 'Barlow',system-ui,sans-serif}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid color-mix(in srgb,var(--green) 55%,transparent);outline-offset:2px}
+.top{display:flex;align-items:center;gap:12px;padding:10px max(16px,2vw);background:var(--sheet);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;font-weight:600;color:var(--navy);white-space:nowrap}
+.brand::before{content:'';width:4px;height:22px;border-radius:2px;background:var(--green)}
+.brand small{font-weight:500;color:var(--muted);font-size:14px}
+.prog{display:flex;align-items:center;gap:10px;margin-inline-start:auto;font-size:14px;color:var(--muted)}
+.bar{width:120px;height:8px;border-radius:99px;background:var(--sunk);overflow:hidden}.bar i{display:block;height:100%;background:var(--green)}
+.btn{border:0;border-radius:999px;padding:10px 18px;min-height:44px;font-weight:600;background:var(--mint);color:var(--green)}
+.btn.primary{background:var(--green);color:var(--on-green)}
+.btn.ghost{background:transparent;color:var(--navy);text-decoration:underline;text-underline-offset:3px}
+.btn.small{min-height:36px;padding:6px 14px;font-size:14.5px}
+.btn:disabled{opacity:.45;cursor:default}
+.wrap{max-width:1040px;margin:0 auto;padding:20px 16px 100px}
+h1{font-size:28px;line-height:1.2;color:var(--navy);margin:8px 0 4px}
+h2.group{font-size:15px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:28px 0 8px}
+p{margin:6px 0}
+.lead{color:var(--muted)}
+.intro{background:var(--sheet);border:1px solid var(--line);border-radius:16px;padding:16px 20px;margin:14px 0;box-shadow:var(--shadow)}
+.intro ol{margin:6px 0;padding-inline-start:22px}.intro li{margin:4px 0}
+.tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:14px 0}
+.tools label{display:flex;align-items:center;gap:8px;font-size:15px}
+.msg{border-radius:12px;padding:10px 14px;margin:8px 0;font-size:15px}
+.msg.ok{background:var(--mint);color:var(--green)}.msg.warn{background:var(--warn);color:var(--warn-ink)}.msg.err{background:var(--err);color:var(--err-ink)}
+.unit{background:var(--sheet);border:1px solid var(--line);border-radius:16px;margin:10px 0;box-shadow:var(--shadow);overflow:hidden}
+.unit>button.head{all:unset;box-sizing:border-box;display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;width:100%;padding:14px 18px;cursor:pointer}
+.unit>button.head:focus-visible{outline:3px solid color-mix(in srgb,var(--green) 55%,transparent);outline-offset:-3px}
+.dot{width:12px;height:12px;border-radius:50%;background:var(--warn-ink)}
+.unit.kontrollert .dot{background:var(--green)}.unit.godkjent .dot{background:var(--green);box-shadow:0 0 0 3px var(--mint)}.unit.ui .dot{background:var(--muted)}
+.titles{display:flex;flex-direction:column}
+.titles b{font-weight:600}.titles span{color:var(--muted);font-size:15px}
+.pill{font-size:13px;font-weight:600;border-radius:999px;padding:2px 10px;white-space:nowrap}
+.pill.g{background:var(--green);color:var(--on-green)}.pill.m{background:var(--mint);color:var(--green)}.pill.y{background:var(--warn);color:var(--warn-ink)}.pill.e{background:var(--edit);color:var(--navy)}
+.body{padding:0 18px 18px;border-top:1px solid var(--line)}
+.colhead{display:grid;grid-template-columns:1fr 1fr;gap:18px;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:14px 0 4px}
+.field{display:grid;grid-template-columns:1fr 1fr;gap:18px;padding:10px 0;border-bottom:1px dashed var(--line)}
+.field:last-of-type{border-bottom:0}
+.lbl{font-size:13.5px;font-weight:600;color:var(--muted);margin-bottom:4px}
+.no{white-space:pre-wrap;background:var(--sunk);border-radius:10px;padding:8px 12px;font-size:15.5px}
+textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:8px 12px;background:var(--sheet);font-size:15.5px;line-height:1.5;resize:vertical;min-height:44px;field-sizing:content}
+textarea.changed{border-color:var(--navy);background:var(--edit)}
+.fieldnote{font-size:13.5px;margin-top:4px}
+.fieldnote.e{color:var(--err-ink)}.fieldnote.w{color:var(--warn-ink)}.fieldnote.c{color:var(--navy)}
+.fieldnote button{all:unset;cursor:pointer;text-decoration:underline;color:var(--navy);margin-inline-start:6px}
+.acts{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:14px}
+.hint{font-size:14.5px;color:var(--muted)}
+.langs{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin:16px 0}
+.langs a{display:block;background:var(--sheet);border:1px solid var(--line);border-radius:16px;padding:16px 18px;text-decoration:none;color:var(--ink);box-shadow:var(--shadow)}
+.langs a b{font-size:20px;display:block}.langs a span{color:var(--muted);font-size:15px}
+.send{position:fixed;inset-inline:0;bottom:0;background:var(--sheet);border-top:1px solid var(--line);padding:10px max(16px,2vw);display:flex;gap:12px;align-items:center;z-index:5;box-shadow:0 -4px 12px rgba(1,57,82,.06)}
+.send .sum{font-size:15px;color:var(--muted);flex:1}
+.modal{position:fixed;inset:0;background:rgba(1,20,30,.45);display:none;align-items:center;justify-content:center;padding:16px;z-index:20}
+.modal.on{display:flex}
+.box{background:var(--sheet);border-radius:18px;max-width:560px;width:100%;padding:22px;max-height:90vh;overflow:auto}
+.box h2{margin:0 0 8px;color:var(--navy);font-size:22px}
+.toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%) translateY(20px);background:var(--navy);color:var(--sheet);padding:10px 18px;border-radius:999px;opacity:0;transition:.2s;pointer-events:none;font-weight:600;z-index:30}
+.toast.show{opacity:1;transform:translateX(-50%)}
+@media (max-width:760px){.field,.colhead{grid-template-columns:1fr;gap:6px}.colhead span:last-child{display:none}.brand small{display:none}.bar{width:70px}.wrap{padding-top:12px}}
+</style>
+</head>
+<body>
+<header class="top"><div class="brand">Kontroll av oversettelse <small>Familiegjenforening</small></div><div class="prog" id="prog"></div></header>
+<main class="wrap" id="app"><p class="hint">Henter tekstene …</p></main>
+<div class="send" id="send" hidden></div>
+<div class="modal" id="modal"><div class="box" id="box"></div></div>
+<div class="toast" id="toast" role="status"></div>
+<script>
+(async()=>{
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const isRtl=l=>['ar','fa','prs','ckb','ps','ur','he'].includes(l);
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),2400)}
+const params=new URLSearchParams(location.search);
+
+// ───────── Hent siste versjon (samme måte som redaktør og mottak) ─────────
+let CFG,BASE='data/',SHA=null;
+async function getJSON(p,optional){const r=await fetch(BASE+p,{cache:'no-store'});if(!r.ok){if(optional)return{};throw new Error(p+' ('+r.status+')')}return r.json()}
+try{
+  CFG=await fetch('data/config.json',{cache:'no-cache'}).then(r=>r.json());
+  if(CFG.github){try{const c=await fetch(`https://api.github.com/repos/${CFG.github}/commits/main`,{cache:'no-store'}).then(r=>{if(!r.ok)throw 0;return r.json()});SHA=c.sha;BASE=`https://raw.githubusercontent.com/${CFG.github}/${SHA}/data/`;CFG=await getJSON('config.json')}catch(e){BASE='data/'}}
+}catch(e){$('#app').innerHTML='<h1>Tekstene kunne ikke lastes</h1><p>Verktøyet må åpnes fra nettsiden.</p>';return}
+const LANGS=(CFG.sprak||[]).filter(l=>l.kode!=='no');
+const [S,NO,UINO]=await Promise.all([getJSON('struktur.json'),getJSON('sprak/no.json'),getJSON('ui/no.json')]);
+let L=params.get('lang');if(!LANGS.some(x=>x.kode===L))L=null;
+
+// ───────── Enheter: det tolken godkjenner ─────────
+const FIELDS={sporsmal:[['tekst','Spørsmål'],['ja','Svar: ja'],['nei','Svar: nei']],fase:[['kort','Kort navn (tidslinjen)'],['tittel','Overskrift'],['undertekst','Ingress']],punkt:[['tittel','Tittel'],['naar','Når og for hvem'],['tekst','Tekst']],kontakt:[['navn','Navn'],['info','Beskrivelse']]};
+const unit=(type,id)=>({id:type+':'+id,type,keys:FIELDS[type].map(([f,lb])=>({k:`${type==='sporsmal'?'sporsmal':type}.${id}.${f}`,lb})).filter(x=>NO[x.k]!=null)});
+function groups(){
+  const g=[{title:'Spørsmål på startsiden',units:S.sporsmal.map(q=>unit('sporsmal',q.id))}];
+  S.faser.forEach(f=>{const ps=S.punkter.filter(p=>p.fase===f.id);if(ps.length)g.push({title:NO[`fase.${f.id}.tittel`]||f.id,units:[unit('fase',f.id),...ps.map(p=>unit('punkt',p.id))]})});
+  g.push({title:'Kontakter',units:S.kontakter.map(k=>unit('kontakt',k.id))});
+  g.push({title:'Knapper og faste tekster',units:[{id:'ui',type:'ui',keys:Object.keys(UINO).map(k=>({k:'ui.'+k,lb:k}))}]});
+  return g;
+}
+const unitTitle=u=>u.type==='ui'?'Knapper og faste tekster':NO[u.keys[0].k]||u.id;
+
+// ───────── Språkvalg ─────────
+if(!L){
+  const rows=await Promise.all(LANGS.map(async l=>{const [t,st]=await Promise.all([getJSON('sprak/'+l.kode+'.json',true),getJSON('sprak/'+l.kode+'.status.json',true)]);
+    const ks=Object.keys(NO),done=ks.filter(k=>t[k]&&st[k]&&st[k].s==='kontrollert').length;return{l,left:ks.length-done,total:ks.length}}));
+  $('#app').innerHTML=`<h1>Velg språk</h1><p class="lead">Du kontrollerer oversettelsen av veilederen «Når familien kommer». Velg språket ditt.</p>
+  <div class="langs">${rows.map(r=>`<a href="?lang=${r.l.kode}"><b dir="auto">${esc(r.l.navn)}</b><span>${r.left?`${r.left} av ${r.total} tekster er ikke kontrollert`:'Alt er kontrollert'}</span></a>`).join('')}</div>
+  <p class="hint">Tips: Lagre lenken til ditt språk som bokmerke.</p>`;
+  return;
+}
+const LN=LANGS.find(x=>x.kode===L),DIR=isRtl(L)?'rtl':'ltr';
+document.title=`${LN.navn} – Kontroll av oversettelse`;
+const [T,ST,UI]=await Promise.all([getJSON('sprak/'+L+'.json',true),getJSON('sprak/'+L+'.status.json',true),getJSON('ui/'+L+'.json',true)]);
+const cur=k=>k.startsWith('ui.')?UI[k.slice(3)]:T[k];
+const nor=k=>k.startsWith('ui.')?UINO[k.slice(3)]:NO[k];
+
+// ───────── Utkast i nettleseren ─────────
+const KEY='fgv_tolk_'+L;
+let D={edits:{},approved:{}};
+try{const x=JSON.parse(localStorage.getItem(KEY));if(x&&x.edits)D=x}catch(e){}
+// Rydd bort det som allerede er publisert
+for(const [k,v] of Object.entries(D.edits))if(cur(k)===v)delete D.edits[k];
+const G=groups(),ALL=G.flatMap(g=>g.units);
+const isPublishedOk=u=>u.type!=='ui'&&u.keys.every(({k})=>T[k]&&ST[k]&&ST[k].s==='kontrollert');
+for(const id of Object.keys(D.approved)){const u=ALL.find(x=>x.id===id);if(!u||(isPublishedOk(u)&&u.keys.every(({k})=>!(k in D.edits))))delete D.approved[id]}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(D))}catch(e){}};save();
+
+const val=k=>k in D.edits?D.edits[k]:(cur(k)||'');
+const edited=u=>u.keys.some(({k})=>k in D.edits);
+function state(u){if(u.type==='ui')return edited(u)?'endret':'ui';if(D.approved[u.id])return'godkjent';if(isPublishedOk(u)&&!edited(u))return'kontrollert';return'gjenstar'}
+const reviewable=ALL.filter(u=>u.type!=='ui');
+
+// ───────── Kontroll av format (samme regler som mottaket) ─────────
+const SCRIPT={ar:[/[؀-ۿ]/,'arabisk skrift'],fa:[/[؀-ۿ]/,'persisk skrift'],prs:[/[؀-ۿ]/,'persisk skrift'],ps:[/[؀-ۿ]/,'arabisk skrift'],ckb:[/[؀-ۿ]/,'arabisk skrift'],ur:[/[؀-ۿ]/,'arabisk skrift'],ti:[/[ሀ-፿]/,'ge\'ez-skrift'],am:[/[ሀ-፿]/,'ge\'ez-skrift'],uk:[/[Ѐ-ӿ]/,'kyrillisk skrift'],ru:[/[Ѐ-ӿ]/,'kyrillisk skrift']};
+const listN=s=>String(s||'').split('\n').filter(x=>/^\s*[–-]\s/.test(x)).length;
+const callN=s=>(String(s||'').match(/«[^»\n]+»/g)||[]).length;
+const nums=s=>(String(s||'').match(/\d+(?:[ .]\d+)*/g)||[]).map(x=>x.replace(/[ .]/g,'')).filter(x=>x.length>=3);
+function check(no,v,k){
+  const out=[];if(!v.trim())return[{e:1,m:'Mangler oversettelse.'}];
+  const sc=SCRIPT[L];if(sc&&!/\.navn$/.test(k)&&no.length>20&&!sc[0].test(v))out.push({e:1,m:`Teksten er ikke skrevet med ${sc[1]}.`});
+  if(listN(no)!==listN(v))out.push({e:1,m:`Punktlista skal ha ${listN(no)} linjer som starter med «– ». Nå: ${listN(v)}.`});
+  if(callN(no)!==callN(v))out.push({e:1,m:'Setningen familien kan si, må stå inne i «…».'});
+  const nv=nums(v);nums(no).forEach(n=>{if(!nv.includes(n))out.push({e:0,m:`Tallet ${n} står ikke i oversettelsen.`})});
+  return out;
+}
+
+// ───────── Visning ─────────
+let OPEN=null,ONLY=reviewable.some(u=>state(u)==='gjenstar'),INTRO=!localStorage.getItem('fgv_tolk_intro');
+function pill(s){return{godkjent:'<span class="pill m">Godkjent av deg</span>',kontrollert:'<span class="pill g">Kontrollert</span>',gjenstar:'<span class="pill y">Ikke kontrollert</span>',ui:'',endret:'<span class="pill e">Endret</span>'}[s]}
+function render(){
+  const done=reviewable.filter(u=>['godkjent','kontrollert'].includes(state(u))).length;
+  $('#prog').innerHTML=`<span>${done} av ${reviewable.length}</span><span class="bar"><i style="width:${Math.round(done/reviewable.length*100)}%"></i></span>`;
+  let h=`<h1 dir="auto">${esc(LN.navn)}</h1><p class="lead">Les den norske teksten, rett oversettelsen hvis noe er feil, og trykk <b>Godkjenn</b>. Når du er ferdig, sender du en fil til teknisk eier.</p>`;
+  if(INTRO)h+=`<div class="intro"><b>Slik gjør du det</b><ol>
+    <li>Åpne et punkt. Den norske teksten står først, og oversettelsen ved siden av eller under.</li>
+    <li>Rett direkte i oversettelsen. Er du usikker på hva den norske teksten betyr, kontakt redaktøren${CFG.redaktor?` (${esc(CFG.redaktor)})`:''}.</li>
+    <li>Linjer som starter med «– » er punktlister. Setninger i «…» er noe familien kan si. Behold disse tegnene.</li>
+    <li>Trykk <b>Godkjenn</b> når punktet er riktig. Det du gjør, lagres i denne nettleseren til du sender det.</li>
+    <li>Trykk <b>Send til teknisk eier</b> nederst. Du kan sende når du vil, også før du er ferdig med alt.</li></ol>
+    <button class="btn small" id="introOk">Skjønner</button></div>`;
+  h+=`<div class="tools"><label><input type="checkbox" id="only" ${ONLY?'checked':''}> Vis bare det som ikke er kontrollert</label><a class="btn ghost small" href="veileder.html?lang=${L}" target="_blank" rel="noopener">Se appen på ${esc(LN.navn)}</a><a class="btn ghost small" href="tolk.html">Bytt språk</a></div>`;
+  if(BASE==='data/'&&CFG.github)h+=`<div class="msg warn">Fikk ikke kontakt med GitHub. Du ser den publiserte versjonen, som kan være noen minutter gammel.</div>`;
+  let shown=0;
+  G.forEach(g=>{
+    const us=g.units.filter(u=>!ONLY||['gjenstar','godkjent','endret'].includes(state(u))||u.id===OPEN);
+    if(!us.length)return;shown+=us.length;
+    h+=`<h2 class="group">${esc(g.title)}</h2>`+us.map(card).join('');
+  });
+  if(!shown)h+=`<div class="msg ok">Alt er kontrollert. Takk! Fjern haken over for å se alle tekstene.</div>`;
+  $('#app').innerHTML=h;
+  sendBar();bind();fit();
+}
+const grow=ta=>{ta.style.height='auto';ta.style.height=(ta.scrollHeight+2)+'px'};
+function fit(){document.querySelectorAll('textarea[data-k]').forEach(grow)}
+addEventListener('resize',fit);
+function card(u){
+  const s=state(u),open=OPEN===u.id,t=u.type==='ui'?'':cur(u.keys[0].k);
+  let h=`<section class="unit ${s}" id="u-${esc(u.id)}"><button class="head" aria-expanded="${open}" data-open="${esc(u.id)}"><span class="dot"></span><span class="titles"><b>${esc(unitTitle(u))}</b>${t?`<span dir="${DIR}">${esc(val(u.keys[0].k))}</span>`:''}</span>${pill(s)}</button>`;
+  if(open){
+    h+=`<div class="body"><div class="colhead"><span>Norsk</span><span dir="auto">${esc(LN.navn)}</span></div>`;
+    u.keys.forEach(({k,lb})=>{
+      const v=val(k),iss=check(nor(k),v,k),ch=k in D.edits;
+      h+=`<div class="field"><div><div class="lbl">${esc(lb)}</div><div class="no">${esc(nor(k))}</div></div><div><div class="lbl">&nbsp;</div><textarea data-k="${esc(k)}" dir="${DIR}" lang="${L}" class="${ch?'changed':''}" rows="${Math.max(1,Math.ceil(v.length/48)+(v.match(/\n/g)||[]).length)}">${esc(v)}</textarea>
+        <div class="notes" data-notes="${esc(k)}">${notes(k,iss,ch)}</div></div></div>`;
+    });
+    const hard=u.keys.some(({k})=>check(nor(k),val(k),k).some(i=>i.e));
+    h+=`<div class="acts">${u.type==='ui'?'<span class="hint">Faste tekster godkjennes ikke enkeltvis. Endringene dine blir med når du sender.</span>':s==='godkjent'?`<button class="btn small" data-unapprove="${esc(u.id)}">Angre godkjenning</button>`:`<button class="btn primary" data-approve="${esc(u.id)}" ${hard?'data-hard="1"':''}>Godkjenn${s==='kontrollert'?' på nytt':''}</button>`}${edited(u)?`<button class="btn ghost small" data-reset="${esc(u.id)}">Tilbakestill endringene</button>`:''}</div><div data-warn="${esc(u.id)}"></div></div>`;
+  }
+  return h+'</section>';
+}
+function notes(k,iss,ch){return (ch?`<div class="fieldnote c">Endret av deg<button data-undo="${esc(k)}">Angre</button></div>`:'')+iss.map(i=>`<div class="fieldnote ${i.e?'e':'w'}">${esc(i.m)}</div>`).join('')}
+function counts(){const appr=Object.keys(D.approved).length,ed=Object.keys(D.edits).length;return{appr,ed}}
+function sendBar(){
+  const {appr,ed}=counts(),el=$('#send');el.hidden=false;
+  el.innerHTML=`<span class="sum">${appr||ed?`${appr} godkjent, ${ed} ${ed===1?'tekst':'tekster'} rettet. Ikke sendt ennå.`:'Ingenting å sende ennå.'}</span><button class="btn primary" id="sendBtn" ${appr||ed?'':'disabled'}>Send til teknisk eier</button>`;
+  $('#sendBtn').onclick=openSend;
+}
+function bind(){
+  const ib=$('#introOk');if(ib)ib.onclick=()=>{INTRO=false;try{localStorage.setItem('fgv_tolk_intro','1')}catch(e){}render()};
+  $('#only').onchange=e=>{ONLY=e.target.checked;render()};
+  document.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>{OPEN=OPEN===b.dataset.open?null:b.dataset.open;render();if(OPEN)document.getElementById('u-'+OPEN).scrollIntoView({block:'start',behavior:'smooth'})});
+  document.querySelectorAll('textarea[data-k]').forEach(ta=>ta.oninput=()=>{
+    grow(ta);const k=ta.dataset.k,v=ta.value.replace(/\r\n?/g,'\n');
+    if(v===(cur(k)||''))delete D.edits[k];else D.edits[k]=v;save();
+    ta.classList.toggle('changed',k in D.edits);
+    $(`[data-notes="${CSS.escape(k)}"]`).innerHTML=notes(k,check(nor(k),v,k),k in D.edits);
+    bindUndo();sendBar();
+  });
+  bindUndo();
+  document.querySelectorAll('[data-approve]').forEach(b=>b.onclick=()=>{
+    const u=ALL.find(x=>x.id===b.dataset.approve);
+    const hard=u.keys.flatMap(({k})=>check(nor(k),val(k),k).filter(i=>i.e));
+    if(hard.length&&!b.dataset.confirmed){$(`[data-warn="${CSS.escape(u.id)}"]`).innerHTML=`<div class="msg err">Noe ser feil ut: ${esc(hard.map(i=>i.m).join(' '))} Rett det, eller trykk Godkjenn en gang til hvis det er riktig slik.</div>`;b.dataset.confirmed='1';return}
+    D.approved[u.id]=true;save();toast('Godkjent');
+    const i=ALL.indexOf(u),next=ALL.slice(i+1).concat(ALL.slice(0,i)).find(x=>state(x)==='gjenstar');
+    OPEN=next?next.id:null;render();if(OPEN)document.getElementById('u-'+OPEN).scrollIntoView({block:'start',behavior:'smooth'});
+  });
+  document.querySelectorAll('[data-unapprove]').forEach(b=>b.onclick=()=>{delete D.approved[b.dataset.unapprove];save();render()});
+  document.querySelectorAll('[data-reset]').forEach(b=>b.onclick=()=>{ALL.find(x=>x.id===b.dataset.reset).keys.forEach(({k})=>delete D.edits[k]);save();render()});
+}
+function bindUndo(){document.querySelectorAll('[data-undo]').forEach(b=>b.onclick=()=>{delete D.edits[b.dataset.undo];save();render()})}
+
+// ───────── Send ─────────
+function modal(h){$('#box').innerHTML=h;$('#modal').classList.add('on')}
+$('#modal').onclick=e=>{if(e.target.id==='modal')$('#modal').classList.remove('on')};
+const today=()=>new Date().toISOString().slice(0,10);
+function file(){
+  const tekster={};
+  const add=(k,godkjent)=>{tekster[k]={norsk:nor(k),sett:cur(k)??null,...(k in D.edits?{ny:D.edits[k]}:{}),godkjent}};
+  Object.keys(D.approved).forEach(id=>{const u=ALL.find(x=>x.id===id);if(u)u.keys.forEach(({k})=>add(k,true))});
+  Object.keys(D.edits).forEach(k=>{if(!(k in tekster))add(k,false)});
+  return{type:'kontroll',versjon:1,sprak:L,laget:new Date().toISOString(),grunnlag:SHA,tekster};
+}
+function openSend(){
+  const {appr,ed}=counts(),left=reviewable.filter(u=>state(u)==='gjenstar').length,name=`kontroll-${L}-${today()}.json`;
+  modal(`<h2>Send til teknisk eier</h2><p>Du har godkjent <b>${appr}</b> og rettet <b>${ed}</b> ${ed===1?'tekst':'tekster'}.${left?` ${left} er ikke kontrollert ennå. Det kan du gjøre senere.`:''}</p>
+    <ol><li>Last ned kontrollfila.</li><li>Send den til teknisk eier på e-post eller Teams.</li><li>Når den er lastet opp, forsvinner merket «Maskinoversatt» i appen for det du har godkjent.</li></ol>
+    <div class="acts"><button class="btn primary" id="dl">Last ned ${esc(name)}</button><button class="btn ghost" id="close">Lukk</button></div>
+    <p class="hint">Arbeidet ditt ligger trygt i denne nettleseren til det er publisert. Bytt ikke nettleser eller maskin før det er sendt.</p>`);
+  $('#close').onclick=()=>$('#modal').classList.remove('on');
+  $('#dl').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(file(),null,2)+'\n'],{type:'application/json'}));a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500);toast('Kontrollfila er lastet ned')};
+}
+OPEN=(ALL.find(u=>state(u)==='gjenstar')||{}).id||null;
+render();
+})();
+</script>
+</body>
+</html>

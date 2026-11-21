@@ -5,6 +5,7 @@ Digital sjekkliste for familier som er gjenforent i Tønsberg kommune. Den finne
 - **App for familiene:** `veileder.html`
 - **Redaktørverktøy:** `redaktor.html`
 - **Mottak for teknisk eier:** `mottak.html`
+- **Kontroll av oversettelse (tolker):** `tolk.html`
 - **Adresse:** https://tonsbergloftet.github.io/familiegjenforening/
 
 Appen er en statisk nettside uten database. Alt innhold ligger i JSON-filer i `data/`.
@@ -22,7 +23,8 @@ Appen er en statisk nettside uten database. Alt innhold ligger i JSON-filer i `d
 ```
 veileder.html            appen familiene bruker (IKKE endre navnet – QR-koder peker hit)
 redaktor.html            redaktørverktøyet
-mottak.html              mottak for teknisk eier: kontroll, KI-oversettelse, lagring
+mottak.html              mottak for teknisk eier: kontroll, KI-oversettelse, opplasting
+tolk.html                tolkene kontrollerer og retter oversettelser
 index.html               sender videre til veileder.html
 data/config.json         språkliste, adresse, lenke til kommunens side
 data/struktur.json       spørsmål, faser, punkter og kontakter (rekkefølge, vilkår)
@@ -63,6 +65,18 @@ Alt gjøres i nettleseren. Du trenger ikke installere noe.
    - Trykk *Kontroller opplastingen* i mottaket. Verktøyet sjekker at filene på GitHub er nøyaktig de det laget.
 
 Mottaket kan også brukes uten endringsfil, for å oversette tekster som mangler.
+
+## Tolkenes kontroll
+
+Send tolken lenken til språket, f.eks. https://tonsbergloftet.github.io/familiegjenforening/tolk.html?lang=ar.
+
+1. Tolken leser norsk og oversettelse side om side, retter direkte og godkjenner punkt for punkt. Arbeidet lagres i tolkens nettleser.
+2. Tolken trykker *Send til teknisk eier* og sender deg kontrollfila (`kontroll-ar-ÅÅÅÅ-MM-DD.json`).
+3. Du legger fila inn i mottaket på samme måte som en endringsfil. Det godkjente blir merket «kontrollert», og merket «Maskinoversatt» forsvinner fra appen.
+
+Mottaket tar ikke med det som er endret etter at tolken så på det. Det gjelder både norsk tekst som er endret og oversettelser som er endret av andre. Disse er fortsatt merket som maskinoversatt, og tolken ser dem igjen neste gang.
+
+Fyll inn `redaktor` (navn og e-post) i `config.json`, så ser tolkene hvem de kan spørre om den norske teksten.
 
 ### Hvis du må gjøre det for hånd
 

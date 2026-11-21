@@ -111,6 +111,7 @@ const fingerprint=(s,t)=>{const j=JSON.stringify({s,t});return j.length+':'+[...
 let R=null;          // siste versjon: {files:{sti:tekst}, data, repo, commit}
 let VERIFIED=null,VMSG='';
 let E=null,EN='';    // endringsfil og filnavn
+let K=null,KN='',KA=null; // kontrollfil fra tolk
 let AN=null,SD=[];   // analyse av tekster og struktur
 let CHOICE={};       // konflikter: 'redaktor' | 'behold'
 let NL=null;         // nytt språk {kode,navn,retning,status}
@@ -297,9 +298,31 @@ ${JSON.stringify(obj,null,2)}`;
 
 // ───────── Steg 2: endringsfil ─────────
 function readChangeFile(text,name){
-  let x;try{x=JSON.parse(text)}catch(e){throw new Error(`«${name}» kan ikke leses. Be redaktøren laste ned endringsfila på nytt.`)}
-  if(x.type!=='endringer'||typeof x.tekster!=='object')throw new Error(`«${name}» er ikke en endringsfil fra redaktørverktøyet. Fila skal hete endringer-ÅÅÅÅ-MM-DD.json.`);
-  E=x;EN=name;CHOICE={};analyse();resetFrom(3);render();
+  let x;try{x=JSON.parse(text)}catch(e){throw new Error(`«${name}» kan ikke leses. Be avsenderen laste ned fila på nytt.`)}
+  if(x.type==='kontroll'){
+    const l=(R.data.config.sprak||[]).find(y=>y.kode===x.sprak);
+    if(!l||l.kode==='no'||typeof x.tekster!=='object')throw new Error(`«${name}» gjelder et språk som ikke finnes i veilederen («${x.sprak}»).`);
+    E=null;EN='';AN=null;SD=[];K=x;KN=name;CHOICE={};analyseK();resetFrom(3);render();return;
+  }
+  if(x.type!=='endringer'||typeof x.tekster!=='object')throw new Error(`«${name}» er ikke en endringsfil fra redaktørverktøyet. Fila skal hete endringer-ÅÅÅÅ-MM-DD.json eller kontroll-språk-ÅÅÅÅ-MM-DD.json.`);
+  K=null;KN='';KA=null;E=x;EN=name;CHOICE={};analyse();resetFrom(3);render();
+}
+// Kontrollfil: tolkens godkjenninger og rettelser. Bare det som fortsatt gjelder, tas med.
+function analyseK(){
+  const l=K.sprak,t=R.data.sprak[l]||{},u=R.data.ui[l]||{},st=R.data.status[l]||{},no=R.data.sprak.no,uino=R.data.ui.no||{};
+  KA={rows:[],skip:[],done:0};
+  for(const [k,x] of Object.entries(K.tekster)){
+    const ui=k.startsWith('ui.'),kk=ui?k.slice(3):k,curNo=ui?uino[kk]:no[kk],cur=(ui?u[kk]:t[kk])??null;
+    const ny=x.ny!=null?String(x.ny).replace(/\r\n?/g,'\n'):null;
+    if(curNo==null){KA.skip.push({k,m:'Teksten finnes ikke lenger.'});continue}
+    if(curNo!==x.norsk){KA.skip.push({k,m:'Den norske teksten er endret etter at tolken så på den. Må kontrolleres på nytt.'});continue}
+    const since=cur!==(x.sett??null);
+    if(since&&ny==null){KA.skip.push({k,m:'Oversettelsen er endret etter at tolken godkjente den. Må kontrolleres på nytt.'});continue}
+    const textDone=ny==null||ny===cur,statusDone=ui||!x.godkjent||(st[kk]&&st[kk].s==='kontrollert');
+    if(textDone&&statusDone){KA.done++;continue}
+    if(since&&!textDone)CHOICE[k]=CHOICE[k]||'tolk';
+    KA.rows.push({k,ui,kk,cur,ny:textDone?null:ny,godkjent:!!x.godkjent&&!ui,conf:since&&!textDone,iss:ny!=null&&!textDone?check(curNo,ny,l,k):[]});
+  }
 }
 function analyse(){
   const no=R.data.sprak.no,T=E.tekster||{},F=E.forrige;
@@ -337,6 +360,7 @@ function buildN(){
     AN.slettet.forEach(k=>delete no[k]);
     if(E.struktur)d.struktur=clone(E.struktur);
   }
+  if(K)KA.rows.forEach(r=>{if(r.ny!=null&&CHOICE[r.k]!=='behold')(r.ui?d.ui:d.sprak)[K.sprak][r.kk]=r.ny});
   if(NL){d.config.sprak.push({kode:NL.kode,navn:NL.navn,retning:NL.retning,status:NL.status});d.sprak[NL.kode]={};d.status[NL.kode]={};d.ui[NL.kode]={}}
   // Tekster som ikke hører til noe lenger fjernes fra alle språk
   REMOVED=[...new Set([...(E?AN.slettet:[]),...Object.keys(d.sprak.no).filter(k=>!belongs(k,d.struktur))])];
@@ -368,7 +392,7 @@ const jobDone=j=>j.keys.every(k=>k in j.acc);
 const allDone=()=>N&&Object.values(JOBS).every(jobDone);
 
 function resetFrom(step){
-  if(step<=2){E=null;EN='';AN=null;SD=[];CHOICE={};NL=null}
+  if(step<=2){E=null;EN='';AN=null;SD=[];CHOICE={};NL=null;K=null;KN='';KA=null}
   if(step<=3){N=null;JOBS={};REMOVED=[];CHANGED=new Set()}
   SAVED=null;VERIFIED=null;VMSG='';
 }
@@ -382,6 +406,7 @@ async function finalData(){
       else{d.sprak[l][k]=v;(d.status[l]=d.status[l]||{})[k]={s:'ki',kilde:await sha10(d.sprak.no[k])}}
     }
   }
+  if(K)for(const r of KA.rows){if(!r.godkjent||(r.conf&&CHOICE[r.k]==='behold'))continue;(d.status[K.sprak]=d.status[K.sprak]||{})[r.kk]={s:'kontrollert',kilde:await sha10(d.sprak.no[r.kk])}}
   // Nye nøkler legges til sist. Eksisterende rekkefølge beholdes, så GitHub bare viser det som faktisk er endret.
   return d;
 }
@@ -392,8 +417,13 @@ function commitText(){
   let title=E?`Innhold: ${names.slice(0,3).join(', ')}${names.length>3?` m.fl.`:''}`:'';
   if(E&&!names.length&&SD.length)title='Innhold: endret struktur';
   if(NL)title=(title?title+'; ':'')+`nytt språk: ${NL.navn}`;
+  if(K)title=`Tolkekontroll: ${langName(N,K.sprak)} (${K.sprak})`+(title?'; '+title:'');
   if(!title)title=`Oversettelser: ${langs.map(([l])=>l).join(', ')}`;
   const L=[];
+  if(K){const g=KA.rows.filter(r=>r.godkjent&&!(r.conf&&CHOICE[r.k]==='behold')),f=KA.rows.filter(r=>r.ny!=null&&CHOICE[r.k]!=='behold');
+    L.push(`Kontrollfil fra tolk: ${KN}${K.laget?` (laget ${new Date(K.laget).toLocaleString('nb-NO',{dateStyle:'short',timeStyle:'short'})})`:''}`);
+    L.push(`Godkjent: ${g.length} tekster. Rettet av tolk: ${f.length} tekster.`);
+    if(KA.skip.length)L.push(`Ikke tatt med (må kontrolleres på nytt): ${KA.skip.map(x=>x.k).join(', ')}`);}
   if(E)L.push(`Endringsfil fra redaktør: ${EN}${E.laget?` (laget ${new Date(E.laget).toLocaleString('nb-NO',{dateStyle:'short',timeStyle:'short'})})`:''}`);
   if(E)L.push(`Norsk: ${AN.endret.length} endret, ${AN.nye.length} nye, ${AN.slettet.length} slettet.`);
   SD.forEach(s=>L.push('- '+s.m));
@@ -430,11 +460,24 @@ function step1(){
   if(!LOADING)b+=`<div class="acts"><button class="btn small" id="reload">Hent på nytt</button></div>`;
   return card(1,'Hent siste versjon',R&&!validate(R.data).err.length,false,b);
 }
+function stepK(){
+  const l=K.sprak,nav=langName(R.data,l),no=R.data.sprak.no,g=KA.rows.filter(r=>r.godkjent),f=KA.rows.filter(r=>r.ny!=null),c=KA.rows.filter(r=>r.conf);
+  let b=`<div class="msg ok">Kontrollfil fra tolk: <b>${esc(KN)}</b>, ${esc(nav)}${K.laget?`, laget ${esc(new Date(K.laget).toLocaleString('nb-NO',{dateStyle:'medium',timeStyle:'short'}))}`:''}. <button class="btn ghost small" id="clearE">Bytt fil</button></div>`;
+  if(!KA.rows.length)b+=`<div class="msg warn">${KA.done?'Alt i denne fila er allerede lagt inn.':'Ingenting i fila kan tas i bruk.'} Det er ingenting nytt å publisere.</div>`;
+  else b+=`<div class="msg ok"><b>${g.length}</b> tekster blir merket som kontrollert, og <b>${f.length}</b> blir rettet.${KA.done?` ${KA.done} var allerede lagt inn.`:''}</div>`;
+  if(KA.skip.length)b+=`<div class="msg warn"><b>${KA.skip.length} ${KA.skip.length===1?'tekst':'tekster'} blir ikke tatt med.</b> De er fortsatt merket «Maskinoversatt», og tolken ser dem igjen neste gang.<ul>${KA.skip.map(x=>`<li>${esc(label(x.k,no))}: ${esc(x.m)}</li>`).join('')}</ul></div>`;
+  if(c.length)b+=`<div class="msg warn"><b>${c.length===1?'1 oversettelse':c.length+' oversettelser'} er endret av andre siden tolken så på dem.</b> Velg hvilken versjon som skal gjelde.</div>`;
+  if(f.length)b+=`<h3>Rettet av tolken (${f.length})</h3>`+f.map(r=>`<div class="ch ${r.conf?'conf':''}"><div class="lbl">${esc(label(r.k,no))}${r.godkjent?'<span class="tag ny">Godkjent</span>':'<span class="tag endret">Ikke godkjent</span>'}${r.conf?'<span class="tag konflikt">Konflikt</span>':''}</div><div class="was" dir="auto">${esc(r.cur??'(mangler)')}</div><div class="now" dir="auto">${esc(r.ny)}</div>${r.iss.length?`<div class="hint">${esc(r.iss.map(i=>i.m).join(' '))}</div>`:''}${r.conf?`<label><input type="radio" name="c-${esc(r.k)}" value="tolk" ${CHOICE[r.k]!=='behold'?'checked':''} data-choice="${esc(r.k)}"> Bruk tolkens tekst</label><label><input type="radio" name="c-${esc(r.k)}" value="behold" ${CHOICE[r.k]==='behold'?'checked':''} data-choice="${esc(r.k)}"> Behold teksten som står på GitHub nå</label>`:''}</div>`).join('');
+  const only=g.filter(r=>r.ny==null);
+  if(only.length)b+=`<details><summary>Godkjent uten endring (${only.length})</summary><ul>${only.map(r=>`<li>${esc(label(r.k,no))}</li>`).join('')}</ul></details>`;
+  return b;
+}
 function step2(){
   const locked=!R||validate(R.data).err.length>0;let b='';
   if(!locked){
-    b+=`<p>Legg inn endringsfila fra redaktøren. Du ser alt som endres før noe skjer.</p>`;
-    if(!E)b+=`<div class="drop" id="drop">Slipp <b>endringer-….json</b> her, eller <button class="btn small" id="pickFile">velg fil</button></div><div id="e2"></div>`;
+    b+=`<p>Legg inn endringsfila fra redaktøren eller kontrollfila fra en tolk. Du ser alt som endres før noe skjer.</p>`;
+    if(K)b+=stepK();
+    else if(!E)b+=`<div class="drop" id="drop">Slipp <b>endringer-….json</b> eller <b>kontroll-….json</b> her, eller <button class="btn small" id="pickFile">velg fil</button></div><div id="e2"></div>`;
     else{
       b+=`<div class="msg ok">Endringsfil: <b>${esc(EN)}</b>${E.laget?`, laget ${esc(new Date(E.laget).toLocaleString('nb-NO',{dateStyle:'medium',timeStyle:'short'}))}`:''}. <button class="btn ghost small" id="clearE">Bytt fil</button></div>`;
       const fp=fingerprint(R.data.struktur,R.data.sprak.no),total=AN.nye.length+AN.endret.length+AN.slettet.length;
@@ -447,14 +490,14 @@ function step2(){
       if(total)b+=`<h3>Tekster (${total})</h3>`+AN.endret.map(k=>row(k,'endret')).join('')+AN.nye.map(k=>row(k,'ny')).join('')+AN.slettet.map(k=>row(k,'slettet')).join('');
       if(SD.length)b+=`<h3>Struktur (${SD.length})</h3>`+SD.map(s=>`<div class="msg ${s.t==='slettet'||s.t==='viktig'?'warn':'ok'}">${esc(s.m)}</div>`).join('')+(SD.some(s=>s.t==='viktig')?'<p class="hint">Telefonnumre vises for familiene på alle språk. Sjekk at det nye nummeret stemmer.</p>':'');
     }
-    if(NL)b+=`<div class="msg ok">Nytt språk: <b>${esc(NL.navn)}</b> (${esc(NL.kode)}, ${NL.retning==='rtl'?'høyre til venstre':'venstre til høyre'}). ${NL.status==='publisert'?'Vises for familiene med en gang, merket «Maskinoversatt».':'Lagres som utkast og vises bare med ?utkast=1.'} <button class="btn ghost small" id="clearNL">Fjern</button></div>`;
+    if(K){}else if(NL)b+=`<div class="msg ok">Nytt språk: <b>${esc(NL.navn)}</b> (${esc(NL.kode)}, ${NL.retning==='rtl'?'høyre til venstre':'venstre til høyre'}). ${NL.status==='publisert'?'Vises for familiene med en gang, merket «Maskinoversatt».':'Lagres som utkast og vises bare med ?utkast=1.'} <button class="btn ghost small" id="clearNL">Fjern</button></div>`;
     else b+=`<details id="nlBox"><summary>Legge til et nytt språk</summary><p class="hint">Alle tekstene KI-oversettes i neste steg. Be så en tolk se over.</p><div class="row"><label>Språkkode<input id="nlKode" placeholder="f.eks. ti" size="6" maxlength="5"></label><label>Navn på eget språk<input id="nlNavn" placeholder="f.eks. ትግርኛ"></label><label>Skriveretning<select id="nlDir"><option value="ltr">Venstre til høyre</option><option value="rtl">Høyre til venstre</option></select></label><label>Vis for familiene<select id="nlStatus"><option value="publisert">Med en gang</option><option value="utkast">Senere (utkast)</option></select></label><button class="btn" id="nlAdd">Legg til</button></div><div id="nlErr"></div><p class="hint">Språkkoden er ISO 639-1, f.eks. so (somali), ti (tigrinja), uk (ukrainsk), fa (persisk).</p></details>`;
     if(N){const v=validate(N);b+=v.err.length?'':`<div class="msg ok">Kontrollert: endringene gir gyldige filer.</div>`}
-    else if(E||NL){
+    else if(E||NL||K){
       const preview=(()=>{const keep=N;buildN();const v=validate(N);N=keep;return v})();
-      b+=msgList('err','Endringene gir feil som må rettes av redaktøren før de kan legges inn:',preview.err);
-      const go=E?(AN.nye.length+AN.endret.length+AN.slettet.length+SD.length>0):false;
-      b+=`<div class="acts"><button class="btn primary" id="apply" ${preview.err.length||(!go&&!NL)?'disabled':''}>Ta i bruk og gå til oversettelse</button></div>`;
+      b+=msgList('err','Endringene gir feil som må rettes før de kan legges inn:',preview.err);
+      const go=K?KA.rows.length>0:E?(AN.nye.length+AN.endret.length+AN.slettet.length+SD.length>0):false;
+      b+=`<div class="acts"><button class="btn primary" id="apply" ${preview.err.length||(!go&&!NL)?'disabled':''}>${K?'Ta i bruk':'Ta i bruk og gå til oversettelse'}</button></div>`;
     } else b+=`<div class="acts"><button class="btn ghost" id="skipE">Jeg har ingen endringsfil, bare oversett det som mangler</button></div>`;
   }
   return card(2,'Se gjennom endringene',!!N,locked,b);
@@ -512,7 +555,7 @@ function bind(){
   on('#dlAgain','onclick',()=>download(SAVED.zip,SAVED.blob));
   on('#pickFile','onclick',()=>{$('#fileInput').value='';$('#fileInput').click()});
   const drop=$('#drop');if(drop){drop.ondragover=e=>{e.preventDefault();drop.classList.add('over')};drop.ondragleave=()=>drop.classList.remove('over');drop.ondrop=async e=>{e.preventDefault();drop.classList.remove('over');const f=e.dataTransfer.files[0];if(f)takeFile(f)}}
-  on('#clearE','onclick',()=>{E=null;EN='';AN=null;SD=[];resetFrom(3);render()});
+  on('#clearE','onclick',()=>{E=null;EN='';AN=null;SD=[];K=null;KN='';KA=null;resetFrom(3);render()});
   on('#skipE','onclick',()=>{buildN();render();$('#s3').scrollIntoView({behavior:'smooth'})});
   on('#apply','onclick',()=>{buildN();render();$('#s3').scrollIntoView({behavior:'smooth'})});
   on('#clearNL','onclick',()=>{NL=null;resetFrom(3);render()});
