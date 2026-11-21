@@ -89,10 +89,9 @@ details summary{cursor:pointer;font-weight:600;color:var(--navy)}
 <header class="top"><div class="brand">Mottak <small>Familiegjenforening · for teknisk eier</small></div><ol class="stepper" id="stepper"></ol></header>
 <main class="wrap">
   <h1>Legg inn endringer</h1>
-  <p class="lead">Verktøyet tar deg gjennom fire steg og kontrollerer alt før noe lagres. Du laster fortsatt opp selv, med GitHub Desktop.</p>
+  <p class="lead">Verktøyet tar deg gjennom fire steg og kontrollerer alt før noe lagres. Til slutt laster du opp på github.com, og verktøyet kontrollerer at opplastingen ble riktig.</p>
   <div id="app"></div>
 </main>
-<input type="file" id="dirInput" webkitdirectory multiple hidden>
 <input type="file" id="fileInput" accept=".json,application/json" hidden>
 <div class="toast" id="toast" role="status"></div>
 <script>
@@ -109,7 +108,8 @@ async function sha10(s){const b=await crypto.subtle.digest('SHA-1',new TextEncod
 const fingerprint=(s,t)=>{const j=JSON.stringify({s,t});return j.length+':'+[...j].reduce((h,c)=>(h*31+c.charCodeAt(0))|0,0)};
 
 // ───────── Tilstand ─────────
-let R=null;          // repoet slik det er nå: {dir, name, files:{sti:tekst}, data}
+let R=null;          // siste versjon: {files:{sti:tekst}, data, repo, commit}
+let VERIFIED=null,VMSG='';
 let E=null,EN='';    // endringsfil og filnavn
 let AN=null,SD=[];   // analyse av tekster og struktur
 let CHOICE={};       // konflikter: 'redaktor' | 'behold'
@@ -123,7 +123,7 @@ let PUB=null;        // sammenligning med publisert versjon
 const SPRAK_RE=/^sprak\/([a-z-]+)\.json$/,STATUS_RE=/^sprak\/([a-z-]+)\.status\.json$/,UI_RE=/^ui\/([a-z-]+)\.json$/;
 const wanted=p=>/^(config|struktur)\.json$/.test(p)||SPRAK_RE.test(p)||STATUS_RE.test(p)||UI_RE.test(p);
 function toData(files){
-  const J=p=>{if(files[p]==null)throw new Error(`Fant ikke ${p} i data-mappa.`);try{return JSON.parse(files[p])}catch(e){throw new Error(`${p} inneholder en feil og kan ikke leses (${e.message}). Rett fila, eller gå tilbake til forrige versjon i GitHub Desktop.`)}};
+  const J=p=>{if(files[p]==null)throw new Error(`Fant ikke data/${p}.`);try{return JSON.parse(files[p])}catch(e){throw new Error(`${p} inneholder en feil og kan ikke leses (${e.message}). Rett fila på github.com, eller gå tilbake til forrige versjon (se README).`)}};
   const d={config:J('config.json'),struktur:J('struktur.json'),sprak:{},status:{},ui:{}};
   for(const p of Object.keys(files)){let m;if(m=p.match(STATUS_RE))d.status[m[1]]=J(p);else if(m=p.match(SPRAK_RE))d.sprak[m[1]]=J(p);else if(m=p.match(UI_RE))d.ui[m[1]]=J(p)}
   return d;
@@ -138,48 +138,48 @@ function toFiles(d){
 }
 const same=(a,b)=>{try{return JSON.stringify(JSON.parse(a))===JSON.stringify(JSON.parse(b))}catch(e){return a===b}};
 
-async function pickFolder(){
-  if(!window.showDirectoryPicker){$('#dirInput').value='';$('#dirInput').click();return}
-  let h;try{h=await showDirectoryPicker({id:'fgv-repo',mode:'readwrite'})}catch(e){return}
+// Henter siste versjon direkte fra GitHub (riktig commit, ingen mellomlagring).
+// Går det ikke, brukes den publiserte versjonen på nettsiden.
+const pathsFor=cfg=>['config.json','struktur.json',...(cfg.sprak||[]).flatMap(l=>['sprak/'+l.kode+'.json','ui/'+l.kode+'.json',...(l.kode==='no'?[]:['sprak/'+l.kode+'.status.json'])])];
+async function latestCommit(repo){
+  const r=await fetch(`https://api.github.com/repos/${repo}/commits/main`,{cache:'no-store',headers:{Accept:'application/vnd.github+json'}});
+  if(!r.ok)throw new Error('GitHub svarte '+r.status);const c=await r.json();
+  return{sha:c.sha,date:c.commit.committer.date,msg:c.commit.message.split('\n')[0],who:c.commit.author.name};
+}
+async function fetchFiles(base,cfgText){
+  const get=async p=>{const r=await fetch(base+p,{cache:'no-store'});if(r.status===404)return null;if(!r.ok)throw new Error(`Kunne ikke hente ${p} (${r.status}).`);return r.text()};
+  const c=cfgText??await get('config.json');if(c==null)throw new Error('Fant ikke data/config.json.');
+  let cfg;try{cfg=JSON.parse(c)}catch(e){throw new Error('config.json inneholder en feil og kan ikke leses.')}
+  const files={'config.json':c};
+  await Promise.all(pathsFor(cfg).filter(p=>p!=='config.json').map(async p=>{const t=await get(p);if(t!=null)files[p]=t}));
+  return files;
+}
+const rawBase=(repo,sha)=>`https://raw.githubusercontent.com/${repo}/${sha}/data/`;
+let ERR1='',LOADING=false;
+async function load(){
+  LOADING=true;ERR1='';R=null;resetFrom(2);render();
   try{
-    let d=h;try{d=await h.getDirectoryHandle('data')}catch(e){}
-    try{await d.getFileHandle('struktur.json')}catch(e){throw new Error(`Fant ikke data/struktur.json i mappa «${h.name}». Velg repo-mappa «familiegjenforening», eller data-mappa i den.`)}
-    const files={};
-    async function walk(dir,pre){for await(const [name,hd] of dir.entries()){
-      if(hd.kind==='directory'){if(!pre&&(name==='sprak'||name==='ui'))await walk(hd,name+'/')}
-      else if(wanted(pre+name))files[pre+name]=await (await hd.getFile()).text()}}
-    await walk(d,'');
-    await load(files,d,h.name);
-  }catch(e){fail1(e.message)}
+    const cfgText=await fetch('data/config.json',{cache:'no-cache'}).then(r=>{if(!r.ok)throw new Error('Fant ikke data/config.json. Mottaket må åpnes fra nettsiden.');return r.text()});
+    const repo=JSON.parse(cfgText).github;let commit=null,files,note='';
+    if(repo){try{commit=await latestCommit(repo);files=await fetchFiles(rawBase(repo,commit.sha))}catch(e){commit=null;note=e.message}}
+    if(!files)files=await fetchFiles('data/',cfgText);
+    R={files,data:toData(files),repo,commit,note};
+  }catch(e){ERR1=e.message;R=null}
+  LOADING=false;render();
 }
-$('#dirInput').onchange=async e=>{
-  const files={};let root='';
-  for(const f of e.target.files){const parts=f.webkitRelativePath.split('/');root=root||parts[0];const i=parts.lastIndexOf('data');const p=(i>=0?parts.slice(i+1):parts.slice(1)).join('/');if(wanted(p))files[p]=await f.text()}
-  if(!files['struktur.json'])return fail1(`Fant ikke data/struktur.json i mappa «${root}». Velg repo-mappa «familiegjenforening», eller data-mappa i den.`);
-  try{await load(files,null,root)}catch(err){fail1(err.message)}
-};
-let ERR1='';function fail1(m){ERR1=m;R=null;render()}
-
-async function load(files,dir,name){
-  const data=toData(files);ERR1='';
-  R={dir,name,files,data};resetFrom(2);
-  PUB=null;
-  if(location.protocol.startsWith('http')){
-    try{const g=p=>fetch('data/'+p,{cache:'no-cache'}).then(r=>{if(!r.ok)throw 0;return r.text()});
-      const [s,t]=await Promise.all([g('struktur.json'),g('sprak/no.json')]);
-      PUB=same(s,files['struktur.json'])&&same(t,files['sprak/no.json'])?'lik':'ulik';
-    }catch(e){PUB=null}}
-  render();
+// Kontroll etter opplasting: henter siste commit og sammenligner filene med det mottaket laget
+async function verifyUpload(){
+  const out={set innerHTML(h){VMSG=h;render()}};out.innerHTML='<div class="msg">Henter siste versjon fra GitHub …</div>';
+  try{
+    const c=await latestCommit(R.repo);
+    if(R.commit&&c.sha===R.commit.sha){out.innerHTML='<div class="msg warn">Finner ingen ny opplasting ennå. Har du trykket <b>Commit changes</b>? Prøv igjen om litt.</div>';return}
+    const base=rawBase(R.repo,c.sha),bad=[],missing=[];
+    await Promise.all(SAVED.paths.map(async p=>{const r=await fetch(base+p,{cache:'no-store'});if(r.status===404){missing.push(p);return}const t=await r.text();if(!same(t,SAVED.files[p]))bad.push(p)}));
+    if(!bad.length&&!missing.length){VERIFIED=c;out.innerHTML=`<div class="msg ok"><b>Opplastingen er riktig.</b> Alle ${SAVED.paths.length} filene ligger på GitHub slik mottaket laget dem («${esc(c.msg)}», ${esc(c.sha.slice(0,7))}). Appen er oppdatert om 1–2 minutter.</div>`;return}
+    out.innerHTML=`<div class="msg err"><b>Opplastingen stemmer ikke.</b>${missing.length?`<br>Mangler på GitHub: ${missing.map(p=>'data/'+esc(p)).join(', ')}. Har du dratt inn mappa <code>data</code>, og ikke mappa rundt den?`:''}${bad.length?`<br>Annet innhold enn forventet: ${bad.map(p=>'data/'+esc(p)).join(', ')}. Last opp disse filene på nytt fra zip-fila.`:''}<br>Siste opplasting: «${esc(c.msg)}» av ${esc(c.who)}.</div>`;
+  }catch(e){out.innerHTML=`<div class="msg err">Kunne ikke kontrollere: ${esc(e.message)}. Sjekk på GitHub at filene er lastet opp.</div>`}
 }
-async function writeFiles(paths,files){
-  if((await R.dir.queryPermission({mode:'readwrite'}))!=='granted'&&(await R.dir.requestPermission({mode:'readwrite'}))!=='granted')throw new Error('Verktøyet fikk ikke lov til å skrive i mappa.');
-  for(const p of paths){const parts=p.split('/');let dir=R.dir;for(const seg of parts.slice(0,-1))dir=await dir.getDirectoryHandle(seg,{create:true});
-    const fh=await dir.getFileHandle(parts.at(-1),{create:true});const w=await fh.createWritable();await w.write(files[p]);await w.close()}
-  // Les tilbake og sjekk at det som ligger i mappa er det vi skrev
-  const bad=[];for(const p of paths){const parts=p.split('/');let dir=R.dir;for(const seg of parts.slice(0,-1))dir=await dir.getDirectoryHandle(seg);const t=await (await (await dir.getFileHandle(parts.at(-1))).getFile()).text();if(t!==files[p])bad.push(p)}
-  return bad;
-}
-// Enkel zip uten komprimering, for nettlesere som ikke kan skrive til mappa
+// Enkel zip uten komprimering
 function crc32(u){let c=-1;for(let i=0;i<u.length;i++){c^=u[i];for(let k=0;k<8;k++)c=c&1?(c>>>1)^0xEDB88320:c>>>1}return(c^-1)>>>0}
 function zip(files){
   const enc=new TextEncoder(),parts=[],cen=[];let off=0,n=0;
@@ -370,7 +370,7 @@ const allDone=()=>N&&Object.values(JOBS).every(jobDone);
 function resetFrom(step){
   if(step<=2){E=null;EN='';AN=null;SD=[];CHOICE={};NL=null}
   if(step<=3){N=null;JOBS={};REMOVED=[];CHANGED=new Set()}
-  SAVED=null;
+  SAVED=null;VERIFIED=null;VMSG='';
 }
 
 // ───────── Steg 4: resultat ─────────
@@ -405,10 +405,10 @@ function commitText(){
 }
 
 // ───────── Visning ─────────
-function stepNow(){return !R?1:!N?2:!allDone()?3:4}
+function stepNow(){return !R?1:!N?2:!allDone()?3:VERIFIED?5:4}
 function render(){
   const s=stepNow();
-  $('#stepper').innerHTML=['Mappe','Endringer','Oversettelse','Lagre'].map((t,i)=>`<li class="${i+1===s?'now':i+1<s?'done':''}"><b>${i+1<s?'✓':i+1}</b><span>${t}</span></li>`).join('');
+  $('#stepper').innerHTML=['Hent','Endringer','Oversettelse','Last opp'].map((t,i)=>`<li class="${i+1===s?'now':i+1<s?'done':''}"><b>${i+1<s?'✓':i+1}</b><span>${t}</span></li>`).join('');
   $('#app').innerHTML=step1()+step2()+step3()+step4();
   bind();
 }
@@ -416,19 +416,19 @@ const card=(n,title,ok,locked,body)=>`<section class="card ${ok?'ok':''} ${locke
 const msgList=(cls,head,items)=>items.length?`<div class="msg ${cls}"><b>${head}</b><ul>${items.map(i=>`<li>${esc(i)}</li>`).join('')}</ul></div>`:'';
 
 function step1(){
-  let b=`<p>Åpne GitHub Desktop og trykk <b>Fetch origin</b> og deretter <b>Pull</b>, så du har siste versjon. Velg så repo-mappa <code>familiegjenforening</code> på maskinen din.</p>`;
+  let b='';
+  if(LOADING)b+='<div class="msg">Henter siste versjon fra GitHub …</div>';
   if(ERR1)b+=`<div class="msg err">${esc(ERR1)}</div>`;
   if(R){
-    const v=validate(R.data),C=R.data.config;
-    b+=`<div class="msg ok">Lest inn mappa <b>${esc(R.name)}</b>: ${Object.keys(R.files).length} filer, ${R.data.struktur.punkter.length} punkter, ${(C.sprak||[]).length} språk.</div>`;
-    if(PUB==='lik')b+=`<div class="msg ok">Innholdet er likt det som er publisert.</div>`;
-    if(PUB==='ulik')b+=`<div class="msg warn"><b>Mappa er ikke lik det som er publisert.</b> Har du trykket Pull i GitHub Desktop? Er det under 2 minutter siden forrige opplasting, kan du se bort fra dette.</div>`;
-    b+=msgList('err','Feil som må rettes før du går videre:',v.err)+msgList('warn','Til informasjon:',v.warn);
+    const v=validate(R.data),C=R.data.config,c=R.commit;
+    b+=c?`<div class="msg ok">Hentet siste versjon fra GitHub: «${esc(c.msg)}» av ${esc(c.who)}, ${esc(new Date(c.date).toLocaleString('nb-NO',{dateStyle:'medium',timeStyle:'short'}))}. ${R.data.struktur.punkter.length} punkter, ${(C.sprak||[]).length} språk.</div>`
+      :`<div class="msg warn"><b>Kunne ikke hente direkte fra GitHub${R.note?` (${esc(R.note)})`:''}.</b> Bruker den publiserte versjonen på nettsiden. Den kan være opptil 10 minutter gammel. Har noen lastet opp nylig, vent litt og trykk «Hent på nytt».${R.repo?'':' Legg inn <code>github</code> i config.json for å hente direkte.'}</div>`;
+    b+=msgList('err','Feil i det som ligger på GitHub nå. Må rettes før du går videre:',v.err)+msgList('warn','Til informasjon:',v.warn);
     const no=R.data.sprak.no,nk=Object.keys(no).length;
     b+=`<details><summary>Status for språkene</summary><table><tr><th>Språk</th><th>Kontrollert av tolk</th><th>Maskinoversatt</th><th>Mangler</th></tr>${(C.sprak||[]).filter(l=>l.kode!=='no').map(l=>{const t=R.data.sprak[l.kode]||{},st=R.data.status[l.kode]||{};const kk=Object.keys(no).filter(k=>t[k]&&st[k]&&st[k].s==='kontrollert').length,miss=Object.keys(no).filter(k=>!t[k]).length;return`<tr><td>${esc(l.navn)}${l.status!=='publisert'?' <span class="hint">(utkast)</span>':''}</td><td>${kk} av ${nk}</td><td>${nk-kk-miss}</td><td>${miss}</td></tr>`}).join('')}</table></details>`;
   }
-  b+=`<div class="acts"><button class="btn ${R?'':'primary'}" id="pick">${R?'Velg mappa på nytt':'Velg repo-mappa'}</button>${!window.showDirectoryPicker?'<span class="hint">Nettleseren din kan ikke lagre direkte i mappa. Du får en zip-fil i steg 4. Chrome og Edge kan lagre direkte.</span>':''}</div>`;
-  return card(1,'Velg repo-mappa',R&&!validate(R.data).err.length,false,b);
+  if(!LOADING)b+=`<div class="acts"><button class="btn small" id="reload">Hent på nytt</button></div>`;
+  return card(1,'Hent siste versjon',R&&!validate(R.data).err.length,false,b);
 }
 function step2(){
   const locked=!R||validate(R.data).err.length>0;let b='';
@@ -443,7 +443,7 @@ function step2(){
       if(!total&&!SD.length)b+=`<div class="msg warn">Alt i denne fila er allerede lagt inn. Det er ingenting nytt å publisere.</div>`;
       if(AN.konflikt.length)b+=`<div class="msg warn"><b>${AN.konflikt.length===1?'1 tekst':AN.konflikt.length+' tekster'} er endret av andre siden redaktøren lastet ned fila.</b> Velg hvilken versjon som skal gjelde for hver av dem.</div>`;
       const no=R.data.sprak.no,nn=E.tekster;
-      const row=(k,kind)=>{const conf=AN.konflikt.includes(k);return`<div class="ch ${conf?'conf':''}"><div class="lbl">${esc(label(k,nn,no))}<span class="tag ${kind}">${{ny:'Ny',endret:'Endret',slettet:'Slettes'}[kind]}</span>${conf?'<span class="tag konflikt">Konflikt</span>':''}</div>${kind!=='ny'?`<div class="was">${esc(no[k])}</div>`:''}${kind!=='slettet'?`<div class="now">${esc(nn[k])}</div>`:''}${/\.tekst$/.test(k)&&k.startsWith('punkt.')&&words(nn[k])>MAXW?`<div class="hint">${words(nn[k])} ord. Anbefalt maks er ${MAXW}.</div>`:''}${conf?`<label><input type="radio" name="c-${esc(k)}" value="redaktor" ${CHOICE[k]!=='behold'?'checked':''} data-choice="${esc(k)}"> Bruk redaktørens tekst</label><label><input type="radio" name="c-${esc(k)}" value="behold" ${CHOICE[k]==='behold'?'checked':''} data-choice="${esc(k)}"> Behold teksten som står i repoet nå</label>`:''}</div>`};
+      const row=(k,kind)=>{const conf=AN.konflikt.includes(k);return`<div class="ch ${conf?'conf':''}"><div class="lbl">${esc(label(k,nn,no))}<span class="tag ${kind}">${{ny:'Ny',endret:'Endret',slettet:'Slettes'}[kind]}</span>${conf?'<span class="tag konflikt">Konflikt</span>':''}</div>${kind!=='ny'?`<div class="was">${esc(no[k])}</div>`:''}${kind!=='slettet'?`<div class="now">${esc(nn[k])}</div>`:''}${/\.tekst$/.test(k)&&k.startsWith('punkt.')&&words(nn[k])>MAXW?`<div class="hint">${words(nn[k])} ord. Anbefalt maks er ${MAXW}.</div>`:''}${conf?`<label><input type="radio" name="c-${esc(k)}" value="redaktor" ${CHOICE[k]!=='behold'?'checked':''} data-choice="${esc(k)}"> Bruk redaktørens tekst</label><label><input type="radio" name="c-${esc(k)}" value="behold" ${CHOICE[k]==='behold'?'checked':''} data-choice="${esc(k)}"> Behold teksten som står på GitHub nå</label>`:''}</div>`};
       if(total)b+=`<h3>Tekster (${total})</h3>`+AN.endret.map(k=>row(k,'endret')).join('')+AN.nye.map(k=>row(k,'ny')).join('')+AN.slettet.map(k=>row(k,'slettet')).join('');
       if(SD.length)b+=`<h3>Struktur (${SD.length})</h3>`+SD.map(s=>`<div class="msg ${s.t==='slettet'||s.t==='viktig'?'warn':'ok'}">${esc(s.m)}</div>`).join('')+(SD.some(s=>s.t==='viktig')?'<p class="hint">Telefonnumre vises for familiene på alle språk. Sjekk at det nye nummeret stemmer.</p>':'');
     }
@@ -488,25 +488,28 @@ function step4(){
   const locked=!allDone();let b='';
   if(!locked){
     if(!SAVED){
-      b+=`<p>Alt er kontrollert. Siste kontroll kjøres når du lagrer.</p><div id="s4msg"></div><div class="acts"><button class="btn primary" id="save">${R.dir?'Lagre i repo-mappa':'Last ned data-mappa (zip)'}</button></div>`;
+      b+=`<p>Alt er kontrollert. Siste kontroll kjøres når du laster ned.</p><div id="s4msg"></div><div class="acts"><button class="btn primary" id="save">Last ned filene som skal lastes opp</button></div>`;
     }else{
-      const {title,body}=commitText();
-      b+=SAVED.html;
-      b+=`<h3>Last opp med GitHub Desktop</h3><ol class="todo">
-        <li>Åpne GitHub Desktop. Under <b>Changes</b> skal du se nøyaktig disse filene:<ul class="files">${SAVED.paths.map(p=>`<li class="${SAVED.created.includes(p)?'new':''}">data/${esc(p)}</li>`).join('')}</ul>Ser du andre filer, ikke ta dem med før du vet hva de er.</li>
-        <li>Kopier oppsummeringen og beskrivelsen under, og lim dem inn nederst til venstre.<pre class="commit"><b>${esc(title)}</b>\n\n${esc(body)}</pre><div class="acts"><button class="btn small" id="cpT">Kopier oppsummering</button><button class="btn small" id="cpB">Kopier beskrivelse</button></div></li>
-        <li>Trykk <b>Commit to main</b>, og deretter <b>Push origin</b>.</li>
-        <li>Vent 1–2 minutter, og åpne <a href="veileder.html${NL?'?lang='+NL.kode:''}" target="_blank" rel="noopener">appen</a>. Sjekk det du har endret, gjerne på mobil.</li>
-        <li>Gi redaktøren beskjed om at endringene er publisert${Object.values(JOBS).some(j=>j.keys.length)?', og be en tolk kontrollere de nye oversettelsene':''}.</li></ol>
-        <div class="acts"><button class="btn ghost" id="again">Start på nytt med en ny endringsfil</button></div>`;
+      const {title,body}=commitText(),up=R.repo?`https://github.com/${R.repo}/upload/main`:'';
+      b+=`<div class="msg ok"><b>${esc(SAVED.zip)} er lastet ned.</b> Den inneholder mappa <code>data</code> med de ${SAVED.paths.length} filene som er endret.</div>
+      <ol class="todo">
+        <li><b>Pakk ut zip-fila.</b> Windows: høyreklikk og velg «Pakk ut alle». Mac: dobbeltklikk. Da får du en mappe som heter <code>data</code>.</li>
+        <li><b>Åpne opplastingssiden på GitHub</b>${up?`: <a href="${esc(up)}" target="_blank" rel="noopener">${esc(up.replace('https://',''))}</a>`:' (Add file → Upload files)'}.</li>
+        <li><b>Dra mappa <code>data</code> inn i feltet.</b> Ikke mappa rundt den. GitHub skal vise disse filene, og eksisterende filer blir erstattet:<ul class="files">${SAVED.paths.map(p=>`<li class="${SAVED.created.includes(p)?'new':''}">data/${esc(p)}</li>`).join('')}</ul></li>
+        <li><b>Lim inn oppsummering og beskrivelse</b> under «Commit changes».<pre class="commit"><b>${esc(title)}</b>\n\n${esc(body)}</pre><div class="acts"><button class="btn small" id="cpT">Kopier oppsummering</button><button class="btn small" id="cpB">Kopier beskrivelse</button></div></li>
+        <li>La «Commit directly to the main branch» være valgt, og trykk <b>Commit changes</b>.</li>
+        <li><b>Kontroller opplastingen.</b> Verktøyet sjekker at filene på GitHub er nøyaktig de som ble laget her.${R.repo?`<div class="acts"><button class="btn primary" id="verify">Kontroller opplastingen</button></div><div id="verifyOut">${VMSG}</div>`:''}</li>
+        <li>Åpne <a href="veileder.html${NL?'?lang='+NL.kode:''}" target="_blank" rel="noopener">appen</a> etter 1–2 minutter og se på det som er endret, gjerne på mobil. Gi redaktøren beskjed${Object.values(JOBS).some(j=>j.keys.length)?', og be en tolk kontrollere de nye oversettelsene':''}.</li></ol>
+        <div class="acts"><button class="btn small" id="dlAgain">Last ned zip-fila igjen</button><button class="btn ghost" id="again">Start på nytt</button></div>`;
     }
   }
-  return card(4,'Lagre og last opp',!!SAVED,locked,b);
+  return card(4,'Last opp på GitHub',!!VERIFIED,locked,b);
 }
-
 function bind(){
   const on=(s,ev,f)=>{const el=$(s);if(el)el[ev]=f};
-  on('#pick','onclick',pickFolder);
+  on('#reload','onclick',load);
+  on('#verify','onclick',verifyUpload);
+  on('#dlAgain','onclick',()=>download(SAVED.zip,SAVED.blob));
   on('#pickFile','onclick',()=>{$('#fileInput').value='';$('#fileInput').click()});
   const drop=$('#drop');if(drop){drop.ondragover=e=>{e.preventDefault();drop.classList.add('over')};drop.ondragleave=()=>drop.classList.remove('over');drop.ondrop=async e=>{e.preventDefault();drop.classList.remove('over');const f=e.dataTransfer.files[0];if(f)takeFile(f)}}
   on('#clearE','onclick',()=>{E=null;EN='';AN=null;SD=[];resetFrom(3);render()});
@@ -528,7 +531,7 @@ function bind(){
   on('#save','onclick',save);
   on('#cpT','onclick',()=>copy(commitText().title,'Oppsummeringen er kopiert'));
   on('#cpB','onclick',()=>copy(commitText().body,'Beskrivelsen er kopiert'));
-  on('#again','onclick',async()=>{if(R.dir){try{const files={};async function walk(dir,pre){for await(const [name,hd] of dir.entries()){if(hd.kind==='directory'){if(!pre&&(name==='sprak'||name==='ui'))await walk(hd,name+'/')}else if(wanted(pre+name))files[pre+name]=await (await hd.getFile()).text()}}await walk(R.dir,'');await load(files,R.dir,R.name)}catch(e){fail1(e.message)}}else{R=null;resetFrom(2);render()}scrollTo({top:0,behavior:'smooth'})});
+  on('#again','onclick',()=>{scrollTo({top:0,behavior:'smooth'});load()});
 }
 async function takeFile(f){try{readChangeFile(await f.text(),f.name)}catch(e){const el=$('#e2');if(el)el.innerHTML=`<div class="msg err">${esc(e.message)}</div>`}}
 $('#fileInput').onchange=e=>{const f=e.target.files[0];if(f)takeFile(f)};
@@ -537,22 +540,15 @@ async function save(){
   const btn=$('#save');btn.disabled=true;
   try{
     const d=await finalData(),v=validate(d);
-    if(v.err.length){$('#s4msg').innerHTML=msgList('err','Siste kontroll fant feil. Ingenting er lagret:',v.err);btn.disabled=false;return}
+    if(v.err.length){$('#s4msg').innerHTML=msgList('err','Siste kontroll fant feil. Ingenting er lastet ned:',v.err);btn.disabled=false;return}
     const files=toFiles(d),paths=Object.keys(files).filter(p=>R.files[p]==null||!same(R.files[p],files[p])),created=paths.filter(p=>R.files[p]==null);
     if(!paths.length){$('#s4msg').innerHTML='<div class="msg warn">Ingen filer er endret. Det er ingenting å laste opp.</div>';btn.disabled=false;return}
-    let html='';
-    if(R.dir){
-      const bad=await writeFiles(paths,files);
-      if(bad.length)throw new Error('Disse filene ble ikke lagret riktig: '+bad.join(', ')+'. Prøv igjen.');
-      html=`<div class="msg ok"><b>${paths.length} filer er lagret i repo-mappa og kontrollert.</b></div>`;
-    }else{
-      download('data.zip',zip(Object.fromEntries(Object.entries(files).map(([p,t])=>['data/'+p,t]))));
-      html=`<div class="msg ok"><b>data.zip er lastet ned.</b> Den inneholder hele data-mappa.</div><ol class="todo"><li>Pakk ut data.zip.</li><li>Slett mappa <code>data</code> i repo-mappa <code>familiegjenforening</code>.</li><li>Flytt den nye <code>data</code>-mappa inn i repo-mappa.</li></ol>`;
-    }
-    SAVED={paths,created,html};render();$('#s4').scrollIntoView({behavior:'smooth'});
+    const name='last-opp-'+new Date().toISOString().slice(0,10)+'.zip';
+    SAVED={paths,created,files,zip:name,blob:zip(Object.fromEntries(paths.map(p=>['data/'+p,files[p]])))};
+    download(name,SAVED.blob);render();$('#s4').scrollIntoView({behavior:'smooth'});
   }catch(e){$('#s4msg').innerHTML=`<div class="msg err">${esc(e.message)}</div>`;btn.disabled=false}
 }
-render();
+load();
 })();
 </script>
 </body>

@@ -202,7 +202,10 @@ const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const clone=o=>JSON.parse(JSON.stringify(o));
 // Henter det som er publisert nå. Redaktøren jobber alltid oppå siste versjon.
-const ORIG=await (async()=>{try{const g=p=>fetch(p,{cache:'no-cache'}).then(r=>{if(!r.ok)throw new Error(p+' ('+r.status+')');return r.json()});const [s,t]=await Promise.all([g('data/struktur.json'),g('data/sprak/no.json')]);return{s,t}}
+const ORIG=await (async()=>{try{
+    // Siste versjon rett fra GitHub hvis mulig, ellers den publiserte på nettsiden
+    let base='data/';try{const cfg=await fetch('data/config.json',{cache:'no-cache'}).then(r=>r.json());if(cfg.github){const c=await fetch(`https://api.github.com/repos/${cfg.github}/commits/main`,{cache:'no-store'}).then(r=>{if(!r.ok)throw 0;return r.json()});base=`https://raw.githubusercontent.com/${cfg.github}/${c.sha}/data/`}}catch(e){}
+    const g=p=>fetch(base+p,{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(p+' ('+r.status+')');return r.json()});const [s,t]=await Promise.all([g('struktur.json'),g('sprak/no.json')]);return{s,t}}
   catch(e){document.getElementById('edit').innerHTML='<h1>Innholdet kunne ikke lastes</h1><p>'+String(e.message).replace(/</g,'&lt;')+'</p><p>Redaktøren må åpnes fra nettsiden, ikke som fil på maskinen.</p>';throw e}})();
 const BASE=JSON.stringify(ORIG).length+':'+[...JSON.stringify(ORIG)].reduce((h,c)=>(h*31+c.charCodeAt(0))|0,0);
 const KEY='fgv_redaktor',NLANG=4,MAXW=80;

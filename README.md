@@ -41,22 +41,13 @@ Detaljer finnes i [docs/DATAMODELL.md](docs/DATAMODELL.md). Råd om tekst finnes
 - **ID-ene til punkter** (f.eks. `police`, `school`). Familienes avkrysninger er lagret på ID. Bytt tittel, aldri ID.
 - **Lagringsnøkkelen `fgv_app_v1`** i `config.json`. Endres den, mister alle familier fremdriften sin.
 
-## Testing på egen maskin
-
-Appen henter JSON-filer og virker derfor ikke ved dobbeltklikk på fila. Kjør i stedet:
-
-```
-cd familiegjenforening
-python3 -m http.server 8000
-```
-
-Åpne deretter http://localhost:8000/veileder.html. Legg til `?utkast=1` for å se punkter med status «utkast».
-
 ## Slik legger du inn endringer: bruk mottaket
 
-Åpne **https://tonsbergloftet.github.io/familiegjenforening/mottak.html** i Chrome eller Edge. Verktøyet tar deg gjennom fire steg:
+Alt gjøres i nettleseren. Du trenger ikke installere noe.
 
-1. **Velg repo-mappa.** Trykk *Fetch origin* og *Pull* i GitHub Desktop først. Verktøyet leser filene, kontrollerer dem og sier fra hvis mappa ikke er lik det som er publisert.
+Åpne **https://tonsbergloftet.github.io/familiegjenforening/mottak.html**. Verktøyet tar deg gjennom fire steg:
+
+1. **Hent siste versjon.** Dette skjer automatisk, rett fra GitHub. Verktøyet kontrollerer filene og viser hvem som lastet opp sist.
 2. **Se gjennom endringene.** Slipp inn endringsfila fra redaktøren. Du ser hver tekst før og etter, nye og fjernede punkter og endrede telefonnumre. Har noen andre endret samme tekst i mellomtiden, velger du hvilken versjon som skal gjelde. Her kan du også legge til et nytt språk.
 3. **KI-oversett.** For hvert språk kopierer du en ferdig pakke, limer den inn i Copilot, ChatGPT eller Claude og limer svaret tilbake. Verktøyet kontrollerer svaret:
    - at alle tekster er med
@@ -65,9 +56,11 @@ python3 -m http.server 8000
    - at tallene er de samme
 
    Du kommer ikke videre før alle språk er oversatt.
-4. **Lagre.** Verktøyet skriver bare de endrede filene til repo-mappa og leser dem tilbake for å kontrollere at de er riktige. Det lager også en ferdig commit-melding. Deretter kjører du *Commit to main* og *Push origin* i GitHub Desktop som vanlig.
-
-Firefox og Safari kan ikke skrive til mappa. Der får du i stedet en zip med hele `data`-mappa, som erstatter den gamle.
+4. **Last opp.** Du får en zip med mappa `data`, som bare inneholder de endrede filene.
+   - Pakk ut zip-fila.
+   - Åpne opplastingssiden (https://github.com/tonsbergloftet/familiegjenforening/upload/main) og dra mappa `data` inn.
+   - Lim inn den ferdige commit-meldingen og trykk *Commit changes*.
+   - Trykk *Kontroller opplastingen* i mottaket. Verktøyet sjekker at filene på GitHub er nøyaktig de det laget.
 
 Mottaket kan også brukes uten endringsfil, for å oversette tekster som mangler.
 
@@ -75,7 +68,7 @@ Mottaket kan også brukes uten endringsfil, for å oversette tekster som mangler
 
 1. Legg de nye tekstene fra endringsfila (`tekster`) inn i `data/sprak/no.json`. `null` betyr at teksten er slettet. Er `struktur` med, erstatter den `data/struktur.json`.
 2. KI-oversett de endrede nøklene til alle språk, og sett status `{"s":"ki"}` i `data/sprak/xx.status.json`.
-3. Test lokalt, og commit med en beskrivende melding.
+3. Last opp filene på github.com med en beskrivende commit-melding.
 
 **Regel: Ingen norsk tekst lastes opp uten oversettelse.** Familiene ser KI-teksten merket «Maskinoversatt» til en tolk har godkjent den. Da endres status til `{"s":"kontrollert"}`.
 
@@ -86,4 +79,6 @@ Flygebladet og de tre viktigste punktene ligger på kommunens nettside, som har 
 ## Hvis noe går galt
 
 - **Appen viser feilmelding om innlasting:** Sannsynligvis en JSON-feil. Lim fila inn på https://jsonlint.com eller se siste commit i GitHub.
-- **Angre en endring:** I GitHub Desktop: *History* → høyreklikk commit → *Revert*.
+- **Angre en endring:** GitHub i nettleseren har ingen angreknapp for vanlige opplastinger. Det enkleste er å la redaktøren rette i redaktørverktøyet og ta det gjennom mottaket på nytt.
+  - Haster det med én fil: Åpne fila på GitHub og trykk *History*. Åpne versjonen før feilen og trykk *Raw*. Kopier alt. Gå tilbake til fila, trykk blyanten (*Edit*), lim inn og trykk *Commit changes*.
+- **For utviklere:** Appen kan testes lokalt med `python3 -m http.server` i repo-mappa. Den virker ikke ved dobbeltklikk på fila.

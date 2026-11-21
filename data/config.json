@@ -1,6 +1,8 @@
 {
   "adresse": "https://tonsbergloftet.github.io/familiegjenforening/",
   "_adresse": "Publisert adresse til mappen der veileder.html ligger.",
+  "github": "tonsbergloftet/familiegjenforening",
+  "_github": "Repoet på GitHub (eier/navn). Redaktør og mottak henter siste versjon herfra.",
   "viktigste_side": "",
   "_viktigste_side": "Lenke til kommunens side med de tre viktigste tingene. Tom = lenken vises ikke.",
   "app": "veileder.html",
