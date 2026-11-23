@@ -17,6 +17,7 @@
 --mint:light-dark(#EEF4E8,#18302a);--warn:light-dark(#FFF3D1,#3a3018);--warn-ink:light-dark(#5C4300,#f0d78f);
 --err:light-dark(#FDE8E6,#3a1d1b);--err-ink:light-dark(#8A1F14,#f4b2a9);--shadow:0 1px 3px rgba(1,57,82,.07),0 4px 12px rgba(1,57,82,.04)}
 *{box-sizing:border-box;min-width:0}
+[hidden]{display:none!important}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 'Barlow',system-ui,sans-serif}
 button,input,textarea,select{font:inherit;color:inherit}
 button{cursor:pointer}
@@ -25,7 +26,7 @@ button{cursor:pointer}
 .brand{display:flex;align-items:center;gap:10px;font-weight:600;color:var(--navy);white-space:nowrap}
 .brand::before{content:'';width:4px;height:22px;border-radius:2px;background:var(--green)}
 .brand small{font-weight:500;color:var(--muted);font-size:14px}
-.stepper{display:flex;gap:6px;margin-inline-start:auto;list-style:none;padding:0;margin-block:0}
+.stepper{display:flex;gap:6px;margin-inline-start:auto;flex-wrap:wrap;list-style:none;padding:0;margin-block:0}
 .stepper li{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--muted);padding:4px 10px 4px 4px;border-radius:999px}
 .stepper li b{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--sunk);font-size:13px}
 .stepper li.now{color:var(--navy);background:var(--mint);font-weight:600}.stepper li.now b{background:var(--green);color:var(--on-green)}
@@ -82,11 +83,14 @@ details summary{cursor:pointer;font-weight:600;color:var(--navy)}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--navy);color:var(--sheet);padding:10px 18px;border-radius:999px;opacity:0;transition:.2s;pointer-events:none;font-weight:600}
 .toast.show{opacity:1;transform:translateX(-50%)}
 [dir=rtl]{text-align:right}
+.intro{border:2px solid var(--green)}
+.intro ol li{margin:6px 0}
+.top{flex-wrap:wrap}
 @media (max-width:760px){.stepper li span{display:none}.stepper li{padding:4px}.brand small{display:none}.card{padding:16px}}
 </style>
 </head>
 <body>
-<header class="top"><div class="brand">Mottak <small>Familiegjenforening · for teknisk eier</small></div><ol class="stepper" id="stepper"></ol></header>
+<header class="top"><div class="brand">Mottak <small>Familiegjenforening · for teknisk eier</small></div><ol class="stepper" id="stepper"></ol><button class="btn ghost small" id="helpBtn">Hjelp</button><button class="btn ghost small" id="undoBtn">Angre en opplasting</button></header>
 <main class="wrap">
   <h1>Legg inn endringer</h1>
   <p class="lead">Verktøyet tar deg gjennom fire steg og kontrollerer alt før noe lagres. Til slutt laster du opp på github.com, og verktøyet kontrollerer at opplastingen ble riktig.</p>
@@ -110,7 +114,8 @@ const fingerprint=(s,t)=>{const j=JSON.stringify({s,t});return j.length+':'+[...
 // ───────── Tilstand ─────────
 let R=null;          // siste versjon: {files:{sti:tekst}, data, repo, commit}
 let VERIFIED=null,VMSG='';
-let RAW=null,STALE=null;   // innlest fil (for å kunne lese den inn på nytt) og melding om ny versjon
+let RAW=null,STALE=null;
+let HELP=!localStorage.getItem('fgv_mottak_intro'),UNDO=null; // UNDO: {stage,commit,files,paths,added,...}   // innlest fil (for å kunne lese den inn på nytt) og melding om ny versjon
 const TRC={};              // godkjente KI-oversettelser: språk|nøkkel|norsk → tekst. Gjenbrukes hvis mottaket må hente på nytt.
 // Zip som er laget, men ikke kontrollert opplastet. Hindrer at to zip-filer bygd på samme versjon overskriver hverandre.
 const PKEY='fgv_mottak_venter';let PENDING=null;try{PENDING=JSON.parse(localStorage.getItem(PKEY))}catch(e){}
@@ -185,7 +190,7 @@ async function checkUpload(P){
     if(cmp&&cmp.commits)others=cmp.commits.filter(x=>!P.files||x.sha!==c.sha).map(x=>x.commit.message.split('\n')[0]).filter(m=>m!==P.title)}catch(e){}}
   if(bad.length||missing.length)return{state:'bad',html:`<div class="msg err"><b>Opplastingen stemmer ikke.</b>${missing.length?`<br>Mangler på GitHub: ${missing.map(p=>'data/'+esc(p)).join(', ')}. Har du dratt inn mappa <code>data</code>, og ikke mappa rundt den?`:''}${bad.length?`<br>Annet innhold enn forventet: ${bad.map(p=>'data/'+esc(p)).join(', ')}.`:''}${others.length?`<br>Det er lastet opp andre endringer etter at zip-fila ble laget: ${others.map(m=>'«'+esc(m)+'»').join(', ')}.`:' Last opp disse filene på nytt fra zip-fila.'}<br>Siste opplasting: «${esc(c.msg)}» av ${esc(c.who)}.</div>`};
   if(others.length)return{state:'warn',c,html:`<div class="msg warn"><b>Filene dine ligger riktig, men det ble lastet opp ${others.length===1?'en annen endring':others.length+' andre endringer'} mellom versjonen zip-fila bygde på og din:</b> ${others.map(m=>'«'+esc(m)+'»').join(', ')}. Opplastingen din kan ha skrevet over noe av det. Åpne appen og sjekk. Mangler noe, legger du den andre fila inn i mottaket på nytt.</div>`};
-  return{state:'ok',c,html:`<div class="msg ok"><b>Opplastingen er riktig.</b> Alle ${P.paths.length} filene ligger på GitHub slik mottaket laget dem («${esc(c.msg)}», ${esc(c.sha.slice(0,7))}). Appen er oppdatert om 1–2 minutter.</div>`};
+  return{state:'ok',c,html:`<div class="msg ok"><b>Opplastingen er riktig.</b> ${P.paths.length===1?'Fila':'Alle '+P.paths.length+' filene'} ligger på GitHub slik mottaket laget dem («${esc(c.msg)}», ${esc(c.sha.slice(0,7))}). Appen er oppdatert om 1–2 minutter.</div>`};
 }
 async function verifyUpload(){
   VMSG='<div class="msg">Henter siste versjon fra GitHub …</div>';render();
@@ -455,11 +460,69 @@ function commitText(){
 }
 
 // ───────── Visning ─────────
+function helpCard(){
+  return `<section class="card intro"><h2>Slik bruker du mottaket</h2>
+  <p>Mottaket er der du legger inn endringer før de publiseres. Du får to typer filer på e-post eller Teams:</p>
+  <ul><li><b>endringer-….json</b> fra redaktøren: ny eller endret norsk tekst, nye punkter eller faser.</li><li><b>kontroll-….json</b> fra en tolk: rettede og godkjente oversettelser.</li></ul>
+  <ol><li><b>Hent:</b> Mottaket henter siste versjon fra GitHub av seg selv.</li>
+  <li><b>Endringer:</b> Slipp inn fila. Se gjennom det som endres, og trykk «Ta i bruk».</li>
+  <li><b>Oversettelse:</b> Gjelder bare endringsfiler. Kopier pakken til Copilot, ChatGPT eller Claude, og lim svaret tilbake. Mottaket kontrollerer svaret.</li>
+  <li><b>Last opp:</b> Last ned zip-fila, dra mappa <code>data</code> inn på github.com og trykk «Kontroller opplastingen».</li></ol>
+  <p><b>Tre regler:</b> Ta én fil om gangen. Ikke rediger filer direkte på github.com. Har du lastet opp noe feil, trykk «Angre en opplasting» øverst.</p>
+  <p class="hint">Du trenger en GitHub-konto med skrivetilgang til repoet. Du finner denne veiledningen igjen under «Hjelp» øverst.</p>
+  <div class="acts"><button class="btn primary" id="helpOk">Skjønner</button></div></section>`;
+}
+// ───────── Angre en opplasting: zip med filene slik de var før siste opplasting ─────────
+async function startUndo(){
+  if(!R||!R.repo||!R.commit){toast('Angring krever kontakt med GitHub. Trykk «Hent på nytt» først.');return}
+  if(PENDING){UNDO={stage:'err',msg:'Du har en zip-fil som ikke er kontrollert. Kontroller eller forkast den i steg 1 før du angrer.'};render();return}
+  UNDO={stage:'loading'};VMSG='';render();
+  try{
+    const api=p=>fetch(`https://api.github.com/repos/${R.repo}/${p}`,{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error('GitHub svarte '+r.status);return r.json()});
+    const list=await api('commits?path=data&per_page=1');if(!list.length)throw new Error('Fant ingen opplastinger.');
+    const c=await api('commits/'+list[0].sha),parent=c.parents[0]&&c.parents[0].sha;if(!parent)throw new Error('Den første opplastingen kan ikke angres.');
+    const fs=(c.files||[]).filter(f=>f.filename.startsWith('data/')),files={},paths=[],added=[];
+    for(const f of fs){const p=f.filename.slice(5);
+      if(f.status==='added'){added.push(p);continue}
+      const from=(f.status==='renamed'&&f.previous_filename?f.previous_filename:f.filename).slice(5);
+      const r=await fetch(rawBase(R.repo,parent)+from,{cache:'no-store'});if(!r.ok)throw new Error('Fant ikke forrige versjon av '+from);
+      files[p]=await r.text();paths.push(p)}
+    const after=Object.assign({},R.files,files);added.forEach(p=>delete after[p]);
+    let check={err:[],warn:[]};try{check=validate(toData(after))}catch(e){check.err.push(e.message)}
+    UNDO={stage:'ready',commit:{sha:c.sha,msg:c.commit.message.split('\n')[0],who:c.commit.author.name,date:c.commit.committer.date},parent,files,paths,added,check};
+  }catch(e){UNDO={stage:'err',msg:e.message}}
+  render();
+}
+function undoDownload(){
+  const u=UNDO,name='angre-'+u.commit.sha.slice(0,7)+'.zip',title=`Angre: ${u.commit.msg}`;
+  const P={zip:name,title,laget:new Date().toISOString(),base:R.commit.sha,paths:u.paths,files:u.files};
+  u.blob=zip(Object.fromEntries(u.paths.map(p=>['data/'+p,u.files[p]])));download(name,u.blob);setPending(P);u.stage='saved';u.title=title;render();
+}
+function undoCard(){
+  const u=UNDO;let b='';
+  if(u.stage==='loading')b='<div class="msg">Henter siste opplasting fra GitHub …</div>';
+  else if(u.stage==='err')b=`<div class="msg err">${esc(u.msg)}</div><div class="acts"><button class="btn" id="undoCancel">Tilbake</button></div>`;
+  else{
+    const c=u.commit;
+    b+=`<p>Dette setter filene tilbake slik de var før den siste opplastingen:</p><div class="msg warn"><b>«${esc(c.msg)}»</b> av ${esc(c.who)}, ${esc(new Date(c.date).toLocaleString('nb-NO',{dateStyle:'medium',timeStyle:'short'}))} (${esc(c.sha.slice(0,7))})</div>`;
+    if(!u.paths.length&&!u.added.length)b+='<div class="msg warn">Opplastingen endret ingen filer i data-mappa. Det er ingenting å angre.</div>';
+    if(u.added.length)b+=`<div class="msg warn">Disse filene ble lagt til i opplastingen: ${u.added.map(p=>'data/'+esc(p)).join(', ')}. De blir liggende, men appen bruker dem ikke etter angringen.</div>`;
+    b+=msgList('err','Etter angringen ville filene hatt feil. Ta kontakt med noen som kan GitHub før du går videre:',u.check.err);
+    if(u.stage==='ready'){
+      b+=`<p>Du får en zip med ${u.paths.length} filer, og laster den opp på samme måte som vanlig. Vil du angre flere opplastinger, gjør du én om gangen.</p><div class="acts"><button class="btn primary" id="undoDl" ${u.paths.length&&!u.check.err.length?'':'disabled'}>Last ned zip med forrige versjon</button><button class="btn ghost" id="undoCancel">Avbryt</button></div>`;
+    }else{
+      b+=`<div class="msg ok"><b>${esc(PENDING?PENDING.zip:'Zip-fila')} er lastet ned.</b></div>`+uploadSteps({paths:u.paths},u.title,`Setter filene i data tilbake slik de var før ${c.sha.slice(0,7)} («${c.msg}»).`);
+      b+=`<div class="acts">${VERIFIED?'<button class="btn primary" id="undoDone">Ferdig, tilbake til mottaket</button>':''}</div>`;
+    }
+  }
+  return `<section class="card"><h2>Angre en opplasting</h2>${b}</section>`;
+}
 function stepNow(){return !R?1:!N?2:!allDone()?3:VERIFIED?5:4}
 function render(){
   const s=stepNow();
   $('#stepper').innerHTML=['Hent','Endringer','Oversettelse','Last opp'].map((t,i)=>`<li class="${i+1===s?'now':i+1<s?'done':''}"><b>${i+1<s?'✓':i+1}</b><span>${t}</span></li>`).join('');
-  $('#app').innerHTML=step1()+step2()+step3()+step4();
+  $('#stepper').hidden=!!UNDO;
+  $('#app').innerHTML=(HELP?helpCard():'')+(UNDO?undoCard():step1()+step2()+step3()+step4());
   bind();
 }
 const card=(n,title,ok,locked,body)=>`<section class="card ${ok?'ok':''} ${locked?'locked':''}" id="s${n}"><h2><span class="n">${ok?'✓':n}</span>${title}</h2>${body}</section>`;
@@ -550,22 +613,30 @@ function step3(){
   }
   return card(3,'KI-oversett til alle språk',allDone()&&!!N,locked,b);
 }
+let COPYTXT={t:'',b:''};
+function uploadSteps(P,title,body,extra){
+  COPYTXT={t:title,b:body};
+  const up=R.repo?`https://github.com/${R.repo}/upload/main`:'';
+  return `<ol class="todo">
+    <li><b>Pakk ut zip-fila.</b> Windows: høyreklikk og velg «Pakk ut alle». Mac: dobbeltklikk. Da får du en mappe som heter <code>data</code>.</li>
+    <li><b>Åpne opplastingssiden på GitHub</b>${up?`: <a href="${esc(up)}" target="_blank" rel="noopener">${esc(up.replace('https://',''))}</a>`:' (Add file → Upload files)'}.</li>
+    <li><b>Dra mappa <code>data</code> inn i feltet.</b> Ikke mappa rundt den. GitHub skal vise disse filene, og eksisterende filer blir erstattet:<ul class="files">${P.paths.map(p=>`<li class="${(P.created||[]).includes(p)?'new':''}">data/${esc(p)}</li>`).join('')}</ul></li>
+    <li><b>Lim inn oppsummering og beskrivelse</b> under «Commit changes».<pre class="commit"><b>${esc(title)}</b>\n\n${esc(body)}</pre><div class="acts"><button class="btn small" data-copy="t">Kopier oppsummering</button><button class="btn small" data-copy="b">Kopier beskrivelse</button></div></li>
+    <li>La «Commit directly to the main branch» være valgt, og trykk <b>Commit changes</b>.</li>
+    <li><b>Kontroller opplastingen.</b> Verktøyet sjekker at filene på GitHub er nøyaktig de som ble laget her.${R.repo?`<div class="acts"><button class="btn primary" id="verify">Kontroller opplastingen</button></div><div id="verifyOut">${VMSG}</div>`:''}</li>${extra||''}</ol>`;
+}
+const UNDO_HELP=`<details class="undohelp"><summary>Har du lastet opp noe feil?</summary>
+  <p><b>Feil i en tekst:</b> Be redaktøren rette den i redaktørverktøyet og sende en ny endringsfil. Det er den vanlige veien.</p>
+  <p><b>Hele opplastingen må tilbake</b>, for eksempel fordi feil fil ble lagt inn eller noe i appen ble ødelagt: Trykk <b>Angre en opplasting</b> øverst. Mottaket lager en zip med filene slik de var før, og du laster den opp på samme måte. Du kan angre flere ganger på rad, én opplasting om gangen, fra den nyeste.</p>
+  <p><b>Ikke slett eller rediger filer direkte på github.com</b> for å rette en feil. Det er lett å gjøre det verre.</p></details>`;
 function step4(){
   const locked=!allDone();let b='';
   if(!locked){
     if(!SAVED){
       b+=`<p>Alt er kontrollert. Siste kontroll kjøres når du laster ned.</p><div id="s4msg"></div><div class="acts"><button class="btn primary" id="save">Last ned filene som skal lastes opp</button></div>`;
     }else{
-      const {title,body}=commitText(),up=R.repo?`https://github.com/${R.repo}/upload/main`:'';
-      b+=`<div class="msg ok"><b>${esc(SAVED.zip)} er lastet ned.</b> Den inneholder mappa <code>data</code> med de ${SAVED.paths.length} filene som er endret.</div>
-      <ol class="todo">
-        <li><b>Pakk ut zip-fila.</b> Windows: høyreklikk og velg «Pakk ut alle». Mac: dobbeltklikk. Da får du en mappe som heter <code>data</code>.</li>
-        <li><b>Åpne opplastingssiden på GitHub</b>${up?`: <a href="${esc(up)}" target="_blank" rel="noopener">${esc(up.replace('https://',''))}</a>`:' (Add file → Upload files)'}.</li>
-        <li><b>Dra mappa <code>data</code> inn i feltet.</b> Ikke mappa rundt den. GitHub skal vise disse filene, og eksisterende filer blir erstattet:<ul class="files">${SAVED.paths.map(p=>`<li class="${SAVED.created.includes(p)?'new':''}">data/${esc(p)}</li>`).join('')}</ul></li>
-        <li><b>Lim inn oppsummering og beskrivelse</b> under «Commit changes».<pre class="commit"><b>${esc(title)}</b>\n\n${esc(body)}</pre><div class="acts"><button class="btn small" id="cpT">Kopier oppsummering</button><button class="btn small" id="cpB">Kopier beskrivelse</button></div></li>
-        <li>La «Commit directly to the main branch» være valgt, og trykk <b>Commit changes</b>.</li>
-        <li><b>Kontroller opplastingen.</b> Verktøyet sjekker at filene på GitHub er nøyaktig de som ble laget her.${R.repo?`<div class="acts"><button class="btn primary" id="verify">Kontroller opplastingen</button></div><div id="verifyOut">${VMSG}</div>`:''}</li>
-        <li>Åpne <a href="veileder.html${NL?'?lang='+NL.kode:''}" target="_blank" rel="noopener">appen</a> etter 1–2 minutter og se på det som er endret, gjerne på mobil. Gi redaktøren beskjed${Object.values(JOBS).some(j=>j.keys.length)?', og be en tolk kontrollere de nye oversettelsene':''}.</li></ol>
+      const {title,body}=commitText();
+      b+=`<div class="msg ok"><b>${esc(SAVED.zip)} er lastet ned.</b> Den inneholder mappa <code>data</code> med de ${SAVED.paths.length} filene som er endret.</div>`+uploadSteps(SAVED,title,body,`<li>Åpne <a href="veileder.html${NL?'?lang='+NL.kode:''}" target="_blank" rel="noopener">appen</a> etter 1–2 minutter og se på det som er endret, gjerne på mobil. Gi redaktøren beskjed${Object.values(JOBS).some(j=>j.keys.length)?', og be en tolk kontrollere de nye oversettelsene':''}.</li>`)+UNDO_HELP+`
         <div class="acts"><button class="btn small" id="dlAgain">Last ned zip-fila igjen</button><button class="btn ghost" id="again">Start på nytt</button></div>`;
     }
   }
@@ -597,8 +668,11 @@ function bind(){
   document.querySelectorAll('[data-apply]').forEach(bt=>bt.onclick=()=>{const l=bt.dataset.apply;JOBS[l].ta=document.querySelector(`[data-ta="${l}"]`).value;applyAnswer(l);render();const c=document.querySelector(`[data-apply="${l}"]`)||document.querySelector('#s3');if(allDone())$('#s4').scrollIntoView({behavior:'smooth'})});
   document.querySelectorAll('[data-force]').forEach(bt=>bt.onclick=()=>{const [l,k]=bt.dataset.force.split('|'),j=JOBS[l],x=j.iss[k];j.acc[k]=x.v;TRC[l+'|'+k+'|'+src(k)]=x.v;j.forced[k]=x.iss.map(i=>i.m).join(' ');j.warn[k]=x.iss;delete j.iss[k];render()});
   on('#save','onclick',save);
-  on('#cpT','onclick',()=>copy(commitText().title,'Oppsummeringen er kopiert'));
-  on('#cpB','onclick',()=>copy(commitText().body,'Beskrivelsen er kopiert'));
+  document.querySelectorAll('[data-copy]').forEach(b=>b.onclick=()=>copy(COPYTXT[b.dataset.copy],b.dataset.copy==='t'?'Oppsummeringen er kopiert':'Beskrivelsen er kopiert'));
+  on('#helpOk','onclick',()=>{HELP=false;try{localStorage.setItem('fgv_mottak_intro','1')}catch(e){}render()});
+  on('#undoDl','onclick',undoDownload);
+  on('#undoCancel','onclick',()=>{UNDO=null;render()});
+  on('#undoDone','onclick',()=>{UNDO=null;load()});
   on('#again','onclick',()=>{scrollTo({top:0,behavior:'smooth'});RAW=null;STALE=null;load()});
 }
 async function takeFile(f){try{readChangeFile(await f.text(),f.name)}catch(e){const el=$('#e2');if(el)el.innerHTML=`<div class="msg err">${esc(e.message)}</div>`}}
@@ -632,6 +706,8 @@ async function save(){
     download(name,SAVED.blob);render();$('#s4').scrollIntoView({behavior:'smooth'});
   }catch(e){$('#s4msg').innerHTML=`<div class="msg err">${esc(e.message)}</div>`;btn.disabled=false}
 }
+$('#helpBtn').onclick=()=>{HELP=!HELP;render();if(HELP)scrollTo({top:0,behavior:'smooth'})};
+$('#undoBtn').onclick=startUndo;
 load();
 })();
 </script>

@@ -208,6 +208,8 @@ const ORIG=await (async()=>{try{
     const g=p=>fetch(base+p,{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(p+' ('+r.status+')');return r.json()});const [s,t]=await Promise.all([g('struktur.json'),g('sprak/no.json')]);return{s,t}}
   catch(e){document.getElementById('edit').innerHTML='<h1>Innholdet kunne ikke lastes</h1><p>'+String(e.message).replace(/</g,'&lt;')+'</p><p>Redaktøren må åpnes fra nettsiden, ikke som fil på maskinen.</p>';throw e}})();
 const BASE=JSON.stringify(ORIG).length+':'+[...JSON.stringify(ORIG)].reduce((h,c)=>(h*31+c.charCodeAt(0))|0,0);
+// Navn på fase: overskrift, ellers kort navn, så en fase aldri blir usynlig i lister
+const fname=id=>t('fase.'+id+'.tittel')||t('fase.'+id+'.kort')||'Fase uten navn';
 const KEY='fgv_redaktor',NLANG=4,MAXW=80;
 let D=clone(ORIG),sel={type:'punkt',id:ORIG.s.punkter[0].id},q='',openCard=true,view=matchMedia('(max-width:760px)').matches?'nav':'edit',baseChanged=false;
 try{const x=JSON.parse(localStorage.getItem(KEY));if(x&&x.s&&x.t){
@@ -254,7 +256,7 @@ function renderNav(){
   h+=`<div class="grp">Sjekklisten</div>`;
   D.s.faser.forEach(f=>{const items=D.s.punkter.filter(p=>p.fase===f.id),hits=items.filter(p=>m(t('punkt.'+p.id+'.tittel')+' '+t('punkt.'+p.id+'.tekst')));
     if(q&&!hits.length)return;
-    h+=nb({type:'fase',id:f.id},t('fase.'+f.id+'.tittel'),'phase',`<span class="dot ${f.status}"></span>`);
+    h+=nb({type:'fase',id:f.id},fname(f.id),'phase',`<span class="dot ${f.status}"></span>`);
     hits.forEach(p=>{const w=words(t('punkt.'+p.id+'.tekst'));h+=nb({type:'punkt',id:p.id},t('punkt.'+p.id+'.tittel')||'(uten tittel)','child',`<span class="dot ${p.status}"></span>`).replace('</span><','</span>'+(w>MAXW?'<span class="flagdot" title="Over '+MAXW+' ord">'+w+'</span>':'')+'<')});
     if(!q)h+=`<button class="add" data-add="${f.id}">+ Nytt punkt</button>`;});
   if(!q)h+=`<button class="add" style="margin-inline-start:0;width:100%" data-addfase="1">+ Ny fase</button>`;
@@ -299,7 +301,7 @@ function renderEdit(){
     h+=`<div class="sec"><h2>Hvem og hvor</h2><p></p>
       <label class="toggle"><input type="checkbox" data-set="viktig" ${p.viktig?'checked':''}> <span><b>Viktig</b> – vises med merket «Viktig» i listen</span></label>
       <div class="f"><div class="fh"><label>Vises bare for</label></div><div class="chips">${opts.filter(v=>FORLBL[v]).map(v=>`<button class="chip" data-cond="${v}" aria-pressed="${(p.vises_hvis||[]).includes(v)}">${FORLBL[v]}</button>`).join('')}</div><div class="hint">${(p.vises_hvis||[]).length?'Vises bare når alle valgte stemmer med svarene familien har gitt.':'Ingen valgt – vises for alle.'}</div></div>
-      <div class="f"><div class="fh"><label for="s_fase">Fase i reisen</label></div><select id="s_fase" data-set="fase">${D.s.faser.map(f=>`<option value="${f.id}" ${p.fase===f.id?'selected':''}>${esc(t('fase.'+f.id+'.tittel'))}</option>`).join('')}</select></div></div></div>`;
+      <div class="f"><div class="fh"><label for="s_fase">Fase i reisen</label></div><select id="s_fase" data-set="fase">${D.s.faser.map(f=>`<option value="${f.id}" ${p.fase===f.id?'selected':''}>${esc(fname(f.id))}${f.status==='utkast'?' (utkast)':''}</option>`).join('')}</select></div></div></div>`;
   } else if(sel.type==='fase'){
     const f=F(sel.id),i=D.s.faser.indexOf(f),n=D.s.punkter.filter(p=>p.fase===f.id).length,k=x=>'fase.'+f.id+'.'+x;
     h+=head('Reisen · fase '+(i+1)+' av '+D.s.faser.length,t(k('tittel'))||'Ny fase',seg(f)+`<button class="mini" data-fmove="-1" ${i?'':'disabled'}>Flytt tidligere</button><button class="mini" data-fmove="1" ${i<D.s.faser.length-1?'':'disabled'}>Flytt senere</button>${isNew('faser',f.id)&&!n?'<button class="mini" data-del="fase">Slett utkastet</button>':''}`);

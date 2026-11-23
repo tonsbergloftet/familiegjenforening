@@ -104,6 +104,5 @@ Flygebladet og de tre viktigste punktene ligger på kommunens nettside, som har 
 ## Hvis noe går galt
 
 - **Appen viser feilmelding om innlasting:** Sannsynligvis en JSON-feil. Lim fila inn på https://jsonlint.com eller se siste commit i GitHub.
-- **Angre en endring:** GitHub i nettleseren har ingen angreknapp for vanlige opplastinger. Det enkleste er å la redaktøren rette i redaktørverktøyet og ta det gjennom mottaket på nytt.
-  - Haster det med én fil: Åpne fila på GitHub og trykk *History*. Åpne versjonen før feilen og trykk *Raw*. Kopier alt. Gå tilbake til fila, trykk blyanten (*Edit*), lim inn og trykk *Commit changes*.
+- **Angre en opplasting:** Trykk *Angre en opplasting* øverst i mottaket. Mottaket lager en zip med filene slik de var før den siste opplastingen. Du laster den opp og kontrollerer den på vanlig måte. Vil du angre flere, tar du én om gangen, fra den nyeste. Er det bare en tekst som er feil, er det enklere at redaktøren retter den og sender en ny endringsfil.
 - **For utviklere:** Appen kan testes lokalt med `python3 -m http.server` i repo-mappa. Den virker ikke ved dobbeltklikk på fila.
