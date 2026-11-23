@@ -45,3 +45,9 @@ Uten fastlege er det vanskelig å få helsehjelp.
 ## Når du endrer en tekst
 
 Alle språk får ny KI-oversettelse og vises som «Maskinoversatt» til en tolk har sett på dem. Små endringer gir derfor også arbeid for tolkene. Samle gjerne flere endringer før du sender endringsfila.
+
+## Få hjelp av KI
+
+Under teksten i redaktøren finner du knappen **Forbedre teksten med KI**. Den kopierer punktet ditt sammen med reglene over og to eksempler fra veilederen. Lim det inn i Copilot, ChatGPT eller Claude, og lim svaret tilbake i redaktøren.
+
+Du ser forslaget ved siden av din egen tekst. Redaktøren sier fra hvis tall har forsvunnet, hvis teksten er for lang, eller hvis den inneholder telefonnumre eller nettadresser. Les alltid gjennom forslaget, fordi KI kan ta feil, også om fakta. Ombestemmer du deg, trykker du **Angre forslaget**.

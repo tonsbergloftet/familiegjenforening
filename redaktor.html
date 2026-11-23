@@ -43,6 +43,21 @@ button{cursor:pointer}
 .nav{border-inline-end:1px solid var(--line);overflow:auto;padding:14px 12px 40px;background:var(--bg)}
 .search{width:100%;padding:10px 14px;border:1px solid var(--line);border-radius:12px;background:var(--sheet);font-size:16px;margin-bottom:10px}
 .grp{margin:14px 0 4px;padding:0 8px;font-size:13px;font-weight:600;color:var(--muted)}
+.navtabs{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;background:var(--sunk);border-radius:12px;padding:4px;margin:0 0 6px}
+.navtabs button{border:0;background:transparent;border-radius:9px;padding:8px 4px;font-weight:600;font-size:14px;color:var(--muted);position:relative}
+.navtabs button[aria-selected=true]{background:var(--sheet);color:var(--navy);box-shadow:var(--shadow)}
+.navtabs button i{position:absolute;top:6px;inset-inline-end:8px;width:7px;height:7px;border-radius:50%;background:#E0A030}
+.navdesc{font-size:13.5px;color:var(--muted);margin:4px 8px 8px;line-height:1.4}
+.ai{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:10px;padding:12px 14px;border-radius:12px;background:var(--mint)}
+.ai .hint{margin:0;flex:1;min-width:200px}
+.aiundo{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--draft);border-radius:12px;padding:10px 14px;margin:0 0 12px;font-size:15px}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:10px 0}
+.cmp div{border-radius:10px;padding:8px 12px;white-space:pre-wrap;font-size:15px;background:var(--sunk)}
+.cmp div.new{background:var(--mint)}
+.cmp b{display:block;font-size:12.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:2px}
+.box textarea.paste{width:100%;min-height:160px;border:1px solid var(--line);border-radius:12px;padding:10px;font:14px/1.45 ui-monospace,Menlo,Consolas,monospace;background:var(--sunk)}
+.box.wide{width:min(820px,100%)}
+@media (max-width:760px){.cmp{grid-template-columns:1fr}}
 .node{display:flex;align-items:center;gap:8px;width:100%;text-align:start;border:0;background:transparent;border-radius:10px;padding:8px 10px;min-height:40px;font-size:15px;color:var(--ink)}
 .node:hover{background:var(--sunk)}
 .node[aria-current=true]{background:var(--sheet);box-shadow:var(--shadow);font-weight:600;color:var(--navy)}
@@ -150,7 +165,7 @@ h1{font-size:clamp(26px,3vw,34px);line-height:1.1;letter-spacing:-.02em;color:va
 .files{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
 .modal{position:fixed;inset:0;z-index:60;background:rgba(10,20,25,.35);display:none;place-items:center;padding:16px}
 .modal.on{display:grid}
-.box{background:var(--sheet);border-radius:20px;padding:22px;width:min(460px,100%);box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.box{background:var(--sheet);border-radius:20px;padding:22px;width:min(460px,100%);max-height:calc(100vh - 32px);overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)}
 .box h2{margin:0 0 12px;color:var(--navy)}
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--navy);color:var(--sheet);padding:10px 18px;border-radius:999px;font-weight:600;font-size:15px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:70}
 .toast.on{opacity:1}
@@ -250,21 +265,28 @@ function nb(o,label,cls='',pre=''){const cur=sel.type===o.type&&sel.id===o.id;re
 function changedEnt(o){const pre={punkt:'punkt.',fase:'fase.',kontakt:'kontakt.',q:'sporsmal.'}[o.type];if(!pre)return false;
   if(Object.keys({...ORIG.t,...D.t}).some(k=>k.startsWith(pre+o.id+'.')&&changedT(k)))return true;const arr={punkt:'punkter',fase:'faser',kontakt:'kontakter',q:'sporsmal'}[o.type];
   return JSON.stringify(ORIG.s[arr].find(x=>x.id===o.id))!==JSON.stringify(D.s[arr].find(x=>x.id===o.id))}
+const tabOf=t=>t==='kontakt'?'kontakt':t==='q'?'q':'sjekk';
+let navTab=null;
 function renderNav(){
   const m=s=>!q||String(s).toLowerCase().includes(q);
-  let h=`<input class="search" id="search" type="search" placeholder="Søk i innholdet" value="${esc(q)}" aria-label="Søk">`;
-  h+=`<div class="grp">Sjekklisten</div>`;
+  const tab=tabOf(sel.type),dirty=tb=>tb==='sjekk'?[...D.s.faser.map(x=>({type:'fase',id:x.id})),...D.s.punkter.map(x=>({type:'punkt',id:x.id}))].some(changedEnt):tb==='kontakt'?D.s.kontakter.some(x=>changedEnt({type:'kontakt',id:x.id})):D.s.sporsmal.some(x=>changedEnt({type:'q',id:x.id}));
+  const TABS=[['sjekk','Sjekklisten','Fasene i reisen, og punktene familien krysser av i hver fase.'],['kontakt','Kontakter','Telefon og nettside som vises under punktene. Står ett sted og brukes på alle språk.'],['q','Spørsmål','De tre spørsmålene på startsiden. Svarene avgjør hvilke punkter familien ser.']];
+  let h=`<div class="navtabs" role="tablist">${TABS.map(([id,lb])=>`<button role="tab" data-navtab="${id}" aria-selected="${!q&&tab===id}">${lb}${dirty(id)?'<i title="Har endringer"></i>':''}</button>`).join('')}</div>`;
+  if(!q)h+=`<p class="navdesc">${TABS.find(x=>x[0]===tab)[2]}</p>`;
+  h+=`<input class="search" id="search" type="search" placeholder="Søk i innholdet" value="${esc(q)}" aria-label="Søk">`;
+  if(q||tab==='sjekk'){
+  if(q)h+=`<div class="grp">Sjekklisten</div>`;
   D.s.faser.forEach(f=>{const items=D.s.punkter.filter(p=>p.fase===f.id),hits=items.filter(p=>m(t('punkt.'+p.id+'.tittel')+' '+t('punkt.'+p.id+'.tekst')));
     if(q&&!hits.length)return;
     h+=nb({type:'fase',id:f.id},fname(f.id),'phase',`<span class="dot ${f.status}"></span>`);
     hits.forEach(p=>{const w=words(t('punkt.'+p.id+'.tekst'));h+=nb({type:'punkt',id:p.id},t('punkt.'+p.id+'.tittel')||'(uten tittel)','child',`<span class="dot ${p.status}"></span>`).replace('</span><','</span>'+(w>MAXW?'<span class="flagdot" title="Over '+MAXW+' ord">'+w+'</span>':'')+'<')});
     if(!q)h+=`<button class="add" data-add="${f.id}">+ Nytt punkt</button>`;});
-  if(!q)h+=`<button class="add" style="margin-inline-start:0;width:100%" data-addfase="1">+ Ny fase</button>`;
-  h+=`<div class="grp">Spørsmålene</div>`;
-  D.s.sporsmal.forEach(s=>{if(m(t('sporsmal.'+s.id+'.tekst')))h+=nb({type:'q',id:s.id},t('sporsmal.'+s.id+'.tekst'),'',`<span class="dot plain"></span>`)});
-  h+=`<div class="grp">Kontakter</div>`;
+  if(!q)h+=`<button class="add" style="margin-inline-start:0;width:100%" data-addfase="1">+ Ny fase</button>`;}
+  if(q||tab==='q'){if(q)h+=`<div class="grp">Spørsmål</div>`;
+  D.s.sporsmal.forEach(s=>{if(m(t('sporsmal.'+s.id+'.tekst')))h+=nb({type:'q',id:s.id},t('sporsmal.'+s.id+'.tekst'),'',`<span class="dot plain"></span>`)});}
+  if(q||tab==='kontakt'){if(q)h+=`<div class="grp">Kontakter</div>`;
   D.s.kontakter.forEach(k=>{if(m(t('kontakt.'+k.id+'.navn')))h+=nb({type:'kontakt',id:k.id},t('kontakt.'+k.id+'.navn'),'',`<span class="dot plain"></span>`)});
-  if(!q)h+=`<button class="add" style="margin-inline-start:0;width:100%" data-addk="1">+ Ny kontakt</button>`;
+  if(!q)h+=`<button class="add" style="margin-inline-start:0;width:100%" data-addk="1">+ Ny kontakt</button>`;}
   h+=`<p class="proto">Utkastet lagres bare i denne nettleseren til du sender endringene.</p>`;
   $('#nav').innerHTML=h;
   const s=$('#search');s.oninput=()=>{q=s.value.trim().toLowerCase();renderNav();const n=$('#search');n.focus();n.setSelectionRange(n.value.length,n.value.length)};
@@ -285,7 +307,8 @@ function renderEdit(){
   let h='';
   if(sel.type==='punkt'){
     const p=P(sel.id),items=D.s.punkter.filter(x=>x.fase===p.fase),i=items.indexOf(p),k=f=>'punkt.'+p.id+'.'+f,w=words(t(k('tekst')));
-    h+=head('Sjekklisten · '+esc(t('fase.'+p.fase+'.tittel')),t(k('tittel'))||'Nytt punkt',seg(p)+`<button class="mini" data-move="-1" ${i?'':'disabled'}>Flytt opp</button><button class="mini" data-move="1" ${i<items.length-1?'':'disabled'}>Flytt ned</button>${isNew('punkter',p.id)?'<button class="mini" data-del="punkt">Slett utkastet</button>':''}`);
+    const undo=AIUNDO&&AIUNDO.id===p.id?`<div class="aiundo">KI-forslaget er satt inn. Les gjennom og juster det som ikke stemmer.<button class="btn small" data-aiundo="1">Angre forslaget</button></div>`:'';
+    h+=undo+head('Sjekklisten · '+esc(t('fase.'+p.fase+'.tittel')),t(k('tittel'))||'Nytt punkt',seg(p)+`<button class="mini" data-move="-1" ${i?'':'disabled'}>Flytt opp</button><button class="mini" data-move="1" ${i<items.length-1?'':'disabled'}>Flytt ned</button>${isNew('punkter',p.id)?'<button class="mini" data-del="punkt">Slett utkastet</button>':''}`);
     h+=`<div class="sec"><h2>Punktet</h2><p>Det familien leser. Skriv kort: hvorfor det er viktig, og hva de gjør.</p>
       ${input(k('tittel'),'Tittel','Start gjerne med et verb: «Bestill …», «Søk om …».')}
       ${input(k('naar'),'Når og for hvem','Valgfritt. Vises under tittelen.','F.eks. «Rett etter ankomst» eller «Barn 1–5 år»')}
@@ -293,7 +316,8 @@ function renderEdit(){
         <div class="tool"><button data-ins="list" title="Ny linje som starter med – blir en punktliste">– Punktliste</button><button data-ins="call" title="Tekst i «» vises som en boks: Dette kan du si">«Dette kan du si»</button></div>
         <textarea class="big" id="${fid(k('tekst'))}" data-k="${k('tekst')}" rows="7">${esc(t(k('tekst')))}</textarea>
         <div class="wc ${w>MAXW?'over':''}" id="wc">${wcHtml(w)}</div>
-        <div class="hint">Linjer som starter med «–» blir en punktliste. En linje med noe i «…» blir en boks med «Dette kan du si».</div>${stale(k('tekst'))}</div></div>`;
+        <div class="hint">Linjer som starter med «–» blir en punktliste. En linje med noe i «…» blir en boks med «Dette kan du si».</div>${stale(k('tekst'))}</div>
+      <div class="ai"><button class="btn" data-ai="1">Forbedre teksten med KI</button><p class="hint">Kopierer punktet med en ferdig instruks om klarspråk, rekkefølge og lengde. Du limer det inn i Copilot, ChatGPT eller Claude, og limer svaret tilbake her.</p></div></div>`;
     h+=`<div class="sec"><h2>Kontakter og lenke</h2><p>Telefonnummer og adresse hentes fra kontaktlisten. Da står de ett sted, og oversettes ikke.</p>
       <div class="f"><div class="fh"><label>Kontakter som vises nederst</label></div><div class="chips">${D.s.kontakter.map(c=>`<button class="chip" data-kon="${c.id}" aria-pressed="${(p.kontakter||[]).includes(c.id)}">${esc(t('kontakt.'+c.id+'.navn'))}</button>`).join('')}</div></div>
       <div class="f"><div class="fh"><label for="s_link">Lenke («Gå til nettside»)</label></div><input type="url" id="s_link" data-set="lenke" value="${esc(p.lenke||'')}" placeholder="https://"></div></div>`;
@@ -353,7 +377,85 @@ function renderAll(){renderNav();renderEdit();renderPrev();stamp()}
 
 // ── Dialoger ──
 function download(name,obj){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(obj,null,2)+'\n'],{type:'application/json'}));a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
-function modal(h){$('#box').innerHTML=h;$('#modal').classList.add('on')}
+// ── KI-hjelp: ferdig instruks for klarspråk. Ingen KI kalles herfra; redaktøren bruker sitt eget verktøy. ──
+let AIUNDO=null;
+const AIKEYS=id=>['tittel','naar','tekst'].map(f=>'punkt.'+id+'.'+f);
+const block=id=>{const [a,b,c]=AIKEYS(id);return`TITTEL: ${t(a)}\nNÅR: ${t(b)}\nTEKST:\n${t(c)}`};
+function aiPrompt(p){
+  const ex=D.s.punkter.filter(x=>x.id!==p.id&&x.status==='publisert'&&t('punkt.'+x.id+'.tekst')&&words(t('punkt.'+x.id+'.tekst'))<=MAXW)
+    .map(x=>{const tx=t('punkt.'+x.id+'.tekst');return{x,sc:(/^[–-] /m.test(tx)?1:0)+(/«[^»]{26,}»/.test(tx)?1:0)+(x.fase===p.fase?1:0)}}).sort((a,b)=>b.sc-a.sc).slice(0,2).map(e=>e.x);
+  const lab={ankommet:{ja:'familien er kommet',nei:'familien er ikke kommet ennå'},barn:{ja:'familier med barn',nei:'familier uten barn'},bolig:{ja:'familier som har bolig',nei:'familier som trenger bolig'}};
+  const hvem=(p.vises_hvis||[]).map(c=>{const [a,b]=c.split('=');return(lab[a]||{})[b]||c}).join(' og ')||'alle';
+  const kon=(p.kontakter||[]).map(id=>t('kontakt.'+id+'.navn')).filter(Boolean).join(', ')||'ingen';
+  return `Du hjelper en fagperson i Tønsberg kommune med å skrive et punkt i veilederen «Når familien kommer». Leserne er familier som nettopp har kommet til Norge gjennom familiegjenforening. Mange leser på mobil, på andrespråk eller i maskinoversettelse.
+
+Skriv om utkastet nederst slik at det følger reglene og ligner eksemplene. Behold alle fakta. Ikke finn på noe nytt. Er noe uklart, eller mangler noe familien trenger å vite, skriv det under MERKNAD i stedet for å gjette.
+
+Regler:
+1. TITTEL: Hva familien skal gjøre. Start med et verb. Maks 8 ord.
+2. NÅR: Når det gjelder, eller for hvem. En kort frase. Kan stå tom.
+3. TEKST: Maks ${MAXW} ord. Rekkefølge: hvorfor det er viktig (én setning), hva de gjør (gjerne punktliste), og eventuelt én setning de kan si.
+4. Én ting per setning. Korte setninger og vanlige ord. Skriv «du» eller «dere». Forklar fagord første gang.
+5. Punktliste: hver linje starter med «– ».
+6. En setning familien kan si eller vise frem, skrives i «…» på en egen linje. Maks én.
+7. Ikke skriv telefonnumre, e-post eller nettadresser. De står i kontaktlisten under punktet.
+8. Frister med tall: «innen 7 dager».
+
+Om punktet:
+- Fase i reisen: ${fname(p.fase)}
+- Vises for: ${hvem}
+- Kontakter under punktet: ${kon}
+
+Eksempler fra veilederen:
+${ex.map(x=>block(x.id)).join('\n\n---\n\n')}
+
+Utkastet:
+${block(p.id)}
+
+Svar nøyaktig i dette formatet, uten noe annet:
+TITTEL: …
+NÅR: …
+TEKST:
+…
+MERKNAD: … (bare hvis noe er uklart eller mangler)`;
+}
+function parseAI(s){
+  s=String(s||'').replace(/\r/g,'').replace(/^```.*$/gm,'').replace(/\*\*/g,'');
+  const g=re=>{const m=s.match(re);return m?m[1].trim():null};
+  const tittel=g(/^\s*TITTEL:[ \t]*(.*)$/mi),naar=g(/^\s*N(?:Å|AA|A)R:[ \t]*(.*)$/mi),
+    tekst=g(/^\s*TEKST:[ \t]*\n?([\s\S]*?)(?=^\s*MERKNAD:|(?![\s\S]))/mi),merk=g(/^\s*MERKNAD:[ \t]*([\s\S]*)$/mi);
+  if(tittel==null||tekst==null)throw new Error('Fant ikke TITTEL og TEKST i svaret. Kopier hele svaret fra KI-verktøyet og prøv igjen.');
+  const clean=x=>x.replace(/^[ \t]*[-•*][ \t]+/gm,'– ').replace(/\n{3,}/g,'\n\n').trim();
+  return{tittel:tittel.replace(/^[«"]|[»"]$/g,''),naar:(naar||'').replace(/^[-–…(]+$|^\(tom\)$/i,''),tekst:clean(tekst),merk:(merk||'').replace(/^[-–…]+$|^\(.*bare hvis.*\)$/i,'').trim()};
+}
+async function aiStart(p){
+  const txt=aiPrompt(p);
+  try{await navigator.clipboard.writeText(txt)}catch(e){const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove()}
+  modal(`<h2>Forbedre teksten med KI</h2><p><b>Punktet og instruksen er kopiert.</b></p><ol><li>Åpne Copilot, ChatGPT eller Claude, og lim inn.</li><li>Kopier hele svaret.</li><li>Lim svaret inn her.</li></ol>
+    <textarea class="paste" id="aiIn" placeholder="Lim inn svaret her" spellcheck="false"></textarea><div id="aiErr"></div>
+    <div class="bar" style="justify-content:flex-end;margin:14px 0 0"><button class="btn ghost" id="aiCopy">Kopier på nytt</button><button class="btn ghost" id="mNo">Avbryt</button><button class="btn primary" id="aiNext">Vis forslaget</button></div>`);
+  $('#box').classList.add('wide');$('#aiIn').focus();
+  $('#mNo').onclick=closeModal;$('#aiCopy').onclick=async()=>{try{await navigator.clipboard.writeText(txt);toast('Kopiert')}catch(e){}};
+  $('#aiNext').onclick=()=>{let r;try{r=parseAI($('#aiIn').value)}catch(e){$('#aiErr').innerHTML=`<div class="stale" style="margin-top:8px">${esc(e.message)}</div>`;return}aiReview(p,r)};
+}
+function aiReview(p,r){
+  const [a,b,c]=AIKEYS(p.id),w=words(r.tekst),warn=[];
+  if(w>MAXW)warn.push(`Forslaget har ${w} ord. Anbefalt maks er ${MAXW}.`);
+  if(/(\d{2} ?){4}|https?:\/\/|www\.|@/.test(r.tekst))warn.push('Forslaget inneholder telefonnummer, nettadresse eller e-post. Det skal stå i kontaktlisten.');
+  const num=x=>(String(x).match(/\d+/g)||[]);const gone=num(t(a)+' '+t(b)+' '+t(c)).filter(n=>!num(r.tittel+' '+r.naar+' '+r.tekst).includes(n));
+  if(gone.length)warn.push(`Tall fra utkastet er borte: ${[...new Set(gone)].join(', ')}. Sjekk at ingen fakta er fjernet.`);
+  if((r.tekst.match(/«[^»]+»/g)||[]).length>1)warn.push('Forslaget har mer enn én «Dette kan du si»-setning.');
+  const row=(lb,o,n)=>`<div class="cmp"><div><b>Nå: ${lb}</b>${esc(o)||'<i>(tom)</i>'}</div><div class="new"><b>Forslag: ${lb}</b>${esc(n)||'<i>(tom)</i>'}</div></div>`;
+  modal(`<h2>KI-forslaget</h2>${r.merk?`<div class="stale" style="margin:6px 0 10px"><b>Merknad fra KI:</b> ${esc(r.merk)}</div>`:''}${warn.map(x=>`<div class="stale" style="margin:6px 0">${esc(x)}</div>`).join('')}
+    ${row('Tittel',t(a),r.tittel)}${row('Når og for hvem',t(b),r.naar)}${row('Tekst',t(c),r.tekst)}
+    <p class="hint">Du er ansvarlig for at innholdet stemmer. KI kan ta feil, også om fakta.</p>
+    <div class="bar" style="justify-content:flex-end;margin:14px 0 0"><button class="btn ghost" id="mNo">Avbryt</button><button class="btn primary" id="aiUse">Bruk forslaget</button></div>`);
+  $('#box').classList.add('wide');
+  $('#mNo').onclick=closeModal;
+  $('#aiUse').onclick=()=>{AIUNDO={id:p.id,vals:{[a]:t(a),[b]:t(b),[c]:t(c)}};
+    [[a,r.tittel],[b,r.naar],[c,r.tekst]].forEach(([k,v])=>{if(v)D.t[k]=v;else delete D.t[k]});save();closeModal();renderAll();toast('Forslaget er satt inn')};
+}
+function modal(h){$('#box').classList.remove('wide');$('#box').innerHTML=h;$('#modal').classList.add('on')}
 const closeModal=()=>$('#modal').classList.remove('on');
 function newItem(fase){
   modal(`<h2>Nytt punkt i «${esc(t('fase.'+fase+'.tittel'))}»</h2><div class="f"><div class="fh"><label for="nt">Tittel</label></div><input type="text" id="nt" placeholder="F.eks. Søk om skoleskyss"></div><p class="hint">Punktet lagres som utkast og vises ikke for familiene før du setter det til Publisert.</p><div class="bar" style="justify-content:flex-end;margin:16px 0 0"><button class="btn ghost" id="mNo">Avbryt</button><button class="btn primary" id="mYes">Lag punktet</button></div>`);
@@ -385,8 +487,9 @@ function openChanges(){
   const r=$('#reset');if(r)r.onclick=()=>{modal(`<h2>Forkaste alle endringer?</h2><p>Utkastet slettes, og alt går tilbake til det som er publisert nå.</p><div class="bar" style="justify-content:flex-end;margin:16px 0 0"><button class="btn ghost" id="mNo">Avbryt</button><button class="btn primary" id="mYes">Forkast</button></div>`);$('#mNo').onclick=closeModal;$('#mYes').onclick=()=>{D=clone(ORIG);try{localStorage.removeItem(KEY)}catch(e){}closeModal();$('#drawer').classList.remove('on');renderAll();toast('Endringene er forkastet')}};
 }
 const TUT=[['Velkommen til redaktøren','Her endrer du innholdet i sjekklisten «Når familien kommer». Du skriver bare på norsk. Oversettelsen ordner teknisk eier og tolkene.'],
- ['Reisen til venstre','Punktene står i fasene familien går gjennom, i samme rekkefølge som i appen. På mobil finner du dem under «Innhold» nederst.'],
+ ['Tre faner til venstre','«Sjekklisten» er fasene og punktene, i samme rekkefølge som i appen. «Kontakter» er telefonnumre og nettsider. «Spørsmål» er de tre spørsmålene på startsiden. På mobil finner du dem under «Innhold» nederst.'],
  ['Ett punkt, tre felt','Tittel, når og for hvem, og tekst. Hold teksten under 80 ord: hvorfor det er viktig, og hva familien gjør. Telefonnumre legger du til som kontakter.'],
+ ['Få hjelp med teksten','Trykk «Forbedre teksten med KI» under teksten. Da kopieres punktet med en ferdig instruks om klarspråk og lengde. Lim det inn i Copilot, ChatGPT eller Claude, og lim svaret tilbake. Du ser forslaget ved siden av din egen tekst før du velger å bruke det.'],
  ['Se resultatet','Forhåndsvisningen viser punktet slik familien ser det. Nye punkter er utkast til du setter dem til «Publisert».'],
  ['Send endringene','Når du er ferdig, trykker du «Send endringer», laster ned fila og sender den til teknisk eier. Til da lagres alt som utkast i denne nettleseren.']];
 function tutorial(i){const [h,p]=TUT[i],last=i===TUT.length-1;
@@ -397,7 +500,8 @@ function tutorial(i){const [h,p]=TUT[i],last=i===TUT.length-1;
 const cur=()=>sel.type==='punkt'?P(sel.id):sel.type==='fase'?F(sel.id):sel.type==='kontakt'?K(sel.id):sel.type==='q'?Q(sel.id):null;
 document.addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b||b.closest('#box')&&!b.dataset.sel)return;const c=cur();
-  if(b.dataset.sel){sel=JSON.parse(b.dataset.sel);renderAll();setView(view==='prev'&&!b.closest('.nav')?'prev':'edit');return}
+  if(b.dataset.navtab){const tb=b.dataset.navtab;navTab=tb;q='';if(tabOf(sel.type)!==tb){sel=tb==='kontakt'?{type:'kontakt',id:D.s.kontakter[0].id}:tb==='q'?{type:'q',id:D.s.sporsmal[0].id}:{type:'punkt',id:D.s.punkter[0].id}}renderAll();return}
+  if(b.dataset.sel){AIUNDO=null;sel=JSON.parse(b.dataset.sel);navTab=tabOf(sel.type);renderAll();setView(view==='prev'&&!b.closest('.nav')?'prev':'edit');return}
   if(b.dataset.view){setView(b.dataset.view);return}
   if(b.dataset.status&&c){c.status=b.dataset.status;save();renderAll();return}
   if(b.dataset.move&&c){const arr=D.s.punkter,same=arr.filter(x=>x.fase===c.fase),o=same[same.indexOf(c)+ +b.dataset.move];if(!o)return;const i=arr.indexOf(c),j=arr.indexOf(o);[arr[i],arr[j]]=[arr[j],arr[i]];save();renderAll();return}
@@ -406,6 +510,8 @@ document.addEventListener('click',e=>{
   if(b.dataset.kon&&c){const a=c.kontakter||[],v=b.dataset.kon;c.kontakter=a.includes(v)?a.filter(x=>x!==v):[...a,v];if(!c.kontakter.length)delete c.kontakter;b.setAttribute('aria-pressed',(c.kontakter||[]).includes(v));save();renderPrev();renderNav();return}
   if(b.dataset.ins){const ta=document.querySelector(`#edit textarea[data-k$=".tekst"]`);const p=ta.selectionStart??ta.value.length,pre=ta.value.slice(0,p),nl=pre&&!pre.endsWith('\n')?'\n':'';
     const ins=b.dataset.ins==='list'?nl+'– ':nl+'Ring og si: «»';ta.value=pre+ins+ta.value.slice(p);const pos=p+ins.length-(b.dataset.ins==='call'?1:0);ta.focus();ta.setSelectionRange(pos,pos);ta.dispatchEvent(new Event('input',{bubbles:true}));return}
+  if(b.dataset.ai){aiStart(c);return}
+  if(b.dataset.aiundo&&AIUNDO){Object.entries(AIUNDO.vals).forEach(([k,v])=>{if(v)D.t[k]=v;else delete D.t[k]});AIUNDO=null;save();renderAll();toast('Teksten er satt tilbake');return}
   if(b.dataset.open){openCard=b.dataset.open==='1';renderPrev();return}
   if(b.dataset.add){newItem(b.dataset.add);return}
   if(b.dataset.addfase){newPhase();return}
