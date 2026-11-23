@@ -66,6 +66,17 @@ Alt gjøres i nettleseren. Du trenger ikke installere noe.
 
 Mottaket kan også brukes uten endringsfil, for å oversette tekster som mangler.
 
+## Rutiner
+
+- **Én fil om gangen.** Legg inn, last opp og kontroller før du tar neste. Mottaket stopper deg hvis en zip-fil ikke er kontrollert.
+- **Ikke rediger filer direkte på github.com**, bortsett fra i nødstilfeller. Alt annet går gjennom mottaket, så det blir kontrollert.
+- **Endring av faser, punkter eller kontakter:** Er det flere redaktører, sier de fra til hverandre først. Endringsfila erstatter hele strukturen.
+- **Oversettelser:** Tekster som ikke er endret på norsk, blir ikke rørt, og godkjente oversettelser blir stående. Når en norsk tekst endres, får den ny KI-oversettelse på alle språk, og tolkegodkjenningen faller bort.
+
+Mottaket har to sperrer mot at endringer overskriver hverandre:
+1. Rett før zip-fila lages, sjekker mottaket om noen har lastet opp siden det hentet data. Har noen gjort det, henter det på nytt og legger fila inn oppå den nye versjonen. KI-oversettelser du allerede har lagt inn, blir gjenbrukt.
+2. «Kontroller opplastingen» sier fra hvis det har kommet andre opplastinger mellom versjonen zip-fila bygde på og din egen.
+
 ## Tolkenes kontroll
 
 Send tolken lenken til språket, f.eks. https://tonsbergloftet.github.io/familiegjenforening/tolk.html?lang=ar.

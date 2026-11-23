@@ -110,6 +110,11 @@ const fingerprint=(s,t)=>{const j=JSON.stringify({s,t});return j.length+':'+[...
 // ───────── Tilstand ─────────
 let R=null;          // siste versjon: {files:{sti:tekst}, data, repo, commit}
 let VERIFIED=null,VMSG='';
+let RAW=null,STALE=null;   // innlest fil (for å kunne lese den inn på nytt) og melding om ny versjon
+const TRC={};              // godkjente KI-oversettelser: språk|nøkkel|norsk → tekst. Gjenbrukes hvis mottaket må hente på nytt.
+// Zip som er laget, men ikke kontrollert opplastet. Hindrer at to zip-filer bygd på samme versjon overskriver hverandre.
+const PKEY='fgv_mottak_venter';let PENDING=null;try{PENDING=JSON.parse(localStorage.getItem(PKEY))}catch(e){}
+const setPending=x=>{PENDING=x;try{x?localStorage.setItem(PKEY,JSON.stringify(x)):localStorage.removeItem(PKEY)}catch(e){}};let PMSG='';
 let E=null,EN='';    // endringsfil og filnavn
 let K=null,KN='',KA=null; // kontrollfil fra tolk
 let AN=null,SD=[];   // analyse av tekster og struktur
@@ -169,16 +174,29 @@ async function load(){
   LOADING=false;render();
 }
 // Kontroll etter opplasting: henter siste commit og sammenligner filene med det mottaket laget
+async function checkUpload(P){
+  const c=await latestCommit(R.repo);
+  if(P.base&&c.sha===P.base)return{state:'none',html:'<div class="msg warn">Finner ingen ny opplasting ennå. Har du trykket <b>Commit changes</b>? Prøv igjen om litt.</div>'};
+  const raw=rawBase(R.repo,c.sha),bad=[],missing=[];
+  await Promise.all(P.paths.map(async p=>{const r=await fetch(raw+p,{cache:'no-store'});if(r.status===404){missing.push(p);return}const t=await r.text();if(!same(t,P.files[p]))bad.push(p)}));
+  // Har det kommet andre opplastinger mellom versjonen zip-fila bygde på og nå?
+  let others=[];
+  if(P.base){try{const cmp=await fetch(`https://api.github.com/repos/${R.repo}/compare/${P.base}...${c.sha}`,{cache:'no-store'}).then(r=>r.ok?r.json():null);
+    if(cmp&&cmp.commits)others=cmp.commits.filter(x=>!P.files||x.sha!==c.sha).map(x=>x.commit.message.split('\n')[0]).filter(m=>m!==P.title)}catch(e){}}
+  if(bad.length||missing.length)return{state:'bad',html:`<div class="msg err"><b>Opplastingen stemmer ikke.</b>${missing.length?`<br>Mangler på GitHub: ${missing.map(p=>'data/'+esc(p)).join(', ')}. Har du dratt inn mappa <code>data</code>, og ikke mappa rundt den?`:''}${bad.length?`<br>Annet innhold enn forventet: ${bad.map(p=>'data/'+esc(p)).join(', ')}.`:''}${others.length?`<br>Det er lastet opp andre endringer etter at zip-fila ble laget: ${others.map(m=>'«'+esc(m)+'»').join(', ')}.`:' Last opp disse filene på nytt fra zip-fila.'}<br>Siste opplasting: «${esc(c.msg)}» av ${esc(c.who)}.</div>`};
+  if(others.length)return{state:'warn',c,html:`<div class="msg warn"><b>Filene dine ligger riktig, men det ble lastet opp ${others.length===1?'en annen endring':others.length+' andre endringer'} mellom versjonen zip-fila bygde på og din:</b> ${others.map(m=>'«'+esc(m)+'»').join(', ')}. Opplastingen din kan ha skrevet over noe av det. Åpne appen og sjekk. Mangler noe, legger du den andre fila inn i mottaket på nytt.</div>`};
+  return{state:'ok',c,html:`<div class="msg ok"><b>Opplastingen er riktig.</b> Alle ${P.paths.length} filene ligger på GitHub slik mottaket laget dem («${esc(c.msg)}», ${esc(c.sha.slice(0,7))}). Appen er oppdatert om 1–2 minutter.</div>`};
+}
 async function verifyUpload(){
-  const out={set innerHTML(h){VMSG=h;render()}};out.innerHTML='<div class="msg">Henter siste versjon fra GitHub …</div>';
-  try{
-    const c=await latestCommit(R.repo);
-    if(R.commit&&c.sha===R.commit.sha){out.innerHTML='<div class="msg warn">Finner ingen ny opplasting ennå. Har du trykket <b>Commit changes</b>? Prøv igjen om litt.</div>';return}
-    const base=rawBase(R.repo,c.sha),bad=[],missing=[];
-    await Promise.all(SAVED.paths.map(async p=>{const r=await fetch(base+p,{cache:'no-store'});if(r.status===404){missing.push(p);return}const t=await r.text();if(!same(t,SAVED.files[p]))bad.push(p)}));
-    if(!bad.length&&!missing.length){VERIFIED=c;out.innerHTML=`<div class="msg ok"><b>Opplastingen er riktig.</b> Alle ${SAVED.paths.length} filene ligger på GitHub slik mottaket laget dem («${esc(c.msg)}», ${esc(c.sha.slice(0,7))}). Appen er oppdatert om 1–2 minutter.</div>`;return}
-    out.innerHTML=`<div class="msg err"><b>Opplastingen stemmer ikke.</b>${missing.length?`<br>Mangler på GitHub: ${missing.map(p=>'data/'+esc(p)).join(', ')}. Har du dratt inn mappa <code>data</code>, og ikke mappa rundt den?`:''}${bad.length?`<br>Annet innhold enn forventet: ${bad.map(p=>'data/'+esc(p)).join(', ')}. Last opp disse filene på nytt fra zip-fila.`:''}<br>Siste opplasting: «${esc(c.msg)}» av ${esc(c.who)}.</div>`;
-  }catch(e){out.innerHTML=`<div class="msg err">Kunne ikke kontrollere: ${esc(e.message)}. Sjekk på GitHub at filene er lastet opp.</div>`}
+  VMSG='<div class="msg">Henter siste versjon fra GitHub …</div>';render();
+  try{const r=await checkUpload(PENDING||SAVED);VMSG=r.html;if(r.state==='ok'||r.state==='warn'){VERIFIED=r.c;setPending(null)}}
+  catch(e){VMSG=`<div class="msg err">Kunne ikke kontrollere: ${esc(e.message)}. Sjekk på GitHub at filene er lastet opp.</div>`}
+  render();
+}
+async function verifyPending(){
+  PMSG='<div class="msg">Henter siste versjon fra GitHub …</div>';render();
+  try{const r=await checkUpload(PENDING);PMSG=r.html;if(r.state==='ok'||r.state==='warn'){setPending(null);await load();PMSG=r.html;render()}else render()}
+  catch(e){PMSG=`<div class="msg err">Kunne ikke kontrollere: ${esc(e.message)}.</div>`;render()}
 }
 // Enkel zip uten komprimering
 function crc32(u){let c=-1;for(let i=0;i<u.length;i++){c^=u[i];for(let k=0;k<8;k++)c=c&1?(c>>>1)^0xEDB88320:c>>>1}return(c^-1)>>>0}
@@ -298,6 +316,7 @@ ${JSON.stringify(obj,null,2)}`;
 
 // ───────── Steg 2: endringsfil ─────────
 function readChangeFile(text,name){
+  RAW={text,name};
   let x;try{x=JSON.parse(text)}catch(e){throw new Error(`«${name}» kan ikke leses. Be avsenderen laste ned fila på nytt.`)}
   if(x.type==='kontroll'){
     const l=(R.data.config.sprak||[]).find(y=>y.kode===x.sprak);
@@ -371,6 +390,7 @@ function buildN(){
     const t=d.sprak[l.kode]||(d.sprak[l.kode]={}),u=d.ui[l.kode]||(d.ui[l.kode]={});
     const keys=Object.keys(d.sprak.no).filter(k=>CHANGED.has(k)||!t[k]).concat(Object.keys(d.ui.no||{}).filter(k=>!u[k]).map(k=>'ui.'+k));
     JOBS[l.kode]={keys,acc:{},warn:{},iss:{},forced:{},ta:'',note:''};
+    keys.forEach(k=>{const c=TRC[l.kode+'|'+k+'|'+src(k)];if(c!=null)JOBS[l.kode].acc[k]=c});
   });
 }
 const src=k=>k.startsWith('ui.')?N.ui.no[k.slice(3)]:N.sprak.no[k];
@@ -382,7 +402,7 @@ function applyAnswer(l){
     if(!j.keys.includes(k)){extra++;continue}
     got++;const v=tidy(raw),iss=check(src(k),v,l,k);
     if(iss.some(i=>i.e)){j.iss[k]={v,iss};delete j.acc[k];bad++}
-    else{j.acc[k]=v;delete j.iss[k];if(iss.length)j.warn[k]=iss;else delete j.warn[k];ok++}
+    else{j.acc[k]=v;TRC[l+'|'+k+'|'+src(k)]=v;delete j.iss[k];if(iss.length)j.warn[k]=iss;else delete j.warn[k];ok++}
   }
   const left=j.keys.filter(k=>!(k in j.acc)&&!(k in j.iss)).length;
   j.ta='';
@@ -457,7 +477,9 @@ function step1(){
     const no=R.data.sprak.no,nk=Object.keys(no).length;
     b+=`<details><summary>Status for språkene</summary><table><tr><th>Språk</th><th>Kontrollert av tolk</th><th>Maskinoversatt</th><th>Mangler</th></tr>${(C.sprak||[]).filter(l=>l.kode!=='no').map(l=>{const t=R.data.sprak[l.kode]||{},st=R.data.status[l.kode]||{};const kk=Object.keys(no).filter(k=>t[k]&&st[k]&&st[k].s==='kontrollert').length,miss=Object.keys(no).filter(k=>!t[k]).length;return`<tr><td>${esc(l.navn)}${l.status!=='publisert'?' <span class="hint">(utkast)</span>':''}</td><td>${kk} av ${nk}</td><td>${nk-kk-miss}</td><td>${miss}</td></tr>`}).join('')}</table></details>`;
   }
-  if(!LOADING)b+=`<div class="acts"><button class="btn small" id="reload">Hent på nytt</button></div>`;
+  if(PENDING&&!SAVED){const P=PENDING;b+=`<div class="msg warn"><b>Du har en zip-fil som ikke er kontrollert:</b> ${esc(P.zip)} («${esc(P.title)}»), laget ${esc(new Date(P.laget).toLocaleString('nb-NO',{dateStyle:'medium',timeStyle:'short'}))}. Last den opp og kontroller den før du tar neste fil. Ellers kan de to overskrive hverandre.<div class="acts"><button class="btn small primary" id="pVerify">Kontroller opplastingen</button><button class="btn ghost small" id="pDrop">Den ble ikke lastet opp. Forkast den</button></div></div>${PMSG}`}
+  else if(PMSG)b+=PMSG;
+  if(!LOADING)b+=`<p class="hint">Ta én fil om gangen: legg inn, last opp og kontroller før du begynner på neste.</p><div class="acts"><button class="btn small" id="reload">Hent på nytt</button></div>`;
   return card(1,'Hent siste versjon',R&&!validate(R.data).err.length,false,b);
 }
 function stepK(){
@@ -473,7 +495,8 @@ function stepK(){
   return b;
 }
 function step2(){
-  const locked=!R||validate(R.data).err.length>0;let b='';
+  const locked=!R||validate(R.data).err.length>0||(PENDING&&!SAVED);let b='';
+  if(STALE&&!locked)b+=STALE;
   if(!locked){
     b+=`<p>Legg inn endringsfila fra redaktøren eller kontrollfila fra en tolk. Du ser alt som endres før noe skjer.</p>`;
     if(K)b+=stepK();
@@ -550,14 +573,16 @@ function step4(){
 }
 function bind(){
   const on=(s,ev,f)=>{const el=$(s);if(el)el[ev]=f};
-  on('#reload','onclick',load);
+  on('#reload','onclick',()=>{PMSG='';load()});
+  on('#pVerify','onclick',verifyPending);
+  on('#pDrop','onclick',()=>{setPending(null);PMSG='';render()});
   on('#verify','onclick',verifyUpload);
   on('#dlAgain','onclick',()=>download(SAVED.zip,SAVED.blob));
   on('#pickFile','onclick',()=>{$('#fileInput').value='';$('#fileInput').click()});
   const drop=$('#drop');if(drop){drop.ondragover=e=>{e.preventDefault();drop.classList.add('over')};drop.ondragleave=()=>drop.classList.remove('over');drop.ondrop=async e=>{e.preventDefault();drop.classList.remove('over');const f=e.dataTransfer.files[0];if(f)takeFile(f)}}
   on('#clearE','onclick',()=>{E=null;EN='';AN=null;SD=[];K=null;KN='';KA=null;resetFrom(3);render()});
   on('#skipE','onclick',()=>{buildN();render();$('#s3').scrollIntoView({behavior:'smooth'})});
-  on('#apply','onclick',()=>{buildN();render();$('#s3').scrollIntoView({behavior:'smooth'})});
+  on('#apply','onclick',()=>{STALE=null;buildN();render();$('#s3').scrollIntoView({behavior:'smooth'})});
   on('#clearNL','onclick',()=>{NL=null;resetFrom(3);render()});
   on('#nlAdd','onclick',()=>{
     const kode=$('#nlKode').value.trim().toLowerCase(),navn=$('#nlNavn').value.trim(),C=R.data.config;
@@ -570,24 +595,40 @@ function bind(){
     const [l,i]=bt.dataset.pack.split(':'),j=JOBS[l],left=j.keys.filter(k=>!(k in j.acc)),packs=[];for(let x=0;x<left.length;x+=PACK)packs.push(left.slice(x,x+PACK));
     copy(prompt(l,langName(N,l),packs[+i],src,+i+1,packs.length),'Pakken er kopiert. Lim den inn i KI-verktøyet.')});
   document.querySelectorAll('[data-apply]').forEach(bt=>bt.onclick=()=>{const l=bt.dataset.apply;JOBS[l].ta=document.querySelector(`[data-ta="${l}"]`).value;applyAnswer(l);render();const c=document.querySelector(`[data-apply="${l}"]`)||document.querySelector('#s3');if(allDone())$('#s4').scrollIntoView({behavior:'smooth'})});
-  document.querySelectorAll('[data-force]').forEach(bt=>bt.onclick=()=>{const [l,k]=bt.dataset.force.split('|'),j=JOBS[l],x=j.iss[k];j.acc[k]=x.v;j.forced[k]=x.iss.map(i=>i.m).join(' ');j.warn[k]=x.iss;delete j.iss[k];render()});
+  document.querySelectorAll('[data-force]').forEach(bt=>bt.onclick=()=>{const [l,k]=bt.dataset.force.split('|'),j=JOBS[l],x=j.iss[k];j.acc[k]=x.v;TRC[l+'|'+k+'|'+src(k)]=x.v;j.forced[k]=x.iss.map(i=>i.m).join(' ');j.warn[k]=x.iss;delete j.iss[k];render()});
   on('#save','onclick',save);
   on('#cpT','onclick',()=>copy(commitText().title,'Oppsummeringen er kopiert'));
   on('#cpB','onclick',()=>copy(commitText().body,'Beskrivelsen er kopiert'));
-  on('#again','onclick',()=>{scrollTo({top:0,behavior:'smooth'});load()});
+  on('#again','onclick',()=>{scrollTo({top:0,behavior:'smooth'});RAW=null;STALE=null;load()});
 }
 async function takeFile(f){try{readChangeFile(await f.text(),f.name)}catch(e){const el=$('#e2');if(el)el.innerHTML=`<div class="msg err">${esc(e.message)}</div>`}}
 $('#fileInput').onchange=e=>{const f=e.target.files[0];if(f)takeFile(f)};
 
+// Det er lastet opp noe nytt siden mottaket hentet data. Hent på nytt og legg inn samme fil igjen.
+async function refetchKeep(c){
+  const raw=RAW,nl=NL,ch={...CHOICE};
+  await load();
+  if(raw){try{readChangeFile(raw.text,raw.name)}catch(e){}}
+  if(nl&&!(R.data.config.sprak||[]).some(l=>l.kode===nl.kode))NL=nl;
+  Object.keys(ch).forEach(k=>{if(k in CHOICE)CHOICE[k]=ch[k]});
+  STALE=`<div class="msg warn"><b>Noen lastet opp en ny versjon mens du jobbet</b> («${esc(c.msg)}» av ${esc(c.who)}). Mottaket har hentet den og lagt inn fila di på nytt oppå den. Se gjennom endringene og trykk «Ta i bruk» igjen. Oversettelser du allerede har lagt inn, blir brukt om igjen.</div>`;
+  render();$('#s2').scrollIntoView({behavior:'smooth'});
+}
 async function save(){
   const btn=$('#save');btn.disabled=true;
   try{
+    if(R.repo&&R.commit){
+      let c=null;try{c=await latestCommit(R.repo)}catch(e){}
+      if(!c){$('#s4msg').innerHTML='<div class="msg err">Fikk ikke kontakt med GitHub for å sjekke at du har siste versjon. Prøv igjen om litt.</div>';btn.disabled=false;return}
+      if(c.sha!==R.commit.sha){await refetchKeep(c);return}
+    }else if(R.repo){$('#s4msg').innerHTML='<div class="msg err">Mottaket fikk ikke hentet direkte fra GitHub, så det kan ikke sjekke om noen har lastet opp i mellomtiden. Trykk «Hent på nytt» i steg 1 og prøv igjen.</div>';btn.disabled=false;return}
     const d=await finalData(),v=validate(d);
     if(v.err.length){$('#s4msg').innerHTML=msgList('err','Siste kontroll fant feil. Ingenting er lastet ned:',v.err);btn.disabled=false;return}
     const files=toFiles(d),paths=Object.keys(files).filter(p=>R.files[p]==null||!same(R.files[p],files[p])),created=paths.filter(p=>R.files[p]==null);
     if(!paths.length){$('#s4msg').innerHTML='<div class="msg warn">Ingen filer er endret. Det er ingenting å laste opp.</div>';btn.disabled=false;return}
     const name='last-opp-'+new Date().toISOString().slice(0,10)+'.zip';
-    SAVED={paths,created,files,zip:name,blob:zip(Object.fromEntries(paths.map(p=>['data/'+p,files[p]])))};
+    SAVED={paths,created,files,zip:name,blob:zip(Object.fromEntries(paths.map(p=>['data/'+p,files[p]]))),base:R.commit&&R.commit.sha,title:commitText().title};
+    setPending({zip:name,title:SAVED.title,laget:new Date().toISOString(),base:SAVED.base,paths,files:Object.fromEntries(paths.map(p=>[p,files[p]]))});
     download(name,SAVED.blob);render();$('#s4').scrollIntoView({behavior:'smooth'});
   }catch(e){$('#s4msg').innerHTML=`<div class="msg err">${esc(e.message)}</div>`;btn.disabled=false}
 }
