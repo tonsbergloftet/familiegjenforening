@@ -65,11 +65,11 @@
   },
   "fase.money.tittel": {
     "s": "ki",
-    "kilde": "fb25e0759e"
+    "kilde": "6f2b84a5bb"
   },
   "fase.money.undertekst": {
     "s": "ki",
-    "kilde": "187e2ae40d"
+    "kilde": "30dca9fe45"
   },
   "fase.norsk.kort": {
     "s": "ki",
@@ -89,11 +89,11 @@
   },
   "punkt.police.naar": {
     "s": "ki",
-    "kilde": "5a3ae1af88"
+    "kilde": "a369e913e0"
   },
   "punkt.police.tekst": {
     "s": "ki",
-    "kilde": "027e1df04f"
+    "kilde": "1c81060274"
   },
   "punkt.postkasse.tittel": {
     "s": "ki",
@@ -502,5 +502,41 @@
   "kontakt.kommunal-bolig.info": {
     "s": "ki",
     "kilde": "fe507affbb"
+  },
+  "fase.senere.kort": {
+    "s": "ki",
+    "kilde": "4ef1ed4d6e"
+  },
+  "fase.senere.tittel": {
+    "s": "ki",
+    "kilde": "b4fa56fecc"
+  },
+  "fase.senere.undertekst": {
+    "s": "ki",
+    "kilde": "85f96a4a3e"
+  },
+  "punkt.forny-oppholdstillatelse.tittel": {
+    "s": "ki",
+    "kilde": "cc0f683bf8"
+  },
+  "punkt.forny-oppholdstillatelse.naar": {
+    "s": "ki",
+    "kilde": "ac5908c3c0"
+  },
+  "punkt.forny-oppholdstillatelse.tekst": {
+    "s": "ki",
+    "kilde": "8407c9918a"
+  },
+  "punkt.sok-om-engangsstonad.tittel": {
+    "s": "ki",
+    "kilde": "0f530e28e7"
+  },
+  "punkt.sok-om-engangsstonad.naar": {
+    "s": "ki",
+    "kilde": "f3bf98f3a5"
+  },
+  "punkt.sok-om-engangsstonad.tekst": {
+    "s": "ki",
+    "kilde": "845055f4be"
   }
 }

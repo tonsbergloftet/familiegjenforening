@@ -57,9 +57,19 @@
     {
       "id": "norsk",
       "status": "publisert"
+    },
+    {
+      "id": "senere",
+      "status": "utkast"
     }
   ],
   "punkter": [
+    {
+      "id": "forny-oppholdstillatelse",
+      "fase": "senere",
+      "status": "utkast",
+      "lenke": "https://www.udi.no/skal-fornye/familieinnvandring/"
+    },
     {
       "id": "police",
       "fase": "key",
@@ -241,6 +251,11 @@
         "nav"
       ],
       "lenke": "https://www.nav.no/barnetrygd"
+    },
+    {
+      "id": "sok-om-engangsstonad",
+      "fase": "money",
+      "status": "utkast"
     },
     {
       "id": "intro",
