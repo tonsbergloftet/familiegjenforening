@@ -60,14 +60,14 @@
     },
     {
       "id": "senere",
-      "status": "utkast"
+      "status": "publisert"
     }
   ],
   "punkter": [
     {
       "id": "forny-oppholdstillatelse",
       "fase": "senere",
-      "status": "utkast",
+      "status": "publisert",
       "lenke": "https://www.udi.no/skal-fornye/familieinnvandring/"
     },
     {
@@ -255,7 +255,7 @@
     {
       "id": "sok-om-engangsstonad",
       "fase": "money",
-      "status": "utkast"
+      "status": "publisert"
     },
     {
       "id": "intro",
