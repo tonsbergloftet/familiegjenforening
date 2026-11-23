@@ -1,50 +1,50 @@
 {
   "fase.key.kort": {
-    "s": "ki",
+    "s": "kontrollert",
     "kilde": "320332b853"
   },
   "fase.key.tittel": {
-    "s": "ki",
+    "s": "kontrollert",
     "kilde": "c06dd76034"
   },
   "fase.key.undertekst": {
-    "s": "ki",
+    "s": "kontrollert",
     "kilde": "a3a4a48b0e"
   },
   "fase.before.kort": {
-    "s": "ki",
+    "s": "kontrollert",
     "kilde": "f491aaef56"
   },
   "fase.before.tittel": {
-    "s": "ki",
+    "s": "kontrollert",
     "kilde": "32a0288f53"
   },
   "fase.before.undertekst": {
-    "s": "ki",
+    "s": "kontrollert",
     "kilde": "cf7d946cb7"
   },
   "fase.week1.kort": {
-    "s": "ki",
+    "s": "kontrollert",
     "kilde": "d7721cc98a"
   },
   "fase.week1.tittel": {
-    "s": "ki",
+    "s": "kontrollert",
     "kilde": "d4ecf09282"
   },
   "fase.week1.undertekst": {
-    "s": "ki",
+    "s": "kontrollert",
     "kilde": "fada7d2764"
   },
   "fase.health.kort": {
-    "s": "ki",
+    "s": "kontrollert",
     "kilde": "e21df32d91"
   },
   "fase.health.tittel": {
-    "s": "ki",
+    "s": "kontrollert",
     "kilde": "5e610e80a3"
   },
   "fase.health.undertekst": {
-    "s": "ki",
+    "s": "kontrollert",
     "kilde": "117e6ceebb"
   },
   "fase.kids.kort": {
@@ -84,135 +84,135 @@
     "kilde": "2269eb8e95"
   },
   "punkt.police.tittel": {
-    "s": "ki",
+    "s": "kontrollert",
     "kilde": "2c8fa41739"
   },
   "punkt.police.naar": {
-    "s": "ki",
+    "s": "kontrollert",
     "kilde": "a369e913e0"
   },
   "punkt.police.tekst": {
-    "s": "ki",
+    "s": "kontrollert",
     "kilde": "1c81060274"
   },
   "punkt.postkasse.tittel": {
-    "s": "ki",
+    "s": "kontrollert",
     "kilde": "9ec5d2c7c0"
   },
   "punkt.postkasse.naar": {
-    "s": "ki",
+    "s": "kontrollert",
     "kilde": "32a0288f53"
   },
   "punkt.postkasse.tekst": {
-    "s": "ki",
+    "s": "kontrollert",
     "kilde": "22782c4600"
   },
   "punkt.housing.tittel": {
-    "s": "ki",
+    "s": "kontrollert",
     "kilde": "d62b5e670c"
   },
   "punkt.housing.naar": {
-    "s": "ki",
+    "s": "kontrollert",
     "kilde": "18edbc5bc1"
   },
   "punkt.housing.tekst": {
-    "s": "ki",
+    "s": "kontrollert",
     "kilde": "5185408710"
   },
   "punkt.udi.tittel": {
-    "s": "ki",
+    "s": "kontrollert",
     "kilde": "6609dfeedb"
   },
   "punkt.udi.naar": {
-    "s": "ki",
+    "s": "kontrollert",
     "kilde": "ab61bf8390"
   },
   "punkt.udi.tekst": {
-    "s": "ki",
+    "s": "kontrollert",
     "kilde": "b2c3d8896d"
   },
   "punkt.docs.tittel": {
-    "s": "ki",
+    "s": "kontrollert",
     "kilde": "aeefb48216"
   },
   "punkt.docs.naar": {
-    "s": "ki",
+    "s": "kontrollert",
     "kilde": "ce7774b9cd"
   },
   "punkt.docs.tekst": {
-    "s": "ki",
+    "s": "kontrollert",
     "kilde": "899c29f4a8"
   },
   "punkt.bhg-early.tittel": {
-    "s": "ki",
+    "s": "kontrollert",
     "kilde": "53800572ca"
   },
   "punkt.bhg-early.naar": {
-    "s": "ki",
+    "s": "kontrollert",
     "kilde": "891b1831ed"
   },
   "punkt.bhg-early.tekst": {
-    "s": "ki",
+    "s": "kontrollert",
     "kilde": "f4d5910b40"
   },
   "punkt.police-attend.tittel": {
-    "s": "ki",
+    "s": "kontrollert",
     "kilde": "97381beaae"
   },
   "punkt.police-attend.naar": {
-    "s": "ki",
+    "s": "kontrollert",
     "kilde": "a28bca78b6"
   },
   "punkt.police-attend.tekst": {
-    "s": "ki",
+    "s": "kontrollert",
     "kilde": "b3f4b5c0ba"
   },
   "punkt.id-letter.tittel": {
-    "s": "ki",
+    "s": "kontrollert",
     "kilde": "24af9c7323"
   },
   "punkt.id-letter.naar": {
-    "s": "ki",
+    "s": "kontrollert",
     "kilde": "201be18899"
   },
   "punkt.id-letter.tekst": {
-    "s": "ki",
+    "s": "kontrollert",
     "kilde": "cc4c4a15a7"
   },
   "punkt.bank-id.tittel": {
-    "s": "ki",
+    "s": "kontrollert",
     "kilde": "6f05f5a75e"
   },
   "punkt.bank-id.naar": {
-    "s": "ki",
+    "s": "kontrollert",
     "kilde": "52dbf0db17"
   },
   "punkt.bank-id.tekst": {
-    "s": "ki",
+    "s": "kontrollert",
     "kilde": "d9cdc0bb02"
   },
   "punkt.tb.tittel": {
-    "s": "ki",
+    "s": "kontrollert",
     "kilde": "7a7ddd3d36"
   },
   "punkt.tb.naar": {
-    "s": "ki",
+    "s": "kontrollert",
     "kilde": "c050ce1b30"
   },
   "punkt.tb.tekst": {
-    "s": "ki",
+    "s": "kontrollert",
     "kilde": "1c3a778479"
   },
   "punkt.fastlege.tittel": {
-    "s": "ki",
+    "s": "kontrollert",
     "kilde": "5e840c524e"
   },
   "punkt.fastlege.naar": {
-    "s": "ki",
+    "s": "kontrollert",
     "kilde": "c685e056e3"
   },
   "punkt.fastlege.tekst": {
-    "s": "ki",
+    "s": "kontrollert",
     "kilde": "747f7734f4"
   },
   "punkt.helsestasjon.tittel": {
@@ -348,39 +348,39 @@
     "kilde": "2b0f738795"
   },
   "sporsmal.ankommet.tekst": {
-    "s": "ki",
+    "s": "kontrollert",
     "kilde": "f475642cb6"
   },
   "sporsmal.ankommet.nei": {
-    "s": "ki",
+    "s": "kontrollert",
     "kilde": "1e9c41fb20"
   },
   "sporsmal.ankommet.ja": {
-    "s": "ki",
+    "s": "kontrollert",
     "kilde": "aecf01e6f8"
   },
   "sporsmal.barn.tekst": {
-    "s": "ki",
+    "s": "kontrollert",
     "kilde": "cdfc24d434"
   },
   "sporsmal.barn.ja": {
-    "s": "ki",
+    "s": "kontrollert",
     "kilde": "283c735c89"
   },
   "sporsmal.barn.nei": {
-    "s": "ki",
+    "s": "kontrollert",
     "kilde": "0148133260"
   },
   "sporsmal.bolig.tekst": {
-    "s": "ki",
+    "s": "kontrollert",
     "kilde": "e7a875eac1"
   },
   "sporsmal.bolig.ja": {
-    "s": "ki",
+    "s": "kontrollert",
     "kilde": "283c735c89"
   },
   "sporsmal.bolig.nei": {
-    "s": "ki",
+    "s": "kontrollert",
     "kilde": "7ffa0099cb"
   },
   "kontakt.legekontor.navn": {
