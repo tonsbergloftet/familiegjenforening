@@ -187,10 +187,19 @@ async function checkUpload(P){
   // Har det kommet andre opplastinger mellom versjonen zip-fila bygde på og nå?
   let others=[];
   if(P.base){try{const cmp=await fetch(`https://api.github.com/repos/${R.repo}/compare/${P.base}...${c.sha}`,{cache:'no-store'}).then(r=>r.ok?r.json():null);
-    if(cmp&&cmp.commits)others=cmp.commits.filter(x=>!P.files||x.sha!==c.sha).map(x=>x.commit.message.split('\n')[0]).filter(m=>m!==P.title)}catch(e){}}
+    if(cmp&&cmp.commits){
+      // Bare opplastinger som endret noe i data/ kan ha skrevet over noe. En feilopplasting i en annen mappe teller ikke.
+      const cand=cmp.commits.filter(x=>x.sha!==c.sha&&x.commit.message.split('\n')[0]!==P.title).slice(-10);
+      for(const x of cand){let touches=true;try{const d=await fetch(`https://api.github.com/repos/${R.repo}/commits/${x.sha}`,{cache:'no-store'}).then(r=>r.ok?r.json():null);if(d&&d.files)touches=d.files.some(f=>f.filename.startsWith('data/'))}catch(e){}
+        if(touches)others.push(x.commit.message.split('\n')[0])}}}catch(e){}}
+  // Vanligste feil: mappa rundt «data» er dratt inn, så filene havner i f.eks. last-opp-2026-11-23/data/
+  let wrong=null;
+  if(missing.length||bad.length){try{const tr=await fetch(`https://api.github.com/repos/${R.repo}/git/trees/${c.sha}?recursive=1`,{cache:'no-store'}).then(r=>r.ok?r.json():null);
+    const hit=tr&&tr.tree.find(x=>x.type==='tree'&&/\/data$/.test(x.path)&&x.path!=='data');if(hit)wrong=hit.path.replace(/\/data$/,'')}catch(e){}}
+  if(wrong)return{state:'bad',html:`<div class="msg err"><b>Filene havnet i feil mappe: <code>${esc(wrong)}/data</code>.</b> Mappa rundt <code>data</code> ble dratt inn i stedet for <code>data</code>. Slik retter du det:<ol class="todo"><li>Åpne <a href="https://github.com/${esc(R.repo)}/tree/main/${esc(wrong)}" target="_blank" rel="noopener">mappa ${esc(wrong)} på GitHub</a>, trykk på de tre prikkene øverst til høyre og velg <b>Delete directory</b>. Trykk <b>Commit changes</b>.</li><li>Åpne den utpakkede mappa <code>${esc(wrong)}</code> på maskinen din, og dra mappa <code>data</code> inne i den til opplastingssiden.</li><li>Trykk «Kontroller opplastingen» igjen.</li></ol></div>`};
   if(bad.length||missing.length)return{state:'bad',html:`<div class="msg err"><b>Opplastingen stemmer ikke.</b>${missing.length?`<br>Mangler på GitHub: ${missing.map(p=>'data/'+esc(p)).join(', ')}. Har du dratt inn mappa <code>data</code>, og ikke mappa rundt den?`:''}${bad.length?`<br>Annet innhold enn forventet: ${bad.map(p=>'data/'+esc(p)).join(', ')}.`:''}${others.length?`<br>Det er lastet opp andre endringer etter at zip-fila ble laget: ${others.map(m=>'«'+esc(m)+'»').join(', ')}.`:' Last opp disse filene på nytt fra zip-fila.'}<br>Siste opplasting: «${esc(c.msg)}» av ${esc(c.who)}.</div>`};
   if(others.length)return{state:'warn',c,html:`<div class="msg warn"><b>Filene dine ligger riktig, men det ble lastet opp ${others.length===1?'en annen endring':others.length+' andre endringer'} mellom versjonen zip-fila bygde på og din:</b> ${others.map(m=>'«'+esc(m)+'»').join(', ')}. Opplastingen din kan ha skrevet over noe av det. Åpne appen og sjekk. Mangler noe, legger du den andre fila inn i mottaket på nytt.</div>`};
-  return{state:'ok',c,html:`<div class="msg ok"><b>Opplastingen er riktig.</b> ${P.paths.length===1?'Fila':'Alle '+P.paths.length+' filene'} ligger på GitHub slik mottaket laget dem («${esc(c.msg)}», ${esc(c.sha.slice(0,7))}). Appen er oppdatert om 1–2 minutter.</div>`};
+  return{state:'ok',c,html:`<div class="msg ok"><b>Opplastingen er riktig.</b> ${P.paths.length===1?'Fila ligger på GitHub slik mottaket laget den':'Alle '+P.paths.length+' filene ligger på GitHub slik mottaket laget dem'} («${esc(c.msg)}», ${esc(c.sha.slice(0,7))}). Appen er oppdatert om 1–2 minutter.</div>`};
 }
 async function verifyUpload(){
   VMSG='<div class="msg">Henter siste versjon fra GitHub …</div>';render();
@@ -511,7 +520,7 @@ function undoCard(){
     if(u.stage==='ready'){
       b+=`<p>Du får en zip med ${u.paths.length} filer, og laster den opp på samme måte som vanlig. Vil du angre flere opplastinger, gjør du én om gangen.</p><div class="acts"><button class="btn primary" id="undoDl" ${u.paths.length&&!u.check.err.length?'':'disabled'}>Last ned zip med forrige versjon</button><button class="btn ghost" id="undoCancel">Avbryt</button></div>`;
     }else{
-      b+=`<div class="msg ok"><b>${esc(PENDING?PENDING.zip:'Zip-fila')} er lastet ned.</b></div>`+uploadSteps({paths:u.paths},u.title,`Setter filene i data tilbake slik de var før ${c.sha.slice(0,7)} («${c.msg}»).`);
+      b+=`<div class="msg ok"><b>${esc(PENDING?PENDING.zip:'Zip-fila')} er lastet ned.</b></div>`+uploadSteps({paths:u.paths,zip:PENDING?PENDING.zip:''},u.title,`Setter filene i data tilbake slik de var før ${c.sha.slice(0,7)} («${c.msg}»).`);
       b+=`<div class="acts">${VERIFIED?'<button class="btn primary" id="undoDone">Ferdig, tilbake til mottaket</button>':''}</div>`;
     }
   }
@@ -620,7 +629,7 @@ function uploadSteps(P,title,body,extra){
   return `<ol class="todo">
     <li><b>Pakk ut zip-fila.</b> Windows: høyreklikk og velg «Pakk ut alle». Mac: dobbeltklikk. Da får du en mappe som heter <code>data</code>.</li>
     <li><b>Åpne opplastingssiden på GitHub</b>${up?`: <a href="${esc(up)}" target="_blank" rel="noopener">${esc(up.replace('https://',''))}</a>`:' (Add file → Upload files)'}.</li>
-    <li><b>Dra mappa <code>data</code> inn i feltet.</b> Ikke mappa rundt den. GitHub skal vise disse filene, og eksisterende filer blir erstattet:<ul class="files">${P.paths.map(p=>`<li class="${(P.created||[]).includes(p)?'new':''}">data/${esc(p)}</li>`).join('')}</ul></li>
+    <li><b>Dra mappa <code>data</code> inn i feltet.</b> Den ligger inne i mappa <code>${esc((P.zip||'').replace(/\.zip$/,''))}</code> som ble laget da du pakket ut. Ikke dra inn den ytterste mappa. GitHub skal vise disse filene, og eksisterende filer blir erstattet:<ul class="files">${P.paths.map(p=>`<li class="${(P.created||[]).includes(p)?'new':''}">data/${esc(p)}</li>`).join('')}</ul></li>
     <li><b>Lim inn oppsummering og beskrivelse</b> under «Commit changes».<pre class="commit"><b>${esc(title)}</b>\n\n${esc(body)}</pre><div class="acts"><button class="btn small" data-copy="t">Kopier oppsummering</button><button class="btn small" data-copy="b">Kopier beskrivelse</button></div></li>
     <li>La «Commit directly to the main branch» være valgt, og trykk <b>Commit changes</b>.</li>
     <li><b>Kontroller opplastingen.</b> Verktøyet sjekker at filene på GitHub er nøyaktig de som ble laget her.${R.repo?`<div class="acts"><button class="btn primary" id="verify">Kontroller opplastingen</button></div><div id="verifyOut">${VMSG}</div>`:''}</li>${extra||''}</ol>`;

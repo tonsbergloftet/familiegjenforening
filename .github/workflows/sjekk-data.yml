@@ -1,0 +1,22 @@
+# Kontrollerer data-mappa ved hver opplasting og hver pull request.
+# Feiler kontrollen, får den som lastet opp en e-post fra GitHub, og commiten får et rødt kryss.
+name: Sjekk data
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  sjekk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Kontroller data
+        run: node tools/sjekk-data.mjs

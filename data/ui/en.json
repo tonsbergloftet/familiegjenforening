@@ -5,8 +5,6 @@
   "felles.ki_merknad": "This text was translated from Norwegian with the help of AI and has not been checked by a translator. Some things may be wrong or unclear. If you are unsure, ask the service it concerns.",
   "felles.lenke_kopiert": "Link copied",
   "sprakvalg.overskrift": "Choose language",
-  "sporsmal.overskrift": "What applies to you?",
-  "sporsmal.ingress": "Answer three questions, and we will make the list based on your answers.",
   "sporsmal.knapp": "Show the list",
   "liste.del": "Share the list with your family",
   "liste.del_hint": "They can choose their own language at the top of the page.",
@@ -24,6 +22,5 @@
   "start.viktigste": "Read the three most important things first",
   "start.test": "This is a test. We are trying out the checklist and would like to hear what you think.",
   "liste.viktig": "Important",
-  "liste.maskinoversatt": "Machine-translated",
-  "liste.kontakt": "Contact"
+  "liste.maskinoversatt": "Machine-translated"
 }

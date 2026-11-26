@@ -5,8 +5,6 @@
   "felles.ki_merknad": "Bu metin yapay zekâ yardımıyla Norveççeden çevrildi ve bir çevirmen tarafından kontrol edilmedi. Bazı yerler yanlış veya anlaşılmaz olabilir. Emin değilseniz ilgili kuruma sorun.",
   "felles.lenke_kopiert": "Bağlantı kopyalandı",
   "sprakvalg.overskrift": "Dil seçin",
-  "sporsmal.overskrift": "Sizin için neler geçerli?",
-  "sporsmal.ingress": "Üç soruyu yanıtlayın, listeyi cevaplarınıza göre hazırlayalım.",
   "sporsmal.knapp": "Listeyi göster",
   "liste.del": "Listeyi ailenizle paylaşın",
   "liste.del_hint": "Sayfanın üstünden kendi dillerini seçebilirler.",
@@ -24,6 +22,5 @@
   "start.viktigste": "Önce en önemli üç şeyi okuyun",
   "start.test": "Bu bir denemedir. Kontrol listesini deniyoruz ve ne düşündüğünüzü duymak isteriz.",
   "liste.viktig": "Önemli",
-  "liste.maskinoversatt": "Makine çevirisi",
-  "liste.kontakt": "İletişim"
+  "liste.maskinoversatt": "Makine çevirisi"
 }
