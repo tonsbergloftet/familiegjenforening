@@ -5,13 +5,15 @@ Struktur og tekst er skilt fra hverandre:
 - `struktur.json` sier **hva som finnes, i hvilken rekkefølge og for hvem**.
 - `sprak/xx.json` inneholder **teksten**, som en flat liste med nøkkel → tekst.
 
-Begge leses av `veileder.html` og `redaktor.html` ved oppstart.
+Alle verktøyene leser dem ved oppstart.
 
 ## config.json
 
 ```json
 {
   "adresse": "https://tonsbergloftet.github.io/familiegjenforening/",
+  "github": "tonsbergloftet/familiegjenforening",
+  "redaktor": "Navn Navnesen, navn@tonsberg.kommune.no",
   "viktigste_side": "",
   "app": "veileder.html",
   "lagringsnokkel": "fgv_app_v1",
@@ -22,6 +24,13 @@ Begge leses av `veileder.html` og `redaktor.html` ved oppstart.
 ```
 
 Felter som starter med `_` er forklaringer og blir ikke brukt av appen.
+
+| Felt | Betydning |
+|---|---|
+| `github` | Repoet (eier/navn). Redaktør, tolk og mottak henter siste versjon herfra. |
+| `redaktor` | Navn og e-post til redaktøren. Vises for tolkene. Tom = vises ikke. |
+| `viktigste_side` | Lenke til kommunens side med de tre viktigste tingene. Tom = vises ikke. |
+| `sprak[].status` | `publisert`, eller `utkast` for et språk som bare vises med `?utkast=1`. |
 
 ## struktur.json
 
@@ -61,7 +70,7 @@ Det finnes tre spørsmål: `ankommet`, `barn` og `bolig`. Svarene er `ja` eller 
 |---|---|
 | `id` | Fast ID. **Endres aldri**, fordi familienes avkrysninger er lagret på den. |
 | `fase` | ID-en til fasen punktet hører til. |
-| `status` | `publisert` eller `utkast`. Utkast vises bare med `?utkast=1`. |
+| `status` | `publisert` eller `utkast`. Utkast vises bare med `?utkast=1`. Redaktøren lager ikke lenger utkast, men eldre punkter kan ha det. Da viser redaktøren en knapp for å vise dem. |
 | `viktig` | Gir merkelappen «Viktig». |
 | `vises_hvis` | Punktet vises bare når **alle** vilkårene stemmer. Mangler feltet, vises punktet for alle. |
 | `lenke` | Valgfri lenke til mer informasjon. |
@@ -111,7 +120,7 @@ Hvis noen av tekstene i et punkt mangler eller ikke er `kontrollert`, vises «Ma
 
 ## ui/xx.json
 
-Faste tekster i appen, som knapper, overskrifter og merkelapper. Disse endres sjelden, og redaktøren redigerer dem ikke. Teknisk eier oversetter dem når et nytt språk legges til.
+Faste tekster i appen, som knapper, overskrifter og merkelapper. `ui/no.json` er kilden. `felles.ki_merknad` vises øverst i appen når noe på språket ikke er kontrollert av tolk. Norsk har den bare som kilde for oversettelse. Disse endres sjelden, og redaktøren redigerer dem ikke. Teknisk eier oversetter dem når et nytt språk legges til.
 
 ## Lagret i nettleseren
 
@@ -124,3 +133,55 @@ Familienes svar og avkrysninger lagres i `localStorage` under `fgv_app_v1`:
 Eldre versjoner av appen lagret `arrived`/`kids`/`housing`. Disse oversettes automatisk til `svar`.
 
 Redaktørverktøyet lagrer utkast under `fgv_redaktor`. Det er bare lagret i redaktørens nettleser til endringsfila er sendt og lagt inn.
+
+Andre nøkler i nettleseren: `fgv_tolk_<språk>` (tolkens arbeid til det er publisert), `fgv_mottak_venter` (zip som ikke er kontrollert), `fgv_redaktor_intro`, `fgv_tolk_intro` og `fgv_mottak_intro`.
+
+## Endringsfil fra redaktøren
+
+`endringer-ÅÅÅÅ-MM-DD.json`:
+
+```json
+{
+  "type": "endringer",
+  "versjon": 2,
+  "laget": "2026-11-23T10:12:00.000Z",
+  "grunnlag": "48213:-129833",
+  "eldre_utkast": true,
+  "tekster": { "punkt.police.tekst": "Ny tekst …", "punkt.gammel.tittel": null },
+  "forrige": { "punkt.police.tekst": "Teksten slik den var …" },
+  "struktur": { "sporsmal": [], "faser": [], "punkter": [], "kontakter": [] }
+}
+```
+
+| Felt | Betydning |
+|---|---|
+| `tekster` | Bare norske tekster som er endret. `null` betyr slettet. |
+| `forrige` | Hvordan tekstene så ut da redaktøren lastet ned. Mottaket bruker det til å oppdage at noen andre har endret samme tekst. |
+| `grunnlag` | Fingeravtrykk av versjonen redaktøren startet fra. |
+| `eldre_utkast` | Bare med når redaktøren fortsatte på et utkast fra en eldre versjon. |
+| `struktur` | Hele `struktur.json`. Bare med når faser, punkter eller kontakter er endret, og erstatter da hele fila. |
+
+## Kontrollfil fra tolk
+
+`kontroll-<språk>-ÅÅÅÅ-MM-DD.json`:
+
+```json
+{
+  "type": "kontroll",
+  "versjon": 1,
+  "sprak": "ar",
+  "laget": "2026-11-23T10:12:00.000Z",
+  "grunnlag": "<commit-sha>",
+  "tekster": {
+    "punkt.police.tittel": { "norsk": "…", "sett": "…", "ny": "…", "godkjent": true },
+    "ui.liste.viktig": { "norsk": "…", "sett": "…", "ny": "…", "godkjent": false }
+  }
+}
+```
+
+| Felt | Betydning |
+|---|---|
+| `norsk` | Den norske teksten tolken så. Er den endret siden, tar mottaket ikke med teksten. |
+| `sett` | Oversettelsen tolken så. Er den endret av andre siden, tar mottaket ikke med en godkjenning uten rettelse, og ber om valg ved rettelse. |
+| `ny` | Tolkens rettede tekst. Bare med når tolken har endret noe. |
+| `godkjent` | Om tolken godkjente teksten. Gir status `kontrollert`. Nøkler som starter med `ui.` får ikke status. |

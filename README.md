@@ -14,9 +14,28 @@ Appen er en statisk nettside uten database. Alt innhold ligger i JSON-filer i `d
 
 | Rolle | Gjør |
 |---|---|
-| **Redaktør** (1) | Skriver og endrer norsk tekst i `redaktor.html` og sender endringsfila til teknisk eier. |
-| **Teknisk eier** (1) | Legger endringer inn i repoet, kjører KI-oversettelse og laster opp (commit). |
-| **Tolker** (flere) | Kontrollerer oversettelser. Er de usikre, tar de kontakt med redaktør. |
+| **Redaktør** (1) | Skriver og endrer norsk tekst i redaktøren og sender endringsfila til teknisk eier. |
+| **Teknisk eier** (1) | Legger filene fra redaktør og tolker inn i mottaket, KI-oversetter og laster opp på github.com. |
+| **Tolker** (flere) | Kontrollerer og retter oversettelser i tolkeverktøyet og sender kontrollfila til teknisk eier. Er de usikre på den norske teksten, spør de redaktøren. |
+
+## Lenker
+
+| Hva | Adresse |
+|---|---|
+| Appen for familiene | https://tonsbergloftet.github.io/familiegjenforening/veileder.html |
+| Redaktøren | https://tonsbergloftet.github.io/familiegjenforening/redaktor.html |
+| Tolkeverktøyet | https://tonsbergloftet.github.io/familiegjenforening/tolk.html?lang=ar (bytt `ar` med språkkoden) |
+| Mottaket | https://tonsbergloftet.github.io/familiegjenforening/mottak.html |
+| Opplasting på GitHub | https://github.com/tonsbergloftet/familiegjenforening/upload/main |
+
+## Ved overlevering
+
+- [ ] GitHub Pages er slått på (Settings → Pages → Deploy from a branch → `main` / root).
+- [ ] Teknisk eier har en GitHub-konto med skrivetilgang til repoet, og minst én person til har det som reserve.
+- [ ] `redaktor` i `data/config.json` har navn og e-post til redaktøren. Det vises for tolkene.
+- [ ] `viktigste_side` i `data/config.json` peker til kommunens side, når den finnes.
+- [ ] Redaktør, tolker og teknisk eier har lagret lenkene sine som bokmerke.
+- [ ] Teknisk eier har lagt inn én endringsfil og én kontrollfil fra start til slutt, med «Kontroller opplastingen».
 
 ## Mapper og filer
 
@@ -26,6 +45,9 @@ redaktor.html            redaktørverktøyet
 mottak.html              mottak for teknisk eier: kontroll, KI-oversettelse, opplasting
 tolk.html                tolkene kontrollerer og retter oversettelser
 index.html               sender videre til veileder.html
+tools/sjekk-data.mjs     kontroll av data-mappa, kjøres av GitHub ved hver opplasting
+.github/workflows/       oppsettet som får GitHub til å kjøre kontrollen
+AGENTS.md                regler for videreutvikling av koden
 data/config.json         språkliste, adresse, lenke til kommunens side
 data/struktur.json       spørsmål, faser, punkter og kontakter (rekkefølge, vilkår)
 data/sprak/no.json       all norsk tekst (kilden)
@@ -60,7 +82,7 @@ Alt gjøres i nettleseren. Du trenger ikke installere noe.
    Du kommer ikke videre før alle språk er oversatt.
 4. **Last opp.** Du får en zip med mappa `data`, som bare inneholder de endrede filene.
    - Pakk ut zip-fila.
-   - Åpne opplastingssiden (https://github.com/tonsbergloftet/familiegjenforening/upload/main) og dra mappa `data` inn.
+   - Åpne opplastingssiden (https://github.com/tonsbergloftet/familiegjenforening/upload/main). Dra inn mappa `data`, ikke mappa rundt den.
    - Lim inn den ferdige commit-meldingen og trykk *Commit changes*.
    - Trykk *Kontroller opplastingen* i mottaket. Verktøyet sjekker at filene på GitHub er nøyaktig de det laget.
 
@@ -105,4 +127,9 @@ Flygebladet og de tre viktigste punktene ligger på kommunens nettside, som har 
 
 - **Appen viser feilmelding om innlasting:** Sannsynligvis en JSON-feil. Lim fila inn på https://jsonlint.com eller se siste commit i GitHub.
 - **Angre en opplasting:** Trykk *Angre en opplasting* øverst i mottaket. Mottaket lager en zip med filene slik de var før den siste opplastingen. Du laster den opp og kontrollerer den på vanlig måte. Vil du angre flere, tar du én om gangen, fra den nyeste. Er det bare en tekst som er feil, er det enklere at redaktøren retter den og sender en ny endringsfil.
-- **For utviklere:** Appen kan testes lokalt med `python3 -m http.server` i repo-mappa. Den virker ikke ved dobbeltklikk på fila.
+- **Filene havnet i feil mappe** (f.eks. `last-opp-2026-11-23/data`): Mappa rundt `data` ble dratt inn. «Kontroller opplastingen» forklarer hvordan du sletter den feile mappa på GitHub og laster opp på nytt.
+- **E-post fra GitHub om «Sjekk data», eller rødt kryss ved en commit:** GitHub kontrollerer data-mappa etter hver opplasting. Åpne e-posten eller krysset for å se hva som er feil. Ofte er det en mappe på feil sted eller en fil som er redigert for hånd. Rett det, eller bruk «Angre en opplasting» i mottaket.
+
+## Videreutvikling
+
+Endringer i koden skal gå gjennom en pull request, ikke rett til `main`. Les [AGENTS.md](AGENTS.md) før du endrer noe. Det gjelder også når du bruker KI til å skrive kode.
