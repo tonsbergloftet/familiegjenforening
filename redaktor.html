@@ -41,6 +41,37 @@ button{cursor:pointer}
 .count{display:inline-grid;place-items:center;min-width:22px;height:22px;border-radius:11px;background:var(--on-green);color:var(--green);font-size:13px;margin-inline-start:6px;padding:0 6px}
 .main{display:grid;grid-template-columns:300px minmax(0,1fr) 400px;min-height:0}
 .nav{border-inline-end:1px solid var(--line);overflow:auto;padding:14px 12px 40px;background:var(--bg)}
+.hide-m{}
+#pubBtn{white-space:nowrap}
+@media (max-width:760px){.hide-m{display:none}}
+.tut{position:fixed;inset:0;z-index:80;display:none}
+.tut.on{display:block}
+.tut-hole{position:fixed;border-radius:16px;box-shadow:0 0 0 9999px rgba(1,30,45,.66);outline:3px solid #FFD35C;outline-offset:0;transition:left .25s,top .25s,width .25s,height .25s;pointer-events:none}
+.tut-card{position:fixed;background:var(--sheet);border-radius:18px;padding:20px 22px;width:min(380px,calc(100vw - 24px));box-shadow:0 20px 60px rgba(0,0,0,.35);transition:left .25s,top .25s}
+.tut-card h2{margin:4px 0 8px;font-size:22px;color:var(--navy);line-height:1.2}
+.tut-card p{margin:0;font-size:16px;line-height:1.55}
+.tut-prog{display:flex;gap:5px;margin-bottom:12px}
+.tut-prog span{height:5px;flex:1;border-radius:3px;background:var(--line)}
+.tut-prog span.on{background:var(--green)}
+.tut-num{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:var(--muted)}
+.navhead{position:sticky;top:-14px;z-index:3;background:var(--bg);margin:-14px -12px 6px;padding:14px 12px 6px;border-bottom:1px solid var(--line)}
+.navhead .search{margin-bottom:4px}
+.phead{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 12px;color:var(--navy)}
+.phead b{font-size:16px}
+.phead small{font-size:13.5px;color:var(--muted);font-weight:500}
+.pnum{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--navy);color:#fff;font-weight:700;font-size:14px;flex:none}
+.edit .phead{position:sticky;top:-22px;z-index:3;background:var(--bg);margin:-22px calc(-1*clamp(16px,3vw,40px)) 16px;padding:14px clamp(16px,3vw,40px) 10px;border-bottom:1px solid var(--line)}
+.prev .phead{position:sticky;top:-18px;z-index:3;background:var(--sunk);margin:-18px -20px 14px;padding:14px 20px 10px;border-bottom:1px solid var(--line)}
+.vis{font-size:12.5px;font-weight:600;border-radius:999px;padding:2px 9px;margin-inline-start:6px;vertical-align:2px}
+.vis.y{background:var(--mint);color:var(--green)}
+.vis.n{background:var(--draft);color:var(--navy)}
+.nodew{position:relative}
+.nodew .node[aria-current=true]{padding-inline-end:78px}
+.mv{position:absolute;inset-inline-end:6px;top:50%;transform:translateY(-50%);display:flex;gap:2px}
+.mv button{width:32px;height:30px;border:1px solid var(--line);background:var(--sheet);border-radius:8px;color:var(--navy);font-weight:700;font-size:15px}
+.mv button:disabled{opacity:.3}
+.bul{width:6px;height:6px;border-radius:50%;background:var(--line);flex:none}
+.hiddennote{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--draft);border-radius:12px;padding:10px 14px;margin:0 0 14px;font-size:15px}
 .search{width:100%;padding:10px 14px;border:1px solid var(--line);border-radius:12px;background:var(--sheet);font-size:16px;margin-bottom:10px}
 .grp{margin:14px 0 4px;padding:0 8px;font-size:13px;font-weight:600;color:var(--muted)}
 .navtabs{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;background:var(--sunk);border-radius:12px;padding:4px;margin:0 0 6px}
@@ -48,16 +79,7 @@ button{cursor:pointer}
 .navtabs button[aria-selected=true]{background:var(--sheet);color:var(--navy);box-shadow:var(--shadow)}
 .navtabs button i{position:absolute;top:6px;inset-inline-end:8px;width:7px;height:7px;border-radius:50%;background:#E0A030}
 .navdesc{font-size:13.5px;color:var(--muted);margin:4px 8px 8px;line-height:1.4}
-.ai{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:10px;padding:12px 14px;border-radius:12px;background:var(--mint)}
-.ai .hint{margin:0;flex:1;min-width:200px}
-.aiundo{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--draft);border-radius:12px;padding:10px 14px;margin:0 0 12px;font-size:15px}
-.cmp{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:10px 0}
-.cmp div{border-radius:10px;padding:8px 12px;white-space:pre-wrap;font-size:15px;background:var(--sunk)}
-.cmp div.new{background:var(--mint)}
-.cmp b{display:block;font-size:12.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:2px}
-.box textarea.paste{width:100%;min-height:160px;border:1px solid var(--line);border-radius:12px;padding:10px;font:14px/1.45 ui-monospace,Menlo,Consolas,monospace;background:var(--sunk)}
 .box.wide{width:min(820px,100%)}
-@media (max-width:760px){.cmp{grid-template-columns:1fr}}
 .node{display:flex;align-items:center;gap:8px;width:100%;text-align:start;border:0;background:transparent;border-radius:10px;padding:8px 10px;min-height:40px;font-size:15px;color:var(--ink)}
 .node:hover{background:var(--sunk)}
 .node[aria-current=true]{background:var(--sheet);box-shadow:var(--shadow);font-weight:600;color:var(--navy)}
@@ -198,18 +220,19 @@ h1{font-size:clamp(26px,3vw,34px);line-height:1.1;letter-spacing:-.02em;color:va
   <header class="top">
     <div class="brand">Redaktør <small>Når familien kommer</small></div>
     <span class="saved" id="saved">Ingen endringer</span>
-    <button class="mini" id="helpBtn">Hjelp</button>
-    <button class="btn primary" id="pubBtn">Send endringer<span class="count" id="cnt">0</span></button>
+    <button class="mini" id="helpBtn">Veiledning</button>
+    <button class="btn primary" id="pubBtn">Send<span class="hide-m"> endringer</span><span class="count" id="cnt">0</span></button>
   </header>
   <div class="main" id="main">
     <nav class="nav" id="nav" aria-label="Innhold"></nav>
     <section class="edit" id="edit"></section>
     <aside class="prev" id="prev"></aside>
   </div>
-  <nav class="tabbar" aria-label="Visning"><button data-view="nav">Innhold</button><button data-view="edit">Rediger</button><button data-view="prev">Forhåndsvis</button></nav>
+  <nav class="tabbar" aria-label="Visning"><button data-view="nav">1 Velg</button><button data-view="edit">2 Rediger</button><button data-view="prev">3 Slik ser det ut</button></nav>
 </div>
 <div class="drawer" id="drawer"><div class="panel" id="panel"></div></div>
 <div class="modal" id="modal"><div class="box" id="box"></div></div>
+<div class="tut" id="tut" role="dialog" aria-modal="true" aria-label="Veiledning"><div class="tut-hole" id="tutHole"></div><div class="tut-card" id="tutCard"></div></div>
 <div class="toast" id="toast" role="status"></div>
 <script>
 (async()=>{
@@ -261,7 +284,11 @@ function labelOf(k){const p=k.split('.'),f=FL[p[2]]||p[2];
   if(p[0]==='punkt')return(t('punkt.'+p[1]+'.tittel')||p[1])+' · '+f;if(p[0]==='fase')return'Fase: '+t('fase.'+p[1]+'.tittel')+' · '+f;if(p[0]==='kontakt')return'Kontakt: '+t('kontakt.'+p[1]+'.navn')+' · '+f;if(p[0]==='sporsmal')return'Spørsmål: '+t('sporsmal.'+p[1]+'.tekst')+' · '+f;return k}
 
 // ── Navigasjon ──
-function nb(o,label,cls='',pre=''){const cur=sel.type===o.type&&sel.id===o.id;return `<button class="node ${cls}" data-sel='${esc(JSON.stringify(o))}' aria-current="${cur}">${pre}<span class="lbl">${esc(label)}</span>${changedEnt(o)?'<span class="chg"></span>':''}</button>`}
+function nb(o,label,cls=''){const cur=sel.type===o.type&&sel.id===o.id;
+  // Pilene for å flytte vises bare på det valgte punktet eller den valgte fasen, der plasseringen synes
+  let mv='';if(cur&&!q&&(o.type==='punkt'||o.type==='fase')){const arr=o.type==='punkt'?D.s.punkter.filter(x=>x.fase===P(o.id).fase):D.s.faser,i=arr.findIndex(x=>x.id===o.id),a=o.type==='punkt'?'data-move':'data-fmove';
+    mv=`<span class="mv"><button ${a}="-1" ${i?'':'disabled'} aria-label="Flytt opp" title="Flytt opp">↑</button><button ${a}="1" ${i<arr.length-1?'':'disabled'} aria-label="Flytt ned" title="Flytt ned">↓</button></span>`}
+  return `<div class="nodew"><button class="node ${cls}" data-sel='${esc(JSON.stringify(o))}' aria-current="${cur}">${o.type==='punkt'?'<span class="bul"></span>':''}<span class="lbl">${esc(label)}</span>${changedEnt(o)?'<span class="chg" title="Endret"></span>':''}</button>${mv}</div>`}
 function changedEnt(o){const pre={punkt:'punkt.',fase:'fase.',kontakt:'kontakt.',q:'sporsmal.'}[o.type];if(!pre)return false;
   if(Object.keys({...ORIG.t,...D.t}).some(k=>k.startsWith(pre+o.id+'.')&&changedT(k)))return true;const arr={punkt:'punkter',fase:'faser',kontakt:'kontakter',q:'sporsmal'}[o.type];
   return JSON.stringify(ORIG.s[arr].find(x=>x.id===o.id))!==JSON.stringify(D.s[arr].find(x=>x.id===o.id))}
@@ -271,21 +298,21 @@ function renderNav(){
   const m=s=>!q||String(s).toLowerCase().includes(q);
   const tab=tabOf(sel.type),dirty=tb=>tb==='sjekk'?[...D.s.faser.map(x=>({type:'fase',id:x.id})),...D.s.punkter.map(x=>({type:'punkt',id:x.id}))].some(changedEnt):tb==='kontakt'?D.s.kontakter.some(x=>changedEnt({type:'kontakt',id:x.id})):D.s.sporsmal.some(x=>changedEnt({type:'q',id:x.id}));
   const TABS=[['sjekk','Sjekklisten','Fasene i reisen, og punktene familien krysser av i hver fase.'],['kontakt','Kontakter','Telefon og nettside som vises under punktene. Står ett sted og brukes på alle språk.'],['q','Spørsmål','De tre spørsmålene på startsiden. Svarene avgjør hvilke punkter familien ser.']];
-  let h=`<div class="navtabs" role="tablist">${TABS.map(([id,lb])=>`<button role="tab" data-navtab="${id}" aria-selected="${!q&&tab===id}">${lb}${dirty(id)?'<i title="Har endringer"></i>':''}</button>`).join('')}</div>`;
+  let h=`<div class="navhead">${phead(1,'Velg hva du vil redigere')}<div class="navtabs" role="tablist">${TABS.map(([id,lb])=>`<button role="tab" data-navtab="${id}" aria-selected="${!q&&tab===id}">${lb}${dirty(id)?'<i title="Har endringer"></i>':''}</button>`).join('')}</div>`;
   if(!q)h+=`<p class="navdesc">${TABS.find(x=>x[0]===tab)[2]}</p>`;
-  h+=`<input class="search" id="search" type="search" placeholder="Søk i innholdet" value="${esc(q)}" aria-label="Søk">`;
+  h+=`<input class="search" id="search" type="search" placeholder="Søk i innholdet" value="${esc(q)}" aria-label="Søk"></div>`;
   if(q||tab==='sjekk'){
   if(q)h+=`<div class="grp">Sjekklisten</div>`;
   D.s.faser.forEach(f=>{const items=D.s.punkter.filter(p=>p.fase===f.id),hits=items.filter(p=>m(t('punkt.'+p.id+'.tittel')+' '+t('punkt.'+p.id+'.tekst')));
     if(q&&!hits.length)return;
-    h+=nb({type:'fase',id:f.id},fname(f.id),'phase',`<span class="dot ${f.status}"></span>`);
-    hits.forEach(p=>{const w=words(t('punkt.'+p.id+'.tekst'));h+=nb({type:'punkt',id:p.id},t('punkt.'+p.id+'.tittel')||'(uten tittel)','child',`<span class="dot ${p.status}"></span>`).replace('</span><','</span>'+(w>MAXW?'<span class="flagdot" title="Over '+MAXW+' ord">'+w+'</span>':'')+'<')});
+    h+=nb({type:'fase',id:f.id},fname(f.id),'phase');
+    hits.forEach(p=>{h+=nb({type:'punkt',id:p.id},t('punkt.'+p.id+'.tittel')||'(uten tittel)','child')});
     if(!q)h+=`<button class="add" data-add="${f.id}">+ Nytt punkt</button>`;});
   if(!q)h+=`<button class="add" style="margin-inline-start:0;width:100%" data-addfase="1">+ Ny fase</button>`;}
   if(q||tab==='q'){if(q)h+=`<div class="grp">Spørsmål</div>`;
-  D.s.sporsmal.forEach(s=>{if(m(t('sporsmal.'+s.id+'.tekst')))h+=nb({type:'q',id:s.id},t('sporsmal.'+s.id+'.tekst'),'',`<span class="dot plain"></span>`)});}
+  D.s.sporsmal.forEach(s=>{if(m(t('sporsmal.'+s.id+'.tekst')))h+=nb({type:'q',id:s.id},t('sporsmal.'+s.id+'.tekst'),'')});}
   if(q||tab==='kontakt'){if(q)h+=`<div class="grp">Kontakter</div>`;
-  D.s.kontakter.forEach(k=>{if(m(t('kontakt.'+k.id+'.navn')))h+=nb({type:'kontakt',id:k.id},t('kontakt.'+k.id+'.navn'),'',`<span class="dot plain"></span>`)});
+  D.s.kontakter.forEach(k=>{if(m(t('kontakt.'+k.id+'.navn')))h+=nb({type:'kontakt',id:k.id},t('kontakt.'+k.id+'.navn'),'')});
   if(!q)h+=`<button class="add" style="margin-inline-start:0;width:100%" data-addk="1">+ Ny kontakt</button>`;}
   h+=`<p class="proto">Utkastet lagres bare i denne nettleseren til du sender endringene.</p>`;
   $('#nav').innerHTML=h;
@@ -294,50 +321,51 @@ function renderNav(){
 
 // ── Felt ──
 const fid=k=>'f_'+k.replace(/[^a-z0-9]/gi,'_');
-function stale(k){return changedT(k)&&ORIG.t[k]?`<div class="stale">Endret. Blir KI-oversatt til ${NLANG} språk når teknisk eier laster det opp.</div>`:''}
+function stale(k){return''}
 function input(k,label,hint='',ph=''){return `<div class="f"><div class="fh"><label for="${fid(k)}">${label}</label></div><input type="text" id="${fid(k)}" data-k="${k}" value="${esc(t(k))}" placeholder="${esc(ph)}">${hint?`<div class="hint">${hint}</div>`:''}${stale(k)}</div>`}
 function area(k,label,hint=''){return `<div class="f"><div class="fh"><label for="${fid(k)}">${label}</label></div><textarea id="${fid(k)}" data-k="${k}" rows="2">${esc(t(k))}</textarea>${hint?`<div class="hint">${hint}</div>`:''}${stale(k)}</div>`}
 function wcHtml(w){return `${w} ord${w>MAXW?` – anbefalt maks ${MAXW}. Kort ned der det går.`:` av anbefalt maks ${MAXW}`}`}
 const order=()=>{const o=[];D.s.faser.forEach(f=>{o.push({type:'fase',id:f.id});D.s.punkter.filter(p=>p.fase===f.id).forEach(p=>o.push({type:'punkt',id:p.id}))});D.s.sporsmal.forEach(s=>o.push({type:'q',id:s.id}));D.s.kontakter.forEach(k=>o.push({type:'kontakt',id:k.id}));return o};
 function stepper(){const o=order(),i=o.findIndex(x=>x.type===sel.type&&x.id===sel.id);const b=(d,l)=>{const x=o[i+d];return `<button class="mini" ${x?`data-sel='${esc(JSON.stringify(x))}'`:'disabled'}>${l}</button>`};return `<span class="step">${b(-1,'‹ Forrige')}${b(1,'Neste ›')}</span>`}
-const head=(crumb,title,extra='')=>`<div class="crumb">${crumb}</div><h1>${esc(title)}</h1><div class="bar">${extra}${stepper()}</div>`;
-const seg=(obj)=>`<div class="seg" role="group" aria-label="Status">${[['publisert','Publisert'],['utkast','Utkast']].map(([v,l])=>`<button data-status="${v}" aria-pressed="${obj.status===v}">${l}</button>`).join('')}</div>`;
+const head=(crumb,title,extra='')=>`<div class="crumb">${crumb}</div><h1>${esc(title)}</h1>${extra?`<div class="bar">${extra}</div>`:''}`;
+// Eldre punkter kan være skjult (utkast). Vis det tydelig, med én knapp for å vise dem.
+const hidden=o=>o.status==='utkast'?`<div class="hiddennote">Skjult for familiene.<button class="btn small" data-status="publisert">Vis i sjekklisten</button></div>`:'';
 
+const phead=(n,title,sub)=>`<div class="phead"><span class="pnum">${n}</span><b>${title}</b>${sub?`<small>${sub}</small>`:''}</div>`;
+const vis=y=>y?'<span class="vis y">Vises for familien</span>':'<span class="vis n">Vises ikke for familien</span>';
 function renderEdit(){
   let h='';
   if(sel.type==='punkt'){
     const p=P(sel.id),items=D.s.punkter.filter(x=>x.fase===p.fase),i=items.indexOf(p),k=f=>'punkt.'+p.id+'.'+f,w=words(t(k('tekst')));
-    const undo=AIUNDO&&AIUNDO.id===p.id?`<div class="aiundo">KI-forslaget er satt inn. Les gjennom og juster det som ikke stemmer.<button class="btn small" data-aiundo="1">Angre forslaget</button></div>`:'';
-    h+=undo+head('Sjekklisten · '+esc(t('fase.'+p.fase+'.tittel')),t(k('tittel'))||'Nytt punkt',seg(p)+`<button class="mini" data-move="-1" ${i?'':'disabled'}>Flytt opp</button><button class="mini" data-move="1" ${i<items.length-1?'':'disabled'}>Flytt ned</button>${isNew('punkter',p.id)?'<button class="mini" data-del="punkt">Slett utkastet</button>':''}`);
-    h+=`<div class="sec"><h2>Punktet</h2><p>Det familien leser. Skriv kort: hvorfor det er viktig, og hva de gjør.</p>
+    h+=phead(2,'Rediger','Lagres automatisk')+head('Sjekklisten · '+esc(fname(p.fase)),t(k('tittel'))||'Nytt punkt',isNew('punkter',p.id)?'<button class="mini" data-del="punkt">Slett punktet</button>':'')+hidden(p);
+    h+=`<div class="sec" data-tut="punktet"><h2>Punktet ${vis(true)}</h2><p>Det familien leser. Tittel og «Når og for hvem» står i lista. Teksten ser de når de åpner punktet.</p>
       ${input(k('tittel'),'Tittel','Start gjerne med et verb: «Bestill …», «Søk om …».')}
       ${input(k('naar'),'Når og for hvem','Valgfritt. Vises under tittelen.','F.eks. «Rett etter ankomst» eller «Barn 1–5 år»')}
       <div class="f"><div class="fh"><label for="${fid(k('tekst'))}">Tekst</label></div>
         <div class="tool"><button data-ins="list" title="Ny linje som starter med – blir en punktliste">– Punktliste</button><button data-ins="call" title="Tekst i «» vises som en boks: Dette kan du si">«Dette kan du si»</button></div>
         <textarea class="big" id="${fid(k('tekst'))}" data-k="${k('tekst')}" rows="7">${esc(t(k('tekst')))}</textarea>
         <div class="wc ${w>MAXW?'over':''}" id="wc">${wcHtml(w)}</div>
-        <div class="hint">Linjer som starter med «–» blir en punktliste. En linje med noe i «…» blir en boks med «Dette kan du si».</div>${stale(k('tekst'))}</div>
-      <div class="ai"><button class="btn" data-ai="1">Forbedre teksten med KI</button><p class="hint">Kopierer punktet med en ferdig instruks om klarspråk, rekkefølge og lengde. Du limer det inn i Copilot, ChatGPT eller Claude, og limer svaret tilbake her.</p></div></div>`;
-    h+=`<div class="sec"><h2>Kontakter og lenke</h2><p>Telefonnummer og adresse hentes fra kontaktlisten. Da står de ett sted, og oversettes ikke.</p>
-      <div class="f"><div class="fh"><label>Kontakter som vises nederst</label></div><div class="chips">${D.s.kontakter.map(c=>`<button class="chip" data-kon="${c.id}" aria-pressed="${(p.kontakter||[]).includes(c.id)}">${esc(t('kontakt.'+c.id+'.navn'))}</button>`).join('')}</div></div>
-      <div class="f"><div class="fh"><label for="s_link">Lenke («Gå til nettside»)</label></div><input type="url" id="s_link" data-set="lenke" value="${esc(p.lenke||'')}" placeholder="https://"></div></div>`;
+        <div class="hint">Linjer som starter med «–» blir en punktliste. En linje med noe i «…» blir en boks med «Dette kan du si».</div>${stale(k('tekst'))}</div></div>`;
+    h+=`<div class="sec"><h2>Kontakter og lenke ${vis(true)}</h2><p>Vises nederst når familien åpner punktet. Trykk på kontaktene som skal være med. Mangler en kontakt, legger du den til under fanen «Kontakter» til venstre.</p>
+      <div class="f"><div class="fh"><label>Kontakter</label></div><div class="chips">${D.s.kontakter.map(c=>`<button class="chip" data-kon="${c.id}" aria-pressed="${(p.kontakter||[]).includes(c.id)}">${esc(t('kontakt.'+c.id+'.navn'))}</button>`).join('')}</div></div>
+      <div class="f"><div class="fh"><label for="s_link">Lenke</label></div><input type="url" id="s_link" data-set="lenke" value="${esc(p.lenke||'')}" placeholder="https://"><div class="hint">Valgfritt. Blir en knapp «Gå til nettside» nederst i punktet.</div></div></div>`;
     const opts=[];D.s.sporsmal.forEach(s=>s.svar.forEach(v=>opts.push(s.id+'='+v)));
-    h+=`<div class="sec"><h2>Hvem og hvor</h2><p></p>
-      <label class="toggle"><input type="checkbox" data-set="viktig" ${p.viktig?'checked':''}> <span><b>Viktig</b> – vises med merket «Viktig» i listen</span></label>
-      <div class="f"><div class="fh"><label>Vises bare for</label></div><div class="chips">${opts.filter(v=>FORLBL[v]).map(v=>`<button class="chip" data-cond="${v}" aria-pressed="${(p.vises_hvis||[]).includes(v)}">${FORLBL[v]}</button>`).join('')}</div><div class="hint">${(p.vises_hvis||[]).length?'Vises bare når alle valgte stemmer med svarene familien har gitt.':'Ingen valgt – vises for alle.'}</div></div>
-      <div class="f"><div class="fh"><label for="s_fase">Fase i reisen</label></div><select id="s_fase" data-set="fase">${D.s.faser.map(f=>`<option value="${f.id}" ${p.fase===f.id?'selected':''}>${esc(fname(f.id))}${f.status==='utkast'?' (utkast)':''}</option>`).join('')}</select></div></div></div>`;
+    h+=`<div class="sec" data-tut="hvem"><h2>Hvem og hvor ${vis(false)}</h2><p>Dette ser ikke familien som tekst. Her bestemmer du hvem som får se punktet, og hvor i reisen det står.</p>
+      <label class="toggle"><input type="checkbox" data-set="viktig" ${p.viktig?'checked':''}> <span><b>Viktig</b> – punktet får merket «Viktig» og skiller seg ut i lista</span></label>
+      <div class="f"><div class="fh"><label>Vises bare for</label></div><div class="chips">${opts.filter(v=>FORLBL[v]).map(v=>`<button class="chip" data-cond="${v}" aria-pressed="${(p.vises_hvis||[]).includes(v)}">${FORLBL[v]}</button>`).join('')}</div><div class="hint">Familien svarer på tre spørsmål på startsiden. Velg ingenting hvis punktet gjelder alle. Velger du for eksempel «Har barn», ser bare familier med barn punktet.<br><b>${(p.vises_hvis||[]).length?'Nå: vises bare for '+(p.vises_hvis||[]).map(v=>'«'+(FORLBL[v]||v)+'»').join(' og ')+'.':'Nå: vises for alle.'}</b></div></div>
+      <div class="f"><div class="fh"><label for="s_fase">Fase i reisen</label></div><div class="hint" style="margin:0 0 6px">Hvilken del av reisen punktet hører til. Rekkefølgen i fasen endrer du med pilene ved punktet i lista til venstre.</div><select id="s_fase" data-set="fase">${D.s.faser.map(f=>`<option value="${f.id}" ${p.fase===f.id?'selected':''}>${esc(fname(f.id))}</option>`).join('')}</select></div></div></div>`;
   } else if(sel.type==='fase'){
     const f=F(sel.id),i=D.s.faser.indexOf(f),n=D.s.punkter.filter(p=>p.fase===f.id).length,k=x=>'fase.'+f.id+'.'+x;
-    h+=head('Reisen · fase '+(i+1)+' av '+D.s.faser.length,t(k('tittel'))||'Ny fase',seg(f)+`<button class="mini" data-fmove="-1" ${i?'':'disabled'}>Flytt tidligere</button><button class="mini" data-fmove="1" ${i<D.s.faser.length-1?'':'disabled'}>Flytt senere</button>${isNew('faser',f.id)&&!n?'<button class="mini" data-del="fase">Slett utkastet</button>':''}`);
-    h+=`<div class="sec"><h2>Fasen</h2><p>${n?n+' punkter i denne fasen.':'Ingen punkter ennå. En tom fase vises ikke i appen.'}</p>${input(k('kort'),'Kort navn i tidslinjen','Ett ord. Det er lite plass på mobil.')}${input(k('tittel'),'Overskrift')}${input(k('undertekst'),'Undertekst')}${n?'':`<button class="btn" data-add="${f.id}">+ Legg til første punkt</button>`}</div>`;
+    h+=phead(2,'Rediger','Lagres automatisk')+head('Reisen · fase '+(i+1)+' av '+D.s.faser.length,t(k('tittel'))||'Ny fase',isNew('faser',f.id)&&!n?'<button class="mini" data-del="fase">Slett fasen</button>':'')+hidden(f);
+    h+=`<div class="sec"><h2>Fasen ${vis(true)}</h2><p>En fase er en del av reisen, for eksempel «De første dagene». ${n?'Den har '+n+' punkter.':'Den har ingen punkter ennå, og vises ikke for familien før den får et punkt.'} Rekkefølgen endrer du med pilene ved fasen i lista til venstre.</p>${input(k('kort'),'Kort navn','Vises i tidslinjen øverst. Ett ord, det er lite plass på mobil.')}${input(k('tittel'),'Overskrift','Vises øverst når familien er i denne fasen.')}${input(k('undertekst'),'Undertekst','En kort setning under overskriften.')}${n?'':`<button class="btn" data-add="${f.id}">+ Legg til første punkt</button>`}</div>`;
   } else if(sel.type==='q'){
     const s=Q(sel.id);
-    h+=head('Spørsmålene',t('sporsmal.'+s.id+'.tekst'));
-    h+=`<div class="sec"><h2>Spørsmålet</h2><p>Svarene styrer hvilke punkter familien ser.</p>${input('sporsmal.'+s.id+'.tekst','Spørsmål')}${s.svar.map(v=>input('sporsmal.'+s.id+'.'+v,'Svaralternativ «'+v+'»')).join('')}</div>`;
+    h+=phead(2,'Rediger','Lagres automatisk')+head('Spørsmålene',t('sporsmal.'+s.id+'.tekst'));
+    h+=`<div class="sec"><h2>Spørsmålet ${vis(true)}</h2><p>Vises på startsiden. Svaret avgjør hvilke punkter familien ser. Hvilke punkter som hører til hvilket svar, velger du under «Hvem og hvor» på hvert punkt.</p>${input('sporsmal.'+s.id+'.tekst','Spørsmål')}${s.svar.map(v=>input('sporsmal.'+s.id+'.'+v,'Svaralternativ «'+v+'»')).join('')}</div>`;
   } else if(sel.type==='kontakt'){
     const c=K(sel.id),used=D.s.punkter.filter(p=>(p.kontakter||[]).includes(c.id));
-    h+=head('Kontakter',t('kontakt.'+c.id+'.navn')||'Ny kontakt');
-    h+=`<div class="sec"><h2>Kontakten</h2><p>${used.length?'Brukt i '+used.length+' punkter: '+used.map(p=>esc(t('punkt.'+p.id+'.tittel'))).join(', ')+'.':'Ikke brukt i noen punkter ennå.'}</p>
+    h+=phead(2,'Rediger','Lagres automatisk')+head('Kontakter',t('kontakt.'+c.id+'.navn')||'Ny kontakt');
+    h+=`<div class="sec"><h2>Kontakten ${vis(true)}</h2><p>Vises nederst i punktene der den er valgt. ${used.length?'Brukt i '+used.length+' punkter: '+used.map(p=>esc(t('punkt.'+p.id+'.tittel'))).join(', ')+'.':'Ikke brukt i noen punkter ennå.'}</p>
       ${input('kontakt.'+c.id+'.navn','Navn')}${area('kontakt.'+c.id+'.info','Kort beskrivelse','Hva de hjelper med, åpningstid, adresse.')}
       <div class="row2"><div class="f"><div class="fh"><label for="k_tel">Telefon</label></div><input type="text" id="k_tel" data-kset="telefon" value="${esc(c.telefon||'')}" placeholder="33 40 60 00"></div><div class="f"><div class="fh"><label for="k_url">Nettside</label></div><input type="url" id="k_url" data-kset="nettside" value="${esc(c.nettside||'')}" placeholder="https://"></div></div>
       <div class="hint">Telefon og nettside er like på alle språk og oversettes ikke.</div></div>`;
@@ -366,108 +394,30 @@ function itemCard(p,open){
 function renderPrev(){
   const pv=$('#prev');let b='',tog=false;
   const tl=fid=>`<div class="tl">${D.s.faser.filter(f=>f.status==='publisert'||f.id===fid).map(f=>`<span class="${f.id===fid?'on':''}">${esc(t('fase.'+f.id+'.kort'))}</span>`).join('')}</div>`;
-  if(sel.type==='punkt'){const p=P(sel.id);tog=true;b=tl(p.fase)+`<div class="p-h">${esc(t('fase.'+p.fase+'.tittel'))}</div><p class="p-sub">${esc(t('fase.'+p.fase+'.undertekst'))}</p>`+itemCard(p,openCard)+(p.status==='utkast'?'<p class="pv-note">Utkast – vises ikke for familiene ennå.</p>':'')}
+  if(sel.type==='punkt'){const p=P(sel.id);tog=true;b=tl(p.fase)+`<div class="p-h">${esc(t('fase.'+p.fase+'.tittel'))}</div><p class="p-sub">${esc(t('fase.'+p.fase+'.undertekst'))}</p>`+itemCard(p,true)}
   else if(sel.type==='fase'){b=tl(sel.id)+`<div class="p-h">${esc(t('fase.'+sel.id+'.tittel'))}</div><p class="p-sub">${esc(t('fase.'+sel.id+'.undertekst'))}</p>`+D.s.punkter.filter(p=>p.fase===sel.id).map(p=>itemCard(p,false)).join('')}
   else if(sel.type==='q'){const s=Q(sel.id);b=`<div class="p-h">Hva gjelder dere?</div><b>${esc(t('sporsmal.'+s.id+'.tekst'))}</b>${s.svar.map(v=>`<div class="opt">${esc(t('sporsmal.'+s.id+'.'+v))}</div>`).join('')}`}
   else if(sel.type==='kontakt'){b=`<p class="p-sub">Slik vises kontakten nederst i et punkt:</p><div class="card"><div class="cbody" style="border:0">${kcard(sel.id)}</div></div>`}
-  pv.innerHTML=`<div class="bar" style="margin-bottom:6px">${stepper()}</div><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><h3>Slik ser familien det</h3>${tog?`<div class="seg"><button data-open="0" aria-pressed="${!openCard}">Lukket</button><button data-open="1" aria-pressed="${openCard}">Åpen</button></div>`:''}</div><div class="phone"><div class="ph-top">Tønsberg kommune</div><div class="ph-body">${b}</div></div>`;
+  pv.innerHTML=`${phead(3,'Slik ser det ut i sjekklisten','Oppdateres mens du skriver')}<div class="phone"><div class="ph-top">Tønsberg kommune</div><div class="ph-body">${b}</div></div>`;
 }
 function setView(v){view=v;$('#main').dataset.view=v;document.querySelectorAll('.tabbar [data-view]').forEach(x=>x.setAttribute('aria-pressed',x.dataset.view===v));if(v==='prev')renderPrev();const el=v==='nav'?$('#nav'):v==='prev'?$('#prev'):$('#edit');el.scrollTop=0}
 function renderAll(){renderNav();renderEdit();renderPrev();stamp()}
 
 // ── Dialoger ──
 function download(name,obj){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(obj,null,2)+'\n'],{type:'application/json'}));a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
-// ── KI-hjelp: ferdig instruks for klarspråk. Ingen KI kalles herfra; redaktøren bruker sitt eget verktøy. ──
-let AIUNDO=null;
-const AIKEYS=id=>['tittel','naar','tekst'].map(f=>'punkt.'+id+'.'+f);
-const block=id=>{const [a,b,c]=AIKEYS(id);return`TITTEL: ${t(a)}\nNÅR: ${t(b)}\nTEKST:\n${t(c)}`};
-function aiPrompt(p){
-  const ex=D.s.punkter.filter(x=>x.id!==p.id&&x.status==='publisert'&&t('punkt.'+x.id+'.tekst')&&words(t('punkt.'+x.id+'.tekst'))<=MAXW)
-    .map(x=>{const tx=t('punkt.'+x.id+'.tekst');return{x,sc:(/^[–-] /m.test(tx)?1:0)+(/«[^»]{26,}»/.test(tx)?1:0)+(x.fase===p.fase?1:0)}}).sort((a,b)=>b.sc-a.sc).slice(0,2).map(e=>e.x);
-  const lab={ankommet:{ja:'familien er kommet',nei:'familien er ikke kommet ennå'},barn:{ja:'familier med barn',nei:'familier uten barn'},bolig:{ja:'familier som har bolig',nei:'familier som trenger bolig'}};
-  const hvem=(p.vises_hvis||[]).map(c=>{const [a,b]=c.split('=');return(lab[a]||{})[b]||c}).join(' og ')||'alle';
-  const kon=(p.kontakter||[]).map(id=>t('kontakt.'+id+'.navn')).filter(Boolean).join(', ')||'ingen';
-  return `Du hjelper en fagperson i Tønsberg kommune med å skrive et punkt i veilederen «Når familien kommer». Leserne er familier som nettopp har kommet til Norge gjennom familiegjenforening. Mange leser på mobil, på andrespråk eller i maskinoversettelse.
-
-Skriv om utkastet nederst slik at det følger reglene og ligner eksemplene. Behold alle fakta. Ikke finn på noe nytt. Er noe uklart, eller mangler noe familien trenger å vite, skriv det under MERKNAD i stedet for å gjette.
-
-Regler:
-1. TITTEL: Hva familien skal gjøre. Start med et verb. Maks 8 ord.
-2. NÅR: Når det gjelder, eller for hvem. En kort frase. Kan stå tom.
-3. TEKST: Maks ${MAXW} ord. Rekkefølge: hvorfor det er viktig (én setning), hva de gjør (gjerne punktliste), og eventuelt én setning de kan si.
-4. Én ting per setning. Korte setninger og vanlige ord. Skriv «du» eller «dere». Forklar fagord første gang.
-5. Punktliste: hver linje starter med «– ».
-6. En setning familien kan si eller vise frem, skrives i «…» på en egen linje. Maks én.
-7. Ikke skriv telefonnumre, e-post eller nettadresser. De står i kontaktlisten under punktet.
-8. Frister med tall: «innen 7 dager».
-
-Om punktet:
-- Fase i reisen: ${fname(p.fase)}
-- Vises for: ${hvem}
-- Kontakter under punktet: ${kon}
-
-Eksempler fra veilederen:
-${ex.map(x=>block(x.id)).join('\n\n---\n\n')}
-
-Utkastet:
-${block(p.id)}
-
-Svar nøyaktig i dette formatet, uten noe annet:
-TITTEL: …
-NÅR: …
-TEKST:
-…
-MERKNAD: … (bare hvis noe er uklart eller mangler)`;
-}
-function parseAI(s){
-  s=String(s||'').replace(/\r/g,'').replace(/^```.*$/gm,'').replace(/\*\*/g,'');
-  const g=re=>{const m=s.match(re);return m?m[1].trim():null};
-  const tittel=g(/^\s*TITTEL:[ \t]*(.*)$/mi),naar=g(/^\s*N(?:Å|AA|A)R:[ \t]*(.*)$/mi),
-    tekst=g(/^\s*TEKST:[ \t]*\n?([\s\S]*?)(?=^\s*MERKNAD:|(?![\s\S]))/mi),merk=g(/^\s*MERKNAD:[ \t]*([\s\S]*)$/mi);
-  if(tittel==null||tekst==null)throw new Error('Fant ikke TITTEL og TEKST i svaret. Kopier hele svaret fra KI-verktøyet og prøv igjen.');
-  const clean=x=>x.replace(/^[ \t]*[-•*][ \t]+/gm,'– ').replace(/\n{3,}/g,'\n\n').trim();
-  return{tittel:tittel.replace(/^[«"]|[»"]$/g,''),naar:(naar||'').replace(/^[-–…(]+$|^\(tom\)$/i,''),tekst:clean(tekst),merk:(merk||'').replace(/^[-–…]+$|^\(.*bare hvis.*\)$/i,'').trim()};
-}
-async function aiStart(p){
-  const txt=aiPrompt(p);
-  try{await navigator.clipboard.writeText(txt)}catch(e){const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove()}
-  modal(`<h2>Forbedre teksten med KI</h2><p><b>Punktet og instruksen er kopiert.</b></p><ol><li>Åpne Copilot, ChatGPT eller Claude, og lim inn.</li><li>Kopier hele svaret.</li><li>Lim svaret inn her.</li></ol>
-    <textarea class="paste" id="aiIn" placeholder="Lim inn svaret her" spellcheck="false"></textarea><div id="aiErr"></div>
-    <div class="bar" style="justify-content:flex-end;margin:14px 0 0"><button class="btn ghost" id="aiCopy">Kopier på nytt</button><button class="btn ghost" id="mNo">Avbryt</button><button class="btn primary" id="aiNext">Vis forslaget</button></div>`);
-  $('#box').classList.add('wide');$('#aiIn').focus();
-  $('#mNo').onclick=closeModal;$('#aiCopy').onclick=async()=>{try{await navigator.clipboard.writeText(txt);toast('Kopiert')}catch(e){}};
-  $('#aiNext').onclick=()=>{let r;try{r=parseAI($('#aiIn').value)}catch(e){$('#aiErr').innerHTML=`<div class="stale" style="margin-top:8px">${esc(e.message)}</div>`;return}aiReview(p,r)};
-}
-function aiReview(p,r){
-  const [a,b,c]=AIKEYS(p.id),w=words(r.tekst),warn=[];
-  if(w>MAXW)warn.push(`Forslaget har ${w} ord. Anbefalt maks er ${MAXW}.`);
-  if(/(\d{2} ?){4}|https?:\/\/|www\.|@/.test(r.tekst))warn.push('Forslaget inneholder telefonnummer, nettadresse eller e-post. Det skal stå i kontaktlisten.');
-  const num=x=>(String(x).match(/\d+/g)||[]);const gone=num(t(a)+' '+t(b)+' '+t(c)).filter(n=>!num(r.tittel+' '+r.naar+' '+r.tekst).includes(n));
-  if(gone.length)warn.push(`Tall fra utkastet er borte: ${[...new Set(gone)].join(', ')}. Sjekk at ingen fakta er fjernet.`);
-  if((r.tekst.match(/«[^»]+»/g)||[]).length>1)warn.push('Forslaget har mer enn én «Dette kan du si»-setning.');
-  const row=(lb,o,n)=>`<div class="cmp"><div><b>Nå: ${lb}</b>${esc(o)||'<i>(tom)</i>'}</div><div class="new"><b>Forslag: ${lb}</b>${esc(n)||'<i>(tom)</i>'}</div></div>`;
-  modal(`<h2>KI-forslaget</h2>${r.merk?`<div class="stale" style="margin:6px 0 10px"><b>Merknad fra KI:</b> ${esc(r.merk)}</div>`:''}${warn.map(x=>`<div class="stale" style="margin:6px 0">${esc(x)}</div>`).join('')}
-    ${row('Tittel',t(a),r.tittel)}${row('Når og for hvem',t(b),r.naar)}${row('Tekst',t(c),r.tekst)}
-    <p class="hint">Du er ansvarlig for at innholdet stemmer. KI kan ta feil, også om fakta.</p>
-    <div class="bar" style="justify-content:flex-end;margin:14px 0 0"><button class="btn ghost" id="mNo">Avbryt</button><button class="btn primary" id="aiUse">Bruk forslaget</button></div>`);
-  $('#box').classList.add('wide');
-  $('#mNo').onclick=closeModal;
-  $('#aiUse').onclick=()=>{AIUNDO={id:p.id,vals:{[a]:t(a),[b]:t(b),[c]:t(c)}};
-    [[a,r.tittel],[b,r.naar],[c,r.tekst]].forEach(([k,v])=>{if(v)D.t[k]=v;else delete D.t[k]});save();closeModal();renderAll();toast('Forslaget er satt inn')};
-}
 function modal(h){$('#box').classList.remove('wide');$('#box').innerHTML=h;$('#modal').classList.add('on')}
 const closeModal=()=>$('#modal').classList.remove('on');
 function newItem(fase){
-  modal(`<h2>Nytt punkt i «${esc(t('fase.'+fase+'.tittel'))}»</h2><div class="f"><div class="fh"><label for="nt">Tittel</label></div><input type="text" id="nt" placeholder="F.eks. Søk om skoleskyss"></div><p class="hint">Punktet lagres som utkast og vises ikke for familiene før du setter det til Publisert.</p><div class="bar" style="justify-content:flex-end;margin:16px 0 0"><button class="btn ghost" id="mNo">Avbryt</button><button class="btn primary" id="mYes">Lag punktet</button></div>`);
+  modal(`<h2>Nytt punkt i «${esc(t('fase.'+fase+'.tittel'))}»</h2><div class="f"><div class="fh"><label for="nt">Tittel</label></div><input type="text" id="nt" placeholder="F.eks. Søk om skoleskyss"></div><p class="hint">Du skriver resten av punktet etterpå.</p><div class="bar" style="justify-content:flex-end;margin:16px 0 0"><button class="btn ghost" id="mNo">Avbryt</button><button class="btn primary" id="mYes">Lag punktet</button></div>`);
   $('#nt').focus();$('#mNo').onclick=closeModal;$('#mYes').onclick=()=>{const ti=$('#nt').value.trim();if(!ti){$('#nt').focus();return}
-    const id=slug(ti,D.s.punkter.map(p=>p.id)),arr=D.s.punkter;let last=-1;arr.forEach((x,i)=>{if(x.fase===fase)last=i});arr.splice(last+1,0,{id,fase,status:'utkast'});D.t['punkt.'+id+'.tittel']=ti;
-    save();closeModal();sel={type:'punkt',id};renderAll();setView('edit');toast('Punktet er laget som utkast');setTimeout(()=>{const f=document.querySelector(`[data-k="punkt.${id}.tekst"]`);f&&f.focus()},50)};
+    const id=slug(ti,D.s.punkter.map(p=>p.id)),arr=D.s.punkter;let last=-1;arr.forEach((x,i)=>{if(x.fase===fase)last=i});arr.splice(last+1,0,{id,fase,status:'publisert'});D.t['punkt.'+id+'.tittel']=ti;
+    save();closeModal();sel={type:'punkt',id};renderAll();setView('edit');toast('Punktet er laget');setTimeout(()=>{const f=document.querySelector(`[data-k="punkt.${id}.tekst"]`);f&&f.focus()},50)};
 }
 function newPhase(){
   modal(`<h2>Ny fase i reisen</h2><div class="f"><div class="fh"><label for="pk">Kort navn i tidslinjen</label></div><input type="text" id="pk" placeholder="F.eks. Jobb"></div><div class="f"><div class="fh"><label for="pt">Overskrift</label></div><input type="text" id="pt" placeholder="F.eks. Jobb og økonomi"></div><div class="f"><div class="fh"><label for="pa">Plassering</label></div><select id="pa"><option value="__first">Først</option>${D.s.faser.map((f,i)=>`<option value="${f.id}" ${i===D.s.faser.length-1?'selected':''}>Etter «${esc(t('fase.'+f.id+'.tittel'))}»</option>`).join('')}</select></div><div class="bar" style="justify-content:flex-end;margin:16px 0 0"><button class="btn ghost" id="mNo">Avbryt</button><button class="btn primary" id="mYes">Lag fasen</button></div>`);
   $('#pk').focus();$('#mNo').onclick=closeModal;$('#mYes').onclick=()=>{const kt=$('#pk').value.trim(),ti=$('#pt').value.trim();if(!kt||!ti){(kt?$('#pt'):$('#pk')).focus();return}
-    const id=slug(kt,D.s.faser.map(f=>f.id)),pos=$('#pa').value,i=pos==='__first'?0:D.s.faser.findIndex(f=>f.id===pos)+1;D.s.faser.splice(i,0,{id,status:'utkast'});D.t['fase.'+id+'.kort']=kt;D.t['fase.'+id+'.tittel']=ti;
-    save();closeModal();sel={type:'fase',id};renderAll();setView('edit');toast('Fasen er laget som utkast')};
+    const id=slug(kt,D.s.faser.map(f=>f.id)),pos=$('#pa').value,i=pos==='__first'?0:D.s.faser.findIndex(f=>f.id===pos)+1;D.s.faser.splice(i,0,{id,status:'publisert'});D.t['fase.'+id+'.kort']=kt;D.t['fase.'+id+'.tittel']=ti;
+    save();closeModal();sel={type:'fase',id};renderAll();setView('edit');toast('Fasen er laget')};
 }
 function newContact(){
   modal(`<h2>Ny kontakt</h2><div class="f"><div class="fh"><label for="kn">Navn</label></div><input type="text" id="kn" placeholder="F.eks. Tønsberg tannklinikk"></div><div class="bar" style="justify-content:flex-end;margin:16px 0 0"><button class="btn ghost" id="mNo">Avbryt</button><button class="btn primary" id="mYes">Lag kontakten</button></div>`);
@@ -486,22 +436,55 @@ function openChanges(){
   const dn=$('#dlNo');if(dn)dn.onclick=()=>{download('no.json',(({base,at,avklart,...r})=>r.t)(D));download('struktur.json',D.s)};
   const r=$('#reset');if(r)r.onclick=()=>{modal(`<h2>Forkaste alle endringer?</h2><p>Utkastet slettes, og alt går tilbake til det som er publisert nå.</p><div class="bar" style="justify-content:flex-end;margin:16px 0 0"><button class="btn ghost" id="mNo">Avbryt</button><button class="btn primary" id="mYes">Forkast</button></div>`);$('#mNo').onclick=closeModal;$('#mYes').onclick=()=>{D=clone(ORIG);try{localStorage.removeItem(KEY)}catch(e){}closeModal();$('#drawer').classList.remove('on');renderAll();toast('Endringene er forkastet')}};
 }
-const TUT=[['Velkommen til redaktøren','Her endrer du innholdet i sjekklisten «Når familien kommer». Du skriver bare på norsk. Oversettelsen ordner teknisk eier og tolkene.'],
- ['Tre faner til venstre','«Sjekklisten» er fasene og punktene, i samme rekkefølge som i appen. «Kontakter» er telefonnumre og nettsider. «Spørsmål» er de tre spørsmålene på startsiden. På mobil finner du dem under «Innhold» nederst.'],
- ['Ett punkt, tre felt','Tittel, når og for hvem, og tekst. Hold teksten under 80 ord: hvorfor det er viktig, og hva familien gjør. Telefonnumre legger du til som kontakter.'],
- ['Få hjelp med teksten','Trykk «Forbedre teksten med KI» under teksten. Da kopieres punktet med en ferdig instruks om klarspråk og lengde. Lim det inn i Copilot, ChatGPT eller Claude, og lim svaret tilbake. Du ser forslaget ved siden av din egen tekst før du velger å bruke det.'],
- ['Se resultatet','Forhåndsvisningen viser punktet slik familien ser det. Nye punkter er utkast til du setter dem til «Publisert».'],
- ['Send endringene','Når du er ferdig, trykker du «Send endringer», laster ned fila og sender den til teknisk eier. Til da lagres alt som utkast i denne nettleseren.']];
-function tutorial(i){const [h,p]=TUT[i],last=i===TUT.length-1;
-  modal(`<div style="display:flex;gap:6px;margin-bottom:14px">${TUT.map((_,j)=>`<span style="height:5px;flex:1;border-radius:3px;background:${j<=i?'var(--green)':'var(--line)'}"></span>`).join('')}</div><h2>${h}</h2><p style="font-size:16px;line-height:1.55">${p}</p><div class="bar" style="justify-content:space-between;margin:18px 0 0"><button class="btn ghost" id="tSkip">${last?'Lukk':'Hopp over'}</button><span style="display:flex;gap:8px">${i?'<button class="btn" id="tPrev">Tilbake</button>':''}<button class="btn primary" id="tNext">${last?'Kom i gang':'Neste'}</button></span></div>`);
-  const end=()=>{closeModal();try{localStorage.setItem('fgv_redaktor_intro','1')}catch(e){}};$('#tSkip').onclick=end;$('#tNext').onclick=()=>last?end():tutorial(i+1);const pv=$('#tPrev');if(pv)pv.onclick=()=>tutorial(i-1)}
+// ── Veiledning: mørklegger skjermen og fremhever én del om gangen. Vises hver gang redaktøren åpnes. ──
+const TUT=[
+ {t:'Velkommen til redaktøren',x:'Her endrer du innholdet i sjekklisten «Når familien kommer». Du skriver bare på norsk. Oversettelsene ordner teknisk eier og tolkene.<br><br>Redaktøren har <b>tre deler</b>. Vi viser deg dem én og én.'},
+ {n:1,v:'nav',el:'#nav',t:'Velg hva du vil redigere',x:'Her er alt innholdet i sjekklisten. Trykk på et punkt for å redigere det.'},
+ {n:1,v:'nav',el:'.navtabs',t:'Tre typer innhold',x:'<b>Sjekklisten:</b> fasene og punktene familien krysser av.<br><b>Kontakter:</b> telefonnumre og nettsider.<br><b>Spørsmål:</b> de tre spørsmålene på startsiden.'},
+ {n:1,v:'nav',el:'#nav .mv',t:'Flytte et punkt',x:'Punktet du har valgt, har to piler. Med dem flytter du punktet opp eller ned i lista.'},
+ {n:2,v:'edit',el:'#edit',t:'Her redigerer du',x:'Det du skriver her, lagres av seg selv i nettleseren din. Ingenting blir publisert før du sender endringene.'},
+ {n:2,v:'edit',el:'[data-tut=punktet]',t:'Det familien leser',x:'Tittel, «Når og for hvem» og tekst. Hold teksten under 80 ord: først hvorfor det er viktig, så hva familien gjør.<br><br>Merket <span class="vis y">Vises for familien</span> viser hva familien ser.'},
+ {n:2,v:'edit',el:'[data-tut=hvem]',t:'Det familien ikke ser',x:'Her bestemmer du hvem som får se punktet, og i hvilken fase det står. Familien ser det ikke som tekst.<br><br>Derfor er det merket <span class="vis n">Vises ikke for familien</span>.'},
+ {n:3,v:'prev',el:'#prev',t:'Slik ser det ut i sjekklisten',x:'Her ser du punktet slik familien ser det på mobilen. Det oppdateres mens du skriver.'},
+ {el:'#pubBtn',t:'Send endringene',x:'Når du er ferdig, trykker du her. Du laster ned en fil og sender den til teknisk eier på e-post eller Teams.<br><br>Du finner denne veiledningen igjen under «Veiledning» øverst.'}];
+let TI=-1;
+function tutorial(i){
+  if(i===0){const p=D.s.punkter[0];if(p&&sel.type!=='punkt'){sel={type:'punkt',id:p.id};renderAll()}}
+  TI=i;$('#tut').classList.add('on');const st=TUT[i],small=matchMedia('(max-width:1180px)').matches;
+  if(st.v&&small)setView(st.v);else if(!small)setView('edit');
+  let el=st.el?document.querySelector(st.el):null;
+  if(el&&!el.getClientRects().length)el=null;
+  if(el&&st.el.startsWith('[data-tut'))el.scrollIntoView({block:'nearest'});
+  if(el&&st.el==='#nav .mv')el.closest('.nodew').scrollIntoView({block:'nearest'});
+  const last=i===TUT.length-1;
+  $('#tutCard').innerHTML=`<div class="tut-prog">${TUT.map((_,j)=>`<span class="${j<=i?'on':''}"></span>`).join('')}</div>${st.n?`<div class="tut-num"><span class="pnum">${st.n}</span>Del ${st.n} av 3</div>`:''}<h2>${st.t}</h2><p>${st.x}</p>
+    <div class="bar" style="justify-content:space-between;margin:16px 0 0"><button class="btn ghost" id="tSkip">${last?'Lukk':'Hopp over'}</button><span style="display:flex;gap:8px">${i?'<button class="btn" id="tPrev">Tilbake</button>':''}<button class="btn primary" id="tNext">${last?'Kom i gang':'Neste'}</button></span></div>`;
+  $('#tSkip').onclick=endTut;$('#tNext').onclick=()=>last?endTut():tutorial(i+1);const pv=$('#tPrev');if(pv)pv.onclick=()=>tutorial(i-1);
+  requestAnimationFrame(()=>placeTut(el));$('#tNext').focus();
+}
+function placeTut(el){
+  const hole=$('#tutHole'),card=$('#tutCard'),W=innerWidth,H=innerHeight,pad=6,cw=card.offsetWidth,ch=card.offsetHeight,g=14;
+  if(!el){Object.assign(hole.style,{left:W/2+'px',top:H/2+'px',width:'0px',height:'0px'});Object.assign(card.style,{left:(W-cw)/2+'px',top:Math.max(12,(H-ch)/2)+'px'});return}
+  const r=el.getBoundingClientRect(),x=Math.max(4,r.left-pad),y=Math.max(4,r.top-pad),w=Math.min(W-4,r.right+pad)-x,h=Math.min(H-4,r.bottom+pad)-y;
+  Object.assign(hole.style,{left:x+'px',top:y+'px',width:w+'px',height:h+'px'});
+  const cl=(v,a,b)=>Math.min(Math.max(v,a),b);let L,T;
+  if(W-(x+w)>=cw+g*2){L=x+w+g;T=cl(y,12,H-ch-12)}
+  else if(x>=cw+g*2){L=x-cw-g;T=cl(y,12,H-ch-12)}
+  else if(H-(y+h)>=ch+g*2){T=y+h+g;L=cl(x,12,W-cw-12)}
+  else if(y>=ch+g*2){T=y-ch-g;L=cl(x,12,W-cw-12)}
+  else{L=(W-cw)/2;T=H-ch-16}
+  Object.assign(card.style,{left:L+'px',top:T+'px'});
+}
+function endTut(){TI=-1;$('#tut').classList.remove('on');if(matchMedia('(max-width:760px)').matches)setView('nav')}
+addEventListener('resize',()=>{if(TI>=0)tutorial(TI)});
+document.addEventListener('keydown',e=>{if(TI<0)return;if(e.key==='Escape')endTut();if(e.key==='ArrowRight'&&TI<TUT.length-1)tutorial(TI+1);if(e.key==='ArrowLeft'&&TI>0)tutorial(TI-1)});
 
 // ── Hendelser ──
 const cur=()=>sel.type==='punkt'?P(sel.id):sel.type==='fase'?F(sel.id):sel.type==='kontakt'?K(sel.id):sel.type==='q'?Q(sel.id):null;
 document.addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b||b.closest('#box')&&!b.dataset.sel)return;const c=cur();
   if(b.dataset.navtab){const tb=b.dataset.navtab;navTab=tb;q='';if(tabOf(sel.type)!==tb){sel=tb==='kontakt'?{type:'kontakt',id:D.s.kontakter[0].id}:tb==='q'?{type:'q',id:D.s.sporsmal[0].id}:{type:'punkt',id:D.s.punkter[0].id}}renderAll();return}
-  if(b.dataset.sel){AIUNDO=null;sel=JSON.parse(b.dataset.sel);navTab=tabOf(sel.type);renderAll();setView(view==='prev'&&!b.closest('.nav')?'prev':'edit');return}
+  if(b.dataset.sel){sel=JSON.parse(b.dataset.sel);navTab=tabOf(sel.type);renderAll();setView(view==='prev'&&!b.closest('.nav')?'prev':'edit');return}
   if(b.dataset.view){setView(b.dataset.view);return}
   if(b.dataset.status&&c){c.status=b.dataset.status;save();renderAll();return}
   if(b.dataset.move&&c){const arr=D.s.punkter,same=arr.filter(x=>x.fase===c.fase),o=same[same.indexOf(c)+ +b.dataset.move];if(!o)return;const i=arr.indexOf(c),j=arr.indexOf(o);[arr[i],arr[j]]=[arr[j],arr[i]];save();renderAll();return}
@@ -510,8 +493,6 @@ document.addEventListener('click',e=>{
   if(b.dataset.kon&&c){const a=c.kontakter||[],v=b.dataset.kon;c.kontakter=a.includes(v)?a.filter(x=>x!==v):[...a,v];if(!c.kontakter.length)delete c.kontakter;b.setAttribute('aria-pressed',(c.kontakter||[]).includes(v));save();renderPrev();renderNav();return}
   if(b.dataset.ins){const ta=document.querySelector(`#edit textarea[data-k$=".tekst"]`);const p=ta.selectionStart??ta.value.length,pre=ta.value.slice(0,p),nl=pre&&!pre.endsWith('\n')?'\n':'';
     const ins=b.dataset.ins==='list'?nl+'– ':nl+'Ring og si: «»';ta.value=pre+ins+ta.value.slice(p);const pos=p+ins.length-(b.dataset.ins==='call'?1:0);ta.focus();ta.setSelectionRange(pos,pos);ta.dispatchEvent(new Event('input',{bubbles:true}));return}
-  if(b.dataset.ai){aiStart(c);return}
-  if(b.dataset.aiundo&&AIUNDO){Object.entries(AIUNDO.vals).forEach(([k,v])=>{if(v)D.t[k]=v;else delete D.t[k]});AIUNDO=null;save();renderAll();toast('Teksten er satt tilbake');return}
   if(b.dataset.open){openCard=b.dataset.open==='1';renderPrev();return}
   if(b.dataset.add){newItem(b.dataset.add);return}
   if(b.dataset.addfase){newPhase();return}
@@ -537,7 +518,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){$('#drawer').classL
 renderAll();setView(view);
 addEventListener('resize',()=>{if(view==='nav'&&!matchMedia('(max-width:760px)').matches)setView('edit')});
 try{if(baseChanged)modal(`<h2>Det er publisert nye endringer</h2><p>Innholdet er oppdatert siden du startet utkastet ditt. Utkastet ditt er beholdt, men sjekk at du ikke overskriver noe som er endret i mellomtiden.</p><div class="bar" style="justify-content:flex-end;margin:16px 0 0"><button class="btn ghost" id="mNo">Start på nytt fra det publiserte</button><button class="btn primary" id="mYes">Fortsett på utkastet</button></div>`),$('#mYes').onclick=()=>{closeModal()},$('#mNo').onclick=()=>{D=clone(ORIG);D.base=BASE;try{localStorage.removeItem(KEY)}catch(e){}closeModal();renderAll()};
-  else if(!localStorage.getItem('fgv_redaktor_intro'))tutorial(0)}catch(e){}
+  else tutorial(0)}catch(e){}
 })();
 </script>
 </body>
